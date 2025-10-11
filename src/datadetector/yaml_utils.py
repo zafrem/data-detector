@@ -32,7 +32,7 @@ class YAMLHandler:
         if not path.exists():
             raise FileNotFoundError(f"YAML file not found: {path}")
 
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             try:
                 data = yaml.safe_load(f)
             except yaml.YAMLError as e:

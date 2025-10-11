@@ -57,8 +57,12 @@ class TestTokenDetection:
 
     def test_jwt_token_detected(self, token_engine):
         """Test JWT token is detected."""
-        text = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
-        result = token_engine.find(text, namespaces=["comm"])
+        jwt_token = (
+            "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9."
+            "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ."
+            "SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        )
+        result = token_engine.find(jwt_token, namespaces=["comm"])
 
         # JWT gets matched by multiple patterns, but jwt_token_01 should be among them
         assert result.match_count >= 1
@@ -170,7 +174,8 @@ class TestTokenRedaction:
 
     def test_github_token_redacted(self, token_engine):
         """Test GitHub token is properly redacted."""
-        text = "My token is ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T1u2V3w4X5y6Z please keep secret"
+        token = "ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T1u2V3w4X5y6Z"
+        text = f"My token is {token} please keep secret"
         result = token_engine.redact(text, namespaces=["comm"])
 
         assert result.redaction_count == 1

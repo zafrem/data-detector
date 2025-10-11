@@ -1,17 +1,17 @@
 """Tests for engine edge cases to improve coverage."""
 
-import pytest
-from datadetector.engine import Engine
-from datadetector.registry import PatternRegistry
-from datadetector.models import (
-    Pattern,
-    Category,
-    Policy,
-    ActionOnMatch,
-    Severity,
-    RedactionStrategy,
-)
 import re
+
+from datadetector.engine import Engine
+from datadetector.models import (
+    ActionOnMatch,
+    Category,
+    Pattern,
+    Policy,
+    RedactionStrategy,
+    Severity,
+)
+from datadetector.registry import PatternRegistry
 
 
 class TestEngineStoreRawPolicy:

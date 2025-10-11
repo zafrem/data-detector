@@ -1,15 +1,26 @@
-name: publish-testpypi
+# DEPRECATED: This workflow is deprecated in favor of the unified release.yml workflow
+# which handles TestPyPI -> PyPI publishing with validation.
+# This workflow is kept for manual TestPyPI testing only.
+name: Manual TestPyPI Publish (Deprecated)
 
 on:
   workflow_dispatch:
-  push:
-    tags: ["v*"]   # v0.0.1
+    inputs:
+      reason:
+        description: 'Reason for manual TestPyPI publish'
+        required: true
+        type: string
 
 jobs:
   build-and-upload:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Log manual publish reason
+        run: |
+          echo "⚠️  Manual TestPyPI publish triggered"
+          echo "Reason: ${{ inputs.reason }}"
+
       - uses: actions/checkout@v4
 
       - name: Set up Python

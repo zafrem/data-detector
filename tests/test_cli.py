@@ -1,8 +1,6 @@
 """Tests for CLI commands."""
 
 import json
-import tempfile
-from pathlib import Path
 
 import pytest
 from click.testing import CliRunner

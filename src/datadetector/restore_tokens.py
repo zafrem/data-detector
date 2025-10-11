@@ -73,7 +73,7 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
         print(f"✗ Error: File not found: {file_path}")
         return False
 
-    with open(file_path, 'r') as f:
+    with open(file_path) as f:
         content = f.read()
 
     # Replace the fake Stripe pattern with the real one
@@ -145,7 +145,10 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
                 new_lines.append('  - id: stripe_key_01')
                 new_lines.append('    location: comm')
                 new_lines.append('    category: token')
-                new_lines.append('    description: Stripe API Key (sk_live_, sk_test_, pk_live_, pk_test_)')
+                new_lines.append(
+                    '    description: Stripe API Key '
+                    '(sk_live_, sk_test_, pk_live_, pk_test_)'
+                )
                 new_lines.append("    pattern: '[sp]k_(live|test)_[A-Za-z0-9]{24,}'")
                 new_lines.append('    verification: high_entropy_token')
                 new_lines.append('    priority: 10')
@@ -205,7 +208,10 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         description="Restore tokens.yml to use real Stripe API key patterns",
-        epilog="SECURITY NOTE: This script uses FAKE example keys for security scanner compatibility.",
+        epilog=(
+            "SECURITY NOTE: This script uses FAKE example keys "
+            "for security scanner compatibility."
+        ),
     )
     parser.add_argument(
         "file_path",

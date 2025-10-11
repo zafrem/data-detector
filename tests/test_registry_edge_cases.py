@@ -1,19 +1,17 @@
 """Tests for registry.py edge cases to improve coverage."""
 
-import pytest
-import yaml
-from pathlib import Path
+import logging
+import re
 
-from datadetector.models import Pattern, Category, Policy, ActionOnMatch, Severity
+import pytest
+
+from datadetector.models import ActionOnMatch, Category, Pattern, Policy, Severity
 from datadetector.registry import (
     PatternRegistry,
-    load_registry,
-    _load_yaml_file,
-    _validate_schema,
     _compile_pattern,
+    _load_yaml_file,
+    load_registry,
 )
-import re
-import logging
 
 
 class TestPatternRegistryEdgeCases:

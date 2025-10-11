@@ -1,14 +1,13 @@
 """Tests for YAML utilities."""
 
 import pytest
-from pathlib import Path
 
 from datadetector.yaml_utils import (
-    YAMLHandler,
     PatternFileHandler,
+    YAMLHandler,
     read_yaml,
-    write_yaml,
     update_yaml,
+    write_yaml,
 )
 
 
