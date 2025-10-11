@@ -135,50 +135,49 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
     # If regex didn't work, try simple string replacement
     if content == original_content:
         # Use a simpler approach - find the section and replace it
-        lines = content.split('\n')
+        lines = content.split("\n")
         new_lines = []
         i = 0
         while i < len(lines):
             line = lines[i]
-            if 'id: stripe_key_01' in line:
+            if "id: stripe_key_01" in line:
                 # Found the stripe section, skip until next pattern or end
-                new_lines.append('  - id: stripe_key_01')
-                new_lines.append('    location: comm')
-                new_lines.append('    category: token')
+                new_lines.append("  - id: stripe_key_01")
+                new_lines.append("    location: comm")
+                new_lines.append("    category: token")
                 new_lines.append(
-                    '    description: Stripe API Key '
-                    '(sk_live_, sk_test_, pk_live_, pk_test_)'
+                    "    description: Stripe API Key " "(sk_live_, sk_test_, pk_live_, pk_test_)"
                 )
                 new_lines.append("    pattern: '[sp]k_(live|test)_[A-Za-z0-9]{24,}'")
-                new_lines.append('    verification: high_entropy_token')
-                new_lines.append('    priority: 10')
+                new_lines.append("    verification: high_entropy_token")
+                new_lines.append("    priority: 10")
                 new_lines.append('    mask: "sk_****_************************"')
-                new_lines.append('    examples:')
-                new_lines.append('      match:')
+                new_lines.append("    examples:")
+                new_lines.append("      match:")
                 new_lines.append('        - "sk_test_EXAMPLEKEY1234567890abcd"')
                 new_lines.append('        - "sk_live_EXAMPLEKEY9876543210zyxw"')
                 new_lines.append('        - "pk_test_FAKEKEYFORTESTINGONLY123"')
-                new_lines.append('      nomatch:')
+                new_lines.append("      nomatch:")
                 new_lines.append('        - "sk_test_short"')
                 new_lines.append('        - "rk_test_notvalid"')
-                new_lines.append('    policy:')
-                new_lines.append('      store_raw: false')
-                new_lines.append('      action_on_match: redact')
-                new_lines.append('      severity: critical')
-                new_lines.append('    metadata:')
+                new_lines.append("    policy:")
+                new_lines.append("      store_raw: false")
+                new_lines.append("      action_on_match: redact")
+                new_lines.append("      severity: critical")
+                new_lines.append("    metadata:")
                 new_lines.append('      provider: "Stripe"')
                 new_lines.append('      type: "API Key"')
 
                 # Skip the old stripe section
                 i += 1
-                while i < len(lines) and not (lines[i].strip().startswith('- id:') and i > 0):
+                while i < len(lines) and not (lines[i].strip().startswith("- id:") and i > 0):
                     i += 1
                 continue
             else:
                 new_lines.append(line)
             i += 1
 
-        content = '\n'.join(new_lines)
+        content = "\n".join(new_lines)
 
     # Check if changes were made
     if content == original_content:
@@ -187,7 +186,7 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
 
     # Write the restored content back
     try:
-        with open(file_path, 'w') as f:
+        with open(file_path, "w") as f:
             f.write(content)
     except Exception as e:
         print(f"✗ Error writing file: {e}")
@@ -201,6 +200,7 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
     print("  - Provider: Changed from 'Example (Stripe-like pattern)' to 'Stripe'")
     print("\nNOTE: All examples use FAKE keys for security scanner compatibility")
     return True
+
 
 def main() -> None:
     """Main entry point for CLI."""
@@ -220,7 +220,8 @@ def main() -> None:
         help="Path to tokens.yml file (default: auto-detect)",
     )
     parser.add_argument(
-        "-v", "--verbose",
+        "-v",
+        "--verbose",
         action="store_true",
         help="Verbose output",
     )
@@ -238,5 +239,5 @@ def main() -> None:
     sys.exit(0 if success else 1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

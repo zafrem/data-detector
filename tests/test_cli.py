@@ -79,9 +79,7 @@ class TestFindCommand:
 
     def test_find_with_multiple_namespaces(self, runner, sample_text):
         """Test find with multiple namespaces."""
-        result = runner.invoke(
-            main, ["find", "--text", sample_text, "--ns", "comm", "--ns", "kr"]
-        )
+        result = runner.invoke(main, ["find", "--text", sample_text, "--ns", "comm", "--ns", "kr"])
         assert result.exit_code == 0
 
     def test_find_json_output(self, runner, sample_text):
@@ -211,23 +209,17 @@ class TestRedactCommand:
 
     def test_redact_with_namespace(self, runner, sample_text):
         """Test redact with namespace."""
-        result = runner.invoke(
-            main, ["redact", "--text", sample_text, "--ns", "comm"]
-        )
+        result = runner.invoke(main, ["redact", "--text", sample_text, "--ns", "comm"])
         assert result.exit_code == 0
 
     def test_redact_with_hash_strategy(self, runner, sample_text):
         """Test redact with hash strategy."""
-        result = runner.invoke(
-            main, ["redact", "--text", sample_text, "--strategy", "hash"]
-        )
+        result = runner.invoke(main, ["redact", "--text", sample_text, "--strategy", "hash"])
         assert result.exit_code == 0
 
     def test_redact_with_tokenize_strategy(self, runner, sample_text):
         """Test redact with tokenize strategy."""
-        result = runner.invoke(
-            main, ["redact", "--text", sample_text, "--strategy", "tokenize"]
-        )
+        result = runner.invoke(main, ["redact", "--text", sample_text, "--strategy", "tokenize"])
         assert result.exit_code == 0
 
     def test_redact_with_stats(self, runner, sample_text):

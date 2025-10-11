@@ -195,9 +195,7 @@ class TestPatternFileHandler:
     def test_add_pattern_to_file(self, tmp_path):
         """Test adding pattern to file."""
         yaml_file = tmp_path / "patterns.yml"
-        PatternFileHandler.create_pattern_file(
-            yaml_file, namespace="test", description="Test"
-        )
+        PatternFileHandler.create_pattern_file(yaml_file, namespace="test", description="Test")
 
         pattern = {
             "id": "phone_01",
@@ -217,9 +215,7 @@ class TestPatternFileHandler:
     def test_add_pattern_missing_fields(self, tmp_path):
         """Test adding pattern with missing required fields."""
         yaml_file = tmp_path / "patterns.yml"
-        PatternFileHandler.create_pattern_file(
-            yaml_file, namespace="test", description="Test"
-        )
+        PatternFileHandler.create_pattern_file(yaml_file, namespace="test", description="Test")
 
         invalid_pattern = {"id": "test_01"}  # Missing required fields
 
@@ -275,9 +271,7 @@ class TestPatternFileHandler:
     def test_remove_pattern_not_found(self, tmp_path, caplog):
         """Test removing non-existent pattern."""
         yaml_file = tmp_path / "patterns.yml"
-        PatternFileHandler.create_pattern_file(
-            yaml_file, namespace="test", description="Test"
-        )
+        PatternFileHandler.create_pattern_file(yaml_file, namespace="test", description="Test")
 
         result = PatternFileHandler.remove_pattern_from_file(yaml_file, "nonexistent")
 
@@ -318,9 +312,7 @@ class TestPatternFileHandler:
     def test_update_pattern_not_found(self, tmp_path, caplog):
         """Test updating non-existent pattern."""
         yaml_file = tmp_path / "patterns.yml"
-        PatternFileHandler.create_pattern_file(
-            yaml_file, namespace="test", description="Test"
-        )
+        PatternFileHandler.create_pattern_file(yaml_file, namespace="test", description="Test")
 
         result = PatternFileHandler.update_pattern_in_file(
             yaml_file, "nonexistent", {"pattern": "test"}
@@ -359,9 +351,7 @@ class TestPatternFileHandler:
     def test_get_pattern_not_found(self, tmp_path):
         """Test getting non-existent pattern."""
         yaml_file = tmp_path / "patterns.yml"
-        PatternFileHandler.create_pattern_file(
-            yaml_file, namespace="test", description="Test"
-        )
+        PatternFileHandler.create_pattern_file(yaml_file, namespace="test", description="Test")
 
         pattern = PatternFileHandler.get_pattern_from_file(yaml_file, "nonexistent")
 
@@ -408,9 +398,7 @@ class TestPatternFileHandler:
     def test_list_patterns_empty_file(self, tmp_path):
         """Test listing patterns in file with no patterns."""
         yaml_file = tmp_path / "patterns.yml"
-        PatternFileHandler.create_pattern_file(
-            yaml_file, namespace="test", description="Test"
-        )
+        PatternFileHandler.create_pattern_file(yaml_file, namespace="test", description="Test")
 
         pattern_ids = PatternFileHandler.list_patterns_in_file(yaml_file)
 

@@ -201,6 +201,7 @@ class TestMetricsEndpoint:
         assert response.status_code == 200
         assert "datadetector_requests_total" in response.text
 
+
 class TestFindEndpointOptions:
     """Tests for /find endpoint with options."""
 

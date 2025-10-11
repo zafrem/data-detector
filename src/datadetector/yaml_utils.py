@@ -70,9 +70,7 @@ class YAMLHandler:
             raise ValueError(f"Data must be a dictionary, got {type(data)}")
 
         if path.exists() and not overwrite:
-            raise FileExistsError(
-                f"File already exists: {path}. Use overwrite=True to overwrite."
-            )
+            raise FileExistsError(f"File already exists: {path}. Use overwrite=True to overwrite.")
 
         # Create parent directory if it doesn't exist
         path.parent.mkdir(parents=True, exist_ok=True)

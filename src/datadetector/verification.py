@@ -154,9 +154,7 @@ def high_entropy_token(value: str) -> bool:
 
     # Check character set (base64url: A-Za-z0-9_- or hex: A-Fa-f0-9)
     # Being permissive to catch various token formats including JWT (with dots)
-    allowed_chars = set(
-        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-+/=."
-    )
+    allowed_chars = set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-+/=.")
     if not all(c in allowed_chars for c in value):
         return False
 
