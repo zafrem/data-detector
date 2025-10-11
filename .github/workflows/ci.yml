@@ -10,7 +10,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   lint:
@@ -138,8 +137,6 @@ jobs:
     environment:
       name: testpypi
       url: https://test.pypi.org/p/datadetector
-    permissions:
-      id-token: write
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -151,6 +148,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
           skip-existing: true
 
   test-testpypi:
@@ -196,8 +194,6 @@ jobs:
     environment:
       name: pypi
       url: https://pypi.org/p/datadetector
-    permissions:
-      id-token: write
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -207,6 +203,8 @@ jobs:
 
       - name: Publish to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_API_TOKEN }}
 
   github-release:
     name: Create GitHub Release
