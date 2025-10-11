@@ -175,8 +175,11 @@ jobs:
         continue-on-error: true
         run: |
           python -m pip install --upgrade pip
+          # Install dependencies from PyPI first to avoid broken TestPyPI packages
+          pip install pyyaml jsonschema click fastapi pydantic starlette uvicorn grpcio protobuf
+          # Then install data-detector from TestPyPI (no deps to avoid conflicts)
           pip install --index-url https://test.pypi.org/simple/ \
-            --extra-index-url https://pypi.org/simple/ \
+            --no-deps \
             data-detector==${{ steps.version.outputs.VERSION }}
 
       - name: Test installed package
