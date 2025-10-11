@@ -58,6 +58,7 @@ test = [
 
 [project.scripts]
 data-detector = "datadetector.cli:main"
+data-detector-restore-tokens = "datadetector.restore_tokens:main"
 
 [project.urls]
 Homepage = "https://github.com/zafrem/data-detector"
@@ -68,7 +69,9 @@ Issues = "https://github.com/zafrem/data-detector/issues"
 where = ["src"]
 
 [tool.setuptools.package-data]
-datadetector = ["py.typed", "schemas/*.json"]
+datadetector = ["py.typed"]
+
+# Include patterns and schemas via MANIFEST.in
 
 [tool.black]
 line-length = 100

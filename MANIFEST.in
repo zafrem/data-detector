@@ -1,0 +1,29 @@
+# Include pattern and schema files
+include patterns/*.yml
+include schemas/*.json
+
+# Include utility scripts
+include restore_tokens.py
+
+# Include documentation
+include README.md
+include CHANGELOG.md
+include QUICKSTART.md
+include CONTRIBUTING.md
+include REQUIREMENTS.md
+include LICENSE
+
+# Include documentation directories
+recursive-include docs *.md
+
+# Include examples
+recursive-include examples *.py *.yml
+
+# Include tests (optional, for source distributions)
+recursive-include tests *.py
+
+# Exclude compiled Python files
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store
