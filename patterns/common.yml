@@ -1,0 +1,293 @@
+namespace: comm
+description: Common patterns applicable across countries (excluding IBAN patterns)
+
+patterns:
+  - id: email_01
+    location: comm
+    category: email
+    description: Standard email address (RFC 5322 simplified)
+    pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    flags: [IGNORECASE]
+    mask: "***@***.***"
+    examples:
+      match:
+        - "user@example.com"
+        - "john.doe+tag@company.co.uk"
+        - "test_user123@mail-server.org"
+      nomatch:
+        - "invalid.email@"
+        - "@example.com"
+        - "user@"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: medium
+
+  - id: ipv4_01
+    location: comm
+    category: ip
+    description: IPv4 address
+    pattern: '\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+    mask: "*.*.*.*"
+    examples:
+      match:
+        - "192.168.1.1"
+        - "10.0.0.1"
+        - "255.255.255.255"
+      nomatch:
+        - "256.1.1.1"
+        - "192.168.1"
+        - "192.168.1.1.1"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+
+  - id: ipv6_01
+    location: comm
+    category: ip
+    description: IPv6 address (simplified)
+    pattern: '(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}'
+    flags: [IGNORECASE]
+    mask: "****:****:****:****:****:****:****:****"
+    examples:
+      match:
+        - "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
+        - "2001:0db8:85a3:1234:5678:8a2e:0370:7334"
+      nomatch:
+        - "192.168.1.1"
+        - "gggg:gggg:gggg:gggg:gggg:gggg:gggg:gggg"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+
+  - id: credit_card_visa_01
+    location: comm
+    category: credit_card
+    description: Visa credit card number
+    pattern: '4[0-9]{12}(?:[0-9]{3})?'
+    mask: "****-****-****-****"
+    examples:
+      match:
+        - "4111111111111111"
+        - "4012888888881881"
+      nomatch:
+        - "5111111111111111"
+        - "411111111111"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: credit_card_mastercard_01
+    location: comm
+    category: credit_card
+    description: MasterCard credit card number
+    pattern: '5[1-5][0-9]{14}'
+    mask: "****-****-****-****"
+    examples:
+      match:
+        - "5500000000000004"
+        - "5105105105105100"
+      nomatch:
+        - "4111111111111111"
+        - "550000000000"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: credit_card_amex_01
+    location: comm
+    category: credit_card
+    description: American Express credit card number
+    pattern: '3[47][0-9]{13}'
+    mask: "****-******-*****"
+    examples:
+      match:
+        - "378282246310005"
+        - "371449635398431"
+      nomatch:
+        - "4111111111111111"
+        - "38123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: credit_card_discover_01
+    location: comm
+    category: credit_card
+    description: Discover credit card number
+    pattern: '6(?:011|5[0-9]{2})[0-9]{12}'
+    mask: "****-****-****-****"
+    examples:
+      match:
+        - "6011111111111117"
+        - "6500000000000002"
+      nomatch:
+        - "4111111111111111"
+        - "601111111111"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: credit_card_jcb_01
+    location: comm
+    category: credit_card
+    description: JCB credit card number
+    pattern: '(?:2131|1800|35\d{3})\d{11}'
+    mask: "****-****-****-****"
+    examples:
+      match:
+        - "3530111333300000"
+        - "3566002020360505"
+      nomatch:
+        - "4111111111111111"
+        - "353011133330"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: credit_card_diners_01
+    location: comm
+    category: credit_card
+    description: Diners Club credit card number
+    pattern: '3[0689][0-9]{12}'
+    mask: "****-******-****"
+    examples:
+      match:
+        - "30569309025904"
+        - "38520000023237"
+      nomatch:
+        - "4111111111111111"
+        - "305693090259"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: url_01
+    location: comm
+    category: other
+    description: URL with http/https protocol
+    pattern: 'https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)'
+    flags: [IGNORECASE]
+    mask: "https://***"
+    examples:
+      match:
+        - "https://example.com"
+        - "http://www.test.org/path?query=value"
+      nomatch:
+        - "ftp://example.com"
+        - "example.com"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+
+  - id: latitude_01
+    location: comm
+    category: location
+    description: Latitude coordinate (decimal degrees)
+    pattern: '(?<!\d)[-+]?(?:[0-8]?[0-9](?:\.[0-9]+)?|90(?:\.0+)?)(?!\d)'
+    mask: "**.******"
+    examples:
+      match:
+        - "37.7749"
+        - "-40.7128"
+        - "90.0"
+        - "-90"
+        - "0.0"
+        - "+45.123456"
+      nomatch:
+        - "91.0"
+        - "-91.5"
+        - "180.0"
+        - "abc"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    metadata:
+      note: "Valid range: -90 to +90 degrees"
+
+  - id: longitude_01
+    location: comm
+    category: location
+    description: Longitude coordinate (decimal degrees)
+    pattern: '(?<!\d)[-+]?(?:1[0-7][0-9](?:\.[0-9]+)?|[0-9]?[0-9](?:\.[0-9]+)?|180(?:\.0+)?)(?!\d)'
+    mask: "***.******"
+    examples:
+      match:
+        - "122.4194"
+        - "-74.0060"
+        - "180.0"
+        - "-180"
+        - "0.0"
+        - "+123.456789"
+      nomatch:
+        - "181.0"
+        - "-181.5"
+        - "200.0"
+        - "xyz"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    metadata:
+      note: "Valid range: -180 to +180 degrees"
+
+  - id: coordinates_pair_01
+    location: comm
+    category: location
+    description: Latitude/Longitude coordinate pair (decimal degrees)
+    pattern: '(?<!\d)[-+]?(?:[0-8]?[0-9](?:\.[0-9]+)?|90(?:\.0+)?)\s*,\s*[-+]?(?:1[0-7][0-9](?:\.[0-9]+)?|[0-9]?[0-9](?:\.[0-9]+)?|180(?:\.0+)?)(?!\d)'
+    mask: "**.******, ***.******"
+    examples:
+      match:
+        - "37.7749, -122.4194"
+        - "40.7128,-74.0060"
+        - "0.0, 0.0"
+        - "-90, 180"
+        - "+45.123, -123.456"
+      nomatch:
+        - "91.0, 122.4194"
+        - "37.7749, 181.0"
+        - "37.7749 122.4194"
+        - "invalid, coords"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    metadata:
+      note: "Format: latitude, longitude with optional whitespace around comma"
+
+  - id: coordinates_dms_01
+    location: comm
+    category: location
+    description: Coordinates in Degrees Minutes Seconds (DMS) format
+    pattern: '[0-9]{1,3}°\s*[0-5]?[0-9]′\s*[0-5]?[0-9](?:\.[0-9]+)?″\s*[NSEW]'
+    verification: dms_coordinate
+    flags: [IGNORECASE]
+    mask: "**°**′**″*"
+    examples:
+      match:
+        - "37°46′29.7″N"
+        - "122°25′9.8″W"
+        - "0°0′0″N"
+        - "90° 0′ 0″ S"
+      nomatch:
+        - "91°0′0″N"
+        - "37°60′0″N"
+        - "37°46′60″N"
+        - "37°46′29.7″X"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    metadata:
+      note: "Format: DD°MM′SS.S″D where D is direction (N/S/E/W)"

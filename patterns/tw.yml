@@ -1,0 +1,496 @@
+namespace: tw
+description: Taiwan (Republic of China) PII patterns
+
+patterns:
+  - id: mobile_01
+    location: tw
+    category: phone
+    description: Taiwan mobile phone number (09XX-XXX-XXX)
+    pattern: '09[0-9]{2}-?[0-9]{3}-?[0-9]{3}'
+    mask: "09**-***-***"
+    examples:
+      match:
+        - "0912-345-678"
+        - "0987654321"
+        - "0923-456-789"
+      nomatch:
+        - "0812-345-678"
+        - "09123-45-678"
+        - "091-234-5678"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+
+  - id: mobile_02
+    location: tw
+    category: phone
+    description: Taiwan mobile phone number (09XX-XXX-XXX)
+    pattern: '09[0-9]{2}\)[0-9]{3}-?[0-9]{3}'
+    mask: "09**-***-***"
+    examples:
+      match:
+        - "0912-345-678"
+        - "0987654321"
+        - "0923)456-789"
+      nomatch:
+        - "0812-345-678"
+        - "09123-45-678"
+        - "091-234-5678"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+      store_raw: false
+      action_on_match: redact
+      severity: high
+
+  - id: landline_01
+    location: tw
+    category: phone
+    description: Taiwan landline number (area code + number)
+    pattern: '0[2-8]-?[0-9]{7,8}'
+    mask: "0*-********"
+    examples:
+      match:
+        - "02-12345678"
+        - "07-1234567"
+        - "04-23456789"
+        - "0212345678"
+      nomatch:
+        - "01-12345678"
+        - "09-12345678"
+        - "02-123456"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+
+  - id: landline_02
+    location: tw
+    category: phone
+    description: Taiwan landline number (area code + number)
+    pattern: '0[2-8]\)[0-9]{7,8}'
+    mask: "0*-********"
+    examples:
+      match:
+        - "02-12345678"
+        - "07)1234567"
+        - "04-23456789"
+        - "0212345678"
+      nomatch:
+        - "01-12345678"
+        - "09-12345678"
+        - "02-123456"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+
+  - id: national_id_01
+    location: tw
+    category: other
+    description: Taiwan National ID (1 letter + 9 digits)
+    pattern: '[A-Z][0-9]{9}'
+    flags: [IGNORECASE]
+    mask: "A*********"
+    examples:
+      match:
+        - "A123456789"
+        - "B987654321"
+        - "f234567890"
+      nomatch:
+        - "AB12345678"
+        - "A12345678"
+        - "1234567890"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "First letter indicates birth location, 2nd digit indicates gender"
+
+  - id: passport_01
+    location: tw
+    category: passport
+    description: Taiwan passport number (9 digits)
+    pattern: '[0-9]{9}'
+    mask: "*********"
+    examples:
+      match:
+        - "123456789"
+        - "987654321"
+      nomatch:
+        - "12345678"
+        - "1234567890"
+        - "A12345678"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+
+  - id: zipcode_01
+    location: tw
+    category: address
+    description: Taiwan postal code (3 or 5 digits)
+    pattern: '[0-9]{3}(?:[0-9]{2})?'
+    mask: "***"
+    examples:
+      match:
+        - "100"
+        - "10491"
+        - "234"
+        - "80661"
+      nomatch:
+        - "12"
+        - "1234"
+        - "123456"
+        - "A123"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+
+  - id: business_id_01
+    location: tw
+    category: other
+    description: Taiwan Business Uniform Number (8 digits)
+    pattern: '[0-9]{8}'
+    mask: "********"
+    examples:
+      match:
+        - "12345678"
+        - "87654321"
+      nomatch:
+        - "1234567"
+        - "123456789"
+        - "A1234567"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+
+  # Bank of Taiwan (臺灣銀行) - Bank Code: 004
+  - id: bank_of_taiwan_account_01
+    location: tw
+    category: bank
+    description: Bank of Taiwan account (004-XXXXXXXXXXXX)
+    pattern: '004-?[0-9]{9,13}'
+    mask: "004-*********"
+    examples:
+      match:
+        - "004-123456789012"
+        - "004123456789012"
+        - "004-987654321098"
+        - "004-12345678901"
+      nomatch:
+        - "005-123456789012"
+        - "004-12345678"
+        - "004-12345678901234"
+        - "04-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Bank of Taiwan (臺灣銀行) - Taiwan's central bank and largest government bank"
+
+  # First Commercial Bank (第一銀行) - Bank Code: 007
+  - id: first_bank_account_01
+    location: tw
+    category: bank
+    description: First Commercial Bank account (007-XXXXXXXXXXXX)
+    pattern: '007-?[0-9]{9,13}'
+    mask: "007-*********"
+    examples:
+      match:
+        - "007-123456789012"
+        - "007123456789012"
+        - "007-987654321098"
+        - "007-12345678901"
+      nomatch:
+        - "008-123456789012"
+        - "007-12345678"
+        - "007-12345678901234"
+        - "07-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "First Commercial Bank (第一銀行) - One of Taiwan's oldest and largest banks"
+
+  # Hua Nan Commercial Bank (華南銀行) - Bank Code: 008
+  - id: hua_nan_bank_account_01
+    location: tw
+    category: bank
+    description: Hua Nan Commercial Bank account (008-XXXXXXXXXXXX)
+    pattern: '008-?[0-9]{9,13}'
+    mask: "008-*********"
+    examples:
+      match:
+        - "008-123456789012"
+        - "008123456789012"
+        - "008-987654321098"
+        - "008-12345678901"
+      nomatch:
+        - "009-123456789012"
+        - "008-12345678"
+        - "008-12345678901234"
+        - "08-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Hua Nan Commercial Bank (華南銀行) - Major commercial bank in Taiwan"
+
+  # Chang Hwa Commercial Bank (彰化銀行) - Bank Code: 009
+  - id: chang_hwa_bank_account_01
+    location: tw
+    category: bank
+    description: Chang Hwa Commercial Bank account (009-XXXXXXXXXXXX)
+    pattern: '009-?[0-9]{9,13}'
+    mask: "009-*********"
+    examples:
+      match:
+        - "009-123456789012"
+        - "009123456789012"
+        - "009-987654321098"
+        - "009-12345678901"
+      nomatch:
+        - "010-123456789012"
+        - "009-12345678"
+        - "009-12345678901234"
+        - "09-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Chang Hwa Commercial Bank (彰化銀行) - Historic commercial bank"
+
+  # Shanghai Commercial & Savings Bank (上海銀行) - Bank Code: 011
+  - id: shanghai_bank_account_01
+    location: tw
+    category: bank
+    description: Shanghai Commercial & Savings Bank account (011-XXXXXXXXXXXX)
+    pattern: '011-?[0-9]{9,13}'
+    mask: "011-*********"
+    examples:
+      match:
+        - "011-123456789012"
+        - "011123456789012"
+        - "011-987654321098"
+        - "011-12345678901"
+      nomatch:
+        - "012-123456789012"
+        - "011-12345678"
+        - "011-12345678901234"
+        - "11-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Shanghai Commercial & Savings Bank (上海銀行) - Commercial and savings bank"
+
+  # Taipei Fubon Commercial Bank (台北富邦銀行) - Bank Code: 012
+  - id: taipei_fubon_bank_account_01
+    location: tw
+    category: bank
+    description: Taipei Fubon Commercial Bank account (012-XXXXXXXXXXXX)
+    pattern: '012-?[0-9]{9,13}'
+    mask: "012-*********"
+    examples:
+      match:
+        - "012-123456789012"
+        - "012123456789012"
+        - "012-987654321098"
+        - "012-12345678901"
+      nomatch:
+        - "013-123456789012"
+        - "012-12345678"
+        - "012-12345678901234"
+        - "12-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Taipei Fubon Commercial Bank (台北富邦銀行) - Major private commercial bank"
+
+  # CTBC Bank (中國信託銀行) - Bank Code: 822
+  - id: ctbc_bank_account_01
+    location: tw
+    category: bank
+    description: CTBC Bank account (822-XXXXXXXXXXXX)
+    pattern: '822-?[0-9]{9,13}'
+    mask: "822-*********"
+    examples:
+      match:
+        - "822-123456789012"
+        - "822123456789012"
+        - "822-987654321098"
+        - "822-12345678901"
+      nomatch:
+        - "823-123456789012"
+        - "822-12345678"
+        - "822-12345678901234"
+        - "82-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "CTBC Bank (中國信託銀行) - China Trust Commercial Bank, major financial institution"
+
+  # E.SUN Commercial Bank (玉山銀行) - Bank Code: 808
+  - id: esun_bank_account_01
+    location: tw
+    category: bank
+    description: E.SUN Commercial Bank account (808-XXXXXXXXXXXX)
+    pattern: '808-?[0-9]{9,13}'
+    mask: "808-*********"
+    examples:
+      match:
+        - "808-123456789012"
+        - "808123456789012"
+        - "808-987654321098"
+        - "808-12345678901"
+      nomatch:
+        - "809-123456789012"
+        - "808-12345678"
+        - "808-12345678901234"
+        - "80-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "E.SUN Commercial Bank (玉山銀行) - Leading private bank known for innovation"
+
+  # Taiwan Cooperative Bank (合作金庫銀行) - Bank Code: 006
+  - id: taiwan_cooperative_bank_account_01
+    location: tw
+    category: bank
+    description: Taiwan Cooperative Bank account (006-XXXXXXXXXXXX)
+    pattern: '006-?[0-9]{9,13}'
+    mask: "006-*********"
+    examples:
+      match:
+        - "006-123456789012"
+        - "006123456789012"
+        - "006-987654321098"
+        - "006-12345678901"
+      nomatch:
+        - "007-123456789012"
+        - "006-12345678"
+        - "006-12345678901234"
+        - "06-123456789012"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Taiwan Cooperative Bank (合作金庫銀行) - Major cooperative banking institution"
+
+  # Generic Taiwan bank account (for other banks)
+  - id: generic_taiwan_bank_account_01
+    location: tw
+    category: bank
+    description: Generic Taiwan bank account (XXX-XXXXXXXXXXXX)
+    pattern: '[0-9]{3}-?[0-9]{9,13}'
+    mask: "***-*********"
+    examples:
+      match:
+        - "123-456789012345"
+        - "999123456789012"
+        - "001-12345678901"
+        - "888-987654321098"
+      nomatch:
+        - "12-456789012345"
+        - "1234-56789012345"
+        - "123-12345678"
+        - "123-12345678901234"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    metadata:
+      note: "Generic format for Taiwan banks: 3-digit bank code + 9-13 digit account number"
+
+  - id: chinese_name_01
+    location: tw
+    category: name
+    description: Traditional Chinese name (2-4 characters)
+    pattern: '\b[\u4e00-\u9fff]{2,4}\b'
+    mask: "***"
+    examples:
+      match:
+        - "王小明"
+        - "李美麗"
+        - "陳志強"
+        - "林雅婷"
+        - "歐陽修"
+      nomatch:
+        - "王"
+        - "abcd"
+        - "王小明先生"
+        - "123"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    metadata:
+      note: "Matches Traditional Chinese characters. Most names are 2-3 characters."
+
+  - id: address_01
+    location: tw
+    category: address
+    description: Taiwan address with postal code, city, district, village, road, and detailed components
+    pattern: '^(?:(?<zip>\d{3}(?:\d{2})?)\s*)?(?<city>[\p{Script=Han}]{1,}(?:市|縣))\s(?<district>[\p{Script=Han}]{1,}(?:區|鄉|鎮|市))\s(?:(?<village>[\p{Script=Han}]{1,}(?:里|村))\s)?(?:(?<lin>\d+鄰)\s)?(?<road>[\p{Script=Han}A-Za-z0-9]+(?:路|街|大道))(?:(?<section>\d+)段)?(?:(?<lane>\d+)巷)?(?:(?<alley>\d+)弄)?(?:\s?(?<no>\d+(?:-\d+)?(?:之\d+)?)(?:號)?)?(?:\s?(?<floor>\d+(?:F|樓)(?:之\d+)?))?(?:\s?(?<room>\d+室))?(?:\s*\((?<note>[^)]+)\))?(?:\s(?<detail>.*))?$'
+    mask: "***市***區***路***號"
+    examples:
+      match:
+        - "100 台北市中正區重慶南路一段122號"
+        - "台北市大安區忠孝東路四段1號"
+        - "新北市板橋區文化路一段188巷17弄1號1樓"
+        - "10491 台北市中山區南京東路二段125號3樓之1"
+        - "桃園市桃園區中正路1000號"
+      nomatch:
+        - "台北市"
+        - "100"
+        - "重慶南路"
+        - "invalid address format"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    metadata:
+      note: "Comprehensive Taiwan address pattern with named capture groups for zip, city, district, village, lin (鄰), road, section, lane, alley, number, floor, room, note, and additional details"
+
+  - id: address_02
+    location: tw
+    category: address
+    description: Taiwan address with simplified main road/number component
+    pattern: '^(?:(?<zip>\d{3}(?:\d{2})?)\s*)?(?<city>[\p{Script=Han}]{1,}(?:市|縣))\s(?<district>[\p{Script=Han}]{1,}(?:區|鄉|鎮|市))\s(?:(?<village>[\p{Script=Han}]{1,}(?:里|村))\s)?(?:(?<lin>\d+鄰)\s)?(?<main>[\p{Script=Han}A-Za-z0-9\-]+(?:路|街|大道|巷|弄)?(?:\d+(?:-\d+)?(?:之\d+)?號)?)(?:\s?(?<rest>.*))?$'
+    mask: "***市***區***"
+    examples:
+      match:
+        - "100 台北市中正區重慶南路一段122號"
+        - "台北市大安區忠孝東路四段1號 2樓"
+        - "新北市板橋區文化路188巷17弄1號"
+        - "桃園市桃園區中正路1000號"
+        - "台中市西屯區台灣大道三段99號 A棟"
+      nomatch:
+        - "台北市"
+        - "100"
+        - "重慶南路"
+        - "invalid address format"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    metadata:
+      note: "Simplified Taiwan address pattern with main road/number component combined and optional rest field for additional details"
