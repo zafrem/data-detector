@@ -29,19 +29,46 @@ What it changes:
     - Provider: Changed from "Example (Stripe-like pattern)" to "Stripe"
 """
 
-import re
 import os
+import re
+import sys
+from pathlib import Path
+from typing import Optional
 
-def restore_tokens_yml(file_path='patterns/tokens.yml'):
+
+def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
     """
     Restore the original Stripe pattern in tokens.yml.
 
     Args:
-        file_path: Path to the tokens.yml file (default: patterns/tokens.yml)
+        file_path: Path to the tokens.yml file. If None, attempts to find it in:
+                   1. ./patterns/tokens.yml (current directory)
+                   2. ../patterns/tokens.yml (parent directory)
+                   3. Package installation directory
 
     Returns:
         bool: True if restoration was successful, False otherwise
     """
+    if file_path is None:
+        # Try to find the tokens.yml file
+        candidates = [
+            Path("patterns/tokens.yml"),  # Current directory
+            Path("../patterns/tokens.yml"),  # Parent directory
+            Path(__file__).parent.parent.parent / "patterns" / "tokens.yml",  # From package
+        ]
+
+        for candidate in candidates:
+            if candidate.exists():
+                file_path = str(candidate)
+                break
+
+        if file_path is None:
+            print("✗ Error: Could not find patterns/tokens.yml")
+            print("  Searched in:")
+            for candidate in candidates:
+                print(f"    - {candidate.absolute()}")
+            return False
+
     if not os.path.exists(file_path):
         print(f"✗ Error: File not found: {file_path}")
         return False
@@ -172,7 +199,38 @@ def restore_tokens_yml(file_path='patterns/tokens.yml'):
     print("\nNOTE: All examples use FAKE keys for security scanner compatibility")
     return True
 
-if __name__ == '__main__':
-    import sys
-    success = restore_tokens_yml()
+def main() -> None:
+    """Main entry point for CLI."""
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Restore tokens.yml to use real Stripe API key patterns",
+        epilog="SECURITY NOTE: This script uses FAKE example keys for security scanner compatibility.",
+    )
+    parser.add_argument(
+        "file_path",
+        nargs="?",
+        default=None,
+        help="Path to tokens.yml file (default: auto-detect)",
+    )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+        help="Verbose output",
+    )
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        print("Starting token restoration process...")
+        if args.file_path:
+            print(f"Target file: {args.file_path}")
+        else:
+            print("Auto-detecting tokens.yml location...")
+
+    success = restore_tokens_yml(args.file_path)
     sys.exit(0 if success else 1)
+
+
+if __name__ == '__main__':
+    main()

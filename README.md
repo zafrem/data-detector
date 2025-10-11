@@ -81,6 +81,28 @@ PatternFileHandler.remove_pattern_from_file("custom_patterns.yml", "api_key_01")
 
 See [YAML Utilities Documentation](docs/yaml_utilities.md) for complete guide.
 
+### Pattern Restoration Utility
+
+The `tokens.yml` pattern file may use modified patterns (with `rk_` prefix) during development to avoid triggering GitHub's push protection. Use the restoration utility to convert these back to real-world Stripe API key patterns:
+
+```bash
+# After installing via pip
+data-detector-restore-tokens
+
+# Or run directly
+python restore_tokens.py
+
+# Or as a module
+python -m datadetector.restore_tokens
+```
+
+**What it does:**
+- Converts fake `rk_(live|test)_` patterns to real `[sp]k_(live|test)_` Stripe patterns
+- Updates examples to use proper `sk_test_`, `sk_live_`, `pk_test_` prefixes
+- Uses obviously fake example keys to avoid secret scanner detection
+
+**Security Note:** All examples use FAKE keys like "EXAMPLEKEY" for security scanner compatibility. This is a defensive security tool - the patterns help detect real leaked credentials.
+
 ### CLI Usage
 
 ```bash
