@@ -282,8 +282,6 @@ jobs:
           images: ${{ secrets.DOCKER_USERNAME }}/data-detector
           tags: |
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
             type=raw,value=latest
 
       - name: Build and push
