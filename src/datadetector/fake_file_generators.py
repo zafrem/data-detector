@@ -62,7 +62,7 @@ class OfficeFileGenerator:
         doc = Document()
 
         # Add title
-        doc.add_heading('Fake Document with Data', 0)
+        doc.add_heading("Fake Document with Data", 0)
 
         # Add paragraphs
         for i in range(paragraphs):
@@ -70,17 +70,17 @@ class OfficeFileGenerator:
 
             if include_pii and random.random() > 0.6:
                 # Add a table with PII data
-                doc.add_heading(f'Section {i+1}: Contact Information', level=2)
+                doc.add_heading(f"Section {i+1}: Contact Information", level=2)
 
                 table = doc.add_table(rows=5, cols=2)
-                table.style = 'Light Grid Accent 1'
+                table.style = "Light Grid Accent 1"
 
                 cells = [
-                    ('Name', self.faker.name()),
-                    ('Email', self.faker.email()),
-                    ('Phone', self.faker.phone_number()),
-                    ('SSN', self.faker.ssn() if include_pii else 'XXX-XX-XXXX'),
-                    ('Address', self.faker.address()),
+                    ("Name", self.faker.name()),
+                    ("Email", self.faker.email()),
+                    ("Phone", self.faker.phone_number()),
+                    ("SSN", self.faker.ssn() if include_pii else "XXX-XX-XXXX"),
+                    ("Address", self.faker.address()),
                 ]
 
                 for idx, (label, value) in enumerate(cells):
@@ -124,9 +124,9 @@ class OfficeFileGenerator:
         ws.title = "Users"
 
         # Headers
-        headers = ['ID', 'Name', 'Email', 'Phone', 'City', 'Country']
+        headers = ["ID", "Name", "Email", "Phone", "City", "Country"]
         if include_pii:
-            headers.extend(['SSN', 'Credit Card', 'IP Address'])
+            headers.extend(["SSN", "Credit Card", "IP Address"])
 
         # Style headers
         header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
@@ -276,7 +276,7 @@ class ImageGenerator:
         output_path = Path(output_path)
 
         # Create image
-        img = Image.new('RGB', (width, height), color=(255, 255, 255))
+        img = Image.new("RGB", (width, height), color=(255, 255, 255))
         draw = ImageDraw.Draw(img)
 
         # Try to use a nice font, fall back to default
@@ -333,7 +333,7 @@ class ImageGenerator:
         output_path = Path(output_path)
 
         width, height = 1200, 800
-        img = Image.new('RGB', (width, height), color=(240, 240, 240))
+        img = Image.new("RGB", (width, height), color=(240, 240, 240))
         draw = ImageDraw.Draw(img)
 
         # Try to load font
@@ -343,7 +343,7 @@ class ImageGenerator:
             font = ImageFont.load_default()
 
         # Draw fake terminal/editor look
-        draw.rectangle([(50, 50), (width-50, height-50)], fill=(30, 30, 30))
+        draw.rectangle([(50, 50), (width - 50, height - 50)], fill=(30, 30, 30))
 
         # Add fake code/config with PII
         y_pos = 80
@@ -355,11 +355,13 @@ class ImageGenerator:
         ]
 
         if include_pii:
-            lines.extend([
-                f"API_KEY={self.gen.from_pattern('comm/aws_access_key_01')}",
-                f"DB_PASSWORD={self.faker.password()}",
-                f"SSN={self.faker.ssn()}",
-            ])
+            lines.extend(
+                [
+                    f"API_KEY={self.gen.from_pattern('comm/aws_access_key_01')}",
+                    f"DB_PASSWORD={self.faker.password()}",
+                    f"SSN={self.faker.ssn()}",
+                ]
+            )
 
         for line in lines:
             draw.text((70, y_pos), line, fill=(0, 255, 0), font=font)
@@ -406,7 +408,7 @@ class XMLGenerator:
         root = ET.Element("users")
 
         for i in range(records):
-            user = ET.SubElement(root, "user", id=str(i+1))
+            user = ET.SubElement(root, "user", id=str(i + 1))
 
             ET.SubElement(user, "name").text = self.faker.name()
             ET.SubElement(user, "email").text = self.faker.email()
@@ -417,7 +419,7 @@ class XMLGenerator:
                 ET.SubElement(user, "credit_card").text = self.faker.credit_card_number()
 
         tree = ET.ElementTree(root)
-        tree.write(output_path, encoding='utf-8', xml_declaration=True)
+        tree.write(output_path, encoding="utf-8", xml_declaration=True)
 
         logger.info(f"Created XML file: {output_path} ({records} records)")
 
@@ -480,25 +482,25 @@ class PDFGenerator:
 
         # Custom styles
         title_style = ParagraphStyle(
-            'CustomTitle',
-            parent=styles['Heading1'],
+            "CustomTitle",
+            parent=styles["Heading1"],
             fontSize=24,
-            textColor=colors.HexColor('#2C3E50'),
+            textColor=colors.HexColor("#2C3E50"),
             spaceAfter=30,
         )
 
         heading_style = ParagraphStyle(
-            'CustomHeading',
-            parent=styles['Heading2'],
+            "CustomHeading",
+            parent=styles["Heading2"],
             fontSize=16,
-            textColor=colors.HexColor('#34495E'),
+            textColor=colors.HexColor("#34495E"),
             spaceAfter=12,
         )
 
         # Title page
         story.append(Paragraph("Fake Document with Data", title_style))
         story.append(Spacer(1, 0.2 * inch))
-        story.append(Paragraph(f"Generated: {self.faker.date()}", styles['Normal']))
+        story.append(Paragraph(f"Generated: {self.faker.date()}", styles["Normal"]))
         story.append(Spacer(1, 0.5 * inch))
 
         # Generate pages
@@ -514,7 +516,7 @@ class PDFGenerator:
             # Add paragraphs
             for _ in range(random.randint(2, 4)):
                 paragraph = self.faker.paragraph(nb_sentences=random.randint(3, 6))
-                story.append(Paragraph(paragraph, styles['Normal']))
+                story.append(Paragraph(paragraph, styles["Normal"]))
                 story.append(Spacer(1, 0.1 * inch))
 
             # Add PII table on some pages
@@ -525,35 +527,41 @@ class PDFGenerator:
 
                 # Create table data
                 table_data = [
-                    ['Field', 'Value'],
-                    ['Name', self.faker.name()],
-                    ['Email', self.faker.email()],
-                    ['Phone', self.faker.phone_number()],
-                    ['Address', self.faker.address().replace('\n', ', ')],
+                    ["Field", "Value"],
+                    ["Name", self.faker.name()],
+                    ["Email", self.faker.email()],
+                    ["Phone", self.faker.phone_number()],
+                    ["Address", self.faker.address().replace("\n", ", ")],
                 ]
 
                 if include_pii:
-                    table_data.extend([
-                        ['SSN', self.faker.ssn()],
-                        ['Credit Card', self.faker.credit_card_number()],
-                        ['IP Address', self.faker.ipv4()],
-                    ])
+                    table_data.extend(
+                        [
+                            ["SSN", self.faker.ssn()],
+                            ["Credit Card", self.faker.credit_card_number()],
+                            ["IP Address", self.faker.ipv4()],
+                        ]
+                    )
 
                 # Create table
                 table = Table(table_data, colWidths=[2 * inch, 4 * inch])
-                table.setStyle(TableStyle([
-                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#3498DB')),
-                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-                    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                    ('FONTSIZE', (0, 0), (-1, 0), 12),
-                    ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                    ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                    ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                    ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-                    ('FONTSIZE', (0, 1), (-1, -1), 10),
-                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
-                ]))
+                table.setStyle(
+                    TableStyle(
+                        [
+                            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#3498DB")),
+                            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                            ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                            ("FONTSIZE", (0, 0), (-1, 0), 12),
+                            ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                            ("BACKGROUND", (0, 1), (-1, -1), colors.beige),
+                            ("GRID", (0, 0), (-1, -1), 1, colors.black),
+                            ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+                            ("FONTSIZE", (0, 1), (-1, -1), 10),
+                            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.lightgrey]),
+                        ]
+                    )
+                )
 
                 story.append(table)
                 story.append(Spacer(1, 0.3 * inch))
@@ -566,7 +574,7 @@ class PDFGenerator:
 
                 for _ in range(random.randint(3, 5)):
                     bullet = f"• {self.faker.sentence()}"
-                    story.append(Paragraph(bullet, styles['Normal']))
+                    story.append(Paragraph(bullet, styles["Normal"]))
                     story.append(Spacer(1, 0.05 * inch))
 
         # Build PDF
@@ -612,29 +620,29 @@ class PDFGenerator:
         styles = getSampleStyleSheet()
 
         # Invoice header
-        story.append(Paragraph("INVOICE", styles['Title']))
+        story.append(Paragraph("INVOICE", styles["Title"]))
         story.append(Spacer(1, 0.3 * inch))
 
         # Invoice info
         invoice_num = f"INV-{random.randint(10000, 99999)}"
-        story.append(Paragraph(f"Invoice Number: {invoice_num}", styles['Normal']))
-        story.append(Paragraph(f"Date: {self.faker.date()}", styles['Normal']))
+        story.append(Paragraph(f"Invoice Number: {invoice_num}", styles["Normal"]))
+        story.append(Paragraph(f"Date: {self.faker.date()}", styles["Normal"]))
         story.append(Spacer(1, 0.3 * inch))
 
         # Billing information
-        story.append(Paragraph("Bill To:", styles['Heading2']))
-        story.append(Paragraph(self.faker.name(), styles['Normal']))
+        story.append(Paragraph("Bill To:", styles["Heading2"]))
+        story.append(Paragraph(self.faker.name(), styles["Normal"]))
         if include_pii:
-            story.append(Paragraph(self.faker.email(), styles['Normal']))
-            story.append(Paragraph(self.faker.phone_number(), styles['Normal']))
-        story.append(Paragraph(self.faker.address().replace('\n', '<br/>'), styles['Normal']))
+            story.append(Paragraph(self.faker.email(), styles["Normal"]))
+            story.append(Paragraph(self.faker.phone_number(), styles["Normal"]))
+        story.append(Paragraph(self.faker.address().replace("\n", "<br/>"), styles["Normal"]))
         story.append(Spacer(1, 0.3 * inch))
 
         # Items table
-        story.append(Paragraph("Items:", styles['Heading2']))
+        story.append(Paragraph("Items:", styles["Heading2"]))
         story.append(Spacer(1, 0.1 * inch))
 
-        items_data = [['Item', 'Quantity', 'Price', 'Total']]
+        items_data = [["Item", "Quantity", "Price", "Total"]]
         total = 0
         for _ in range(random.randint(3, 8)):
             item = self.faker.catch_phrase()
@@ -642,41 +650,40 @@ class PDFGenerator:
             price = random.uniform(10, 500)
             item_total = qty * price
             total += item_total
-            items_data.append([
-                item,
-                str(qty),
-                f"${price:.2f}",
-                f"${item_total:.2f}"
-            ])
+            items_data.append([item, str(qty), f"${price:.2f}", f"${item_total:.2f}"])
 
-        items_data.append(['', '', 'Subtotal:', f"${total:.2f}"])
+        items_data.append(["", "", "Subtotal:", f"${total:.2f}"])
         tax = total * 0.08
-        items_data.append(['', '', 'Tax (8%):', f"${tax:.2f}"])
-        items_data.append(['', '', 'Total:', f"${total + tax:.2f}"])
+        items_data.append(["", "", "Tax (8%):", f"${tax:.2f}"])
+        items_data.append(["", "", "Total:", f"${total + tax:.2f}"])
 
         items_table = Table(items_data, colWidths=[3 * inch, 1 * inch, 1.25 * inch, 1.25 * inch])
-        items_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('ALIGN', (1, 1), (-1, -1), 'RIGHT'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 12),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -4), colors.beige),
-            ('GRID', (0, 0), (-1, -4), 1, colors.black),
-            ('LINEABOVE', (2, -3), (-1, -3), 1, colors.black),
-            ('LINEABOVE', (2, -1), (-1, -1), 2, colors.black),
-            ('FONTNAME', (2, -1), (-1, -1), 'Helvetica-Bold'),
-        ]))
+        items_table.setStyle(
+            TableStyle(
+                [
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                    ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                    ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                    ("ALIGN", (1, 1), (-1, -1), "RIGHT"),
+                    ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+                    ("FONTSIZE", (0, 0), (-1, 0), 12),
+                    ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                    ("BACKGROUND", (0, 1), (-1, -4), colors.beige),
+                    ("GRID", (0, 0), (-1, -4), 1, colors.black),
+                    ("LINEABOVE", (2, -3), (-1, -3), 1, colors.black),
+                    ("LINEABOVE", (2, -1), (-1, -1), 2, colors.black),
+                    ("FONTNAME", (2, -1), (-1, -1), "Helvetica-Bold"),
+                ]
+            )
+        )
 
         story.append(items_table)
         story.append(Spacer(1, 0.5 * inch))
 
         # Payment info
         if include_pii:
-            story.append(Paragraph("Payment Information:", styles['Heading2']))
-            story.append(Paragraph(f"Account: {self.faker.credit_card_number()}", styles['Normal']))
+            story.append(Paragraph("Payment Information:", styles["Heading2"]))
+            story.append(Paragraph(f"Account: {self.faker.credit_card_number()}", styles["Normal"]))
 
         doc.build(story)
         logger.info(f"Created PDF invoice: {output_path}")

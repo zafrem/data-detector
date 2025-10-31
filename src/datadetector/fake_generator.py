@@ -52,8 +52,7 @@ class FakeDataGenerator:
         """
         if Faker is None:
             raise ImportError(
-                "Faker is required for fake data generation. "
-                "Install it with: pip install faker"
+                "Faker is required for fake data generation. " "Install it with: pip install faker"
             )
 
         if seed is not None:
@@ -72,52 +71,49 @@ class FakeDataGenerator:
         return {
             # Email
             "comm/email_01": lambda: self.faker.email(),
-
             # Phone numbers
             "us/phone_01": lambda: self.faker.phone_number()[:14],
             "kr/mobile_01": lambda: (
                 f"010-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
             ),
-
             # SSN/National IDs
             "us/ssn_01": lambda: self.faker.ssn(),
             "kr/rrn_01": lambda: self._generate_korean_rrn(),
-
             # Credit cards
             "comm/credit_card_visa_01": lambda: self.faker.credit_card_number(card_type="visa"),
             "comm/credit_card_mastercard_01": lambda: (
                 self.faker.credit_card_number(card_type="mastercard")
             ),
-
             # Names
             "kr/korean_name_01": lambda: self._generate_korean_name(),
-
             # Addresses
             "us/zipcode_01": lambda: self.faker.zipcode(),
             "kr/zipcode_01": lambda: f"{random.randint(10000, 99999)}",
-
             # IPs
             "comm/ipv4_01": lambda: self.faker.ipv4(),
             "comm/ipv6_01": lambda: self.faker.ipv6(),
-
             # URLs
             "comm/url_01": lambda: self.faker.url(),
-
             # Tokens
             "comm/aws_access_key_01": lambda: (
                 "AKIA" + "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=16))
             ),
             "comm/github_token_01": lambda: (
-                "ghp_" + "".join(random.choices(
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", k=36
-                ))
+                "ghp_"
+                + "".join(
+                    random.choices(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", k=36
+                    )
+                )
             ),
             "comm/google_api_key_01": lambda: (
-                "AIza" + "".join(random.choices(
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_", k=35
-                ))
+                "AIza"
+                + "".join(
+                    random.choices(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_", k=35
+                    )
+                )
             ),
-
             # Coordinates
             "comm/latitude_01": lambda: f"{self.faker.latitude()}",
             "comm/longitude_01": lambda: f"{self.faker.longitude()}",
@@ -137,7 +133,20 @@ class FakeDataGenerator:
         """Generate a fake Korean name."""
         surnames = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임"]
         given_chars = [
-            "민", "서", "준", "지", "하", "도", "현", "수", "영", "우", "진", "은", "재", "윤"
+            "민",
+            "서",
+            "준",
+            "지",
+            "하",
+            "도",
+            "현",
+            "수",
+            "영",
+            "우",
+            "진",
+            "은",
+            "재",
+            "윤",
         ]
 
         surname = random.choice(surnames)
@@ -187,10 +196,10 @@ class FakeDataGenerator:
             record += f"  Email: {self.from_pattern('comm/email_01')}\n"
 
             for pattern_id in include_patterns:
-                if pattern_id in self._pattern_generators and pattern_id != 'comm/email_01':
+                if pattern_id in self._pattern_generators and pattern_id != "comm/email_01":
                     try:
                         value = self.from_pattern(pattern_id)
-                        label = pattern_id.split('/')[-1].replace('_', ' ').title()
+                        label = pattern_id.split("/")[-1].replace("_", " ").title()
                         record += f"  {label}: {value}\n"
                     except Exception:
                         pass
@@ -217,13 +226,13 @@ class FakeDataGenerator:
 
         output_path = Path(output_path)
 
-        with open(output_path, 'w', newline='', encoding='utf-8') as f:
+        with open(output_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
 
             # Header
-            headers = ['id', 'name', 'email', 'phone', 'address', 'city', 'country']
+            headers = ["id", "name", "email", "phone", "address", "city", "country"]
             if include_pii:
-                headers.extend(['ssn', 'credit_card', 'ip_address'])
+                headers.extend(["ssn", "credit_card", "ip_address"])
 
             writer.writerow(headers)
 
@@ -240,11 +249,13 @@ class FakeDataGenerator:
                 ]
 
                 if include_pii:
-                    row.extend([
-                        self.faker.ssn(),
-                        self.faker.credit_card_number(),
-                        self.faker.ipv4(),
-                    ])
+                    row.extend(
+                        [
+                            self.faker.ssn(),
+                            self.faker.credit_card_number(),
+                            self.faker.ipv4(),
+                        ]
+                    )
 
                 writer.writerow(row)
 
@@ -269,28 +280,30 @@ class FakeDataGenerator:
         data = []
         for i in range(records):
             record = {
-                'id': i + 1,
-                'name': self.faker.name(),
-                'email': self.faker.email(),
-                'phone': self.faker.phone_number(),
-                'address': {
-                    'street': self.faker.street_address(),
-                    'city': self.faker.city(),
-                    'country': self.faker.country(),
+                "id": i + 1,
+                "name": self.faker.name(),
+                "email": self.faker.email(),
+                "phone": self.faker.phone_number(),
+                "address": {
+                    "street": self.faker.street_address(),
+                    "city": self.faker.city(),
+                    "country": self.faker.country(),
                 },
-                'created_at': self.faker.iso8601(),
+                "created_at": self.faker.iso8601(),
             }
 
             if include_pii:
-                record.update({
-                    'ssn': self.faker.ssn(),
-                    'credit_card': self.faker.credit_card_number(),
-                    'ip_address': self.faker.ipv4(),
-                })
+                record.update(
+                    {
+                        "ssn": self.faker.ssn(),
+                        "credit_card": self.faker.credit_card_number(),
+                        "ip_address": self.faker.ipv4(),
+                    }
+                )
 
             data.append(record)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
         logger.info(f"Created JSON file: {output_path} ({records} records)")
@@ -317,7 +330,8 @@ class FakeDataGenerator:
 
         # Create table
         if include_pii:
-            cursor.execute('''
+            cursor.execute(
+                """
                 CREATE TABLE users (
                     id INTEGER PRIMARY KEY,
                     name TEXT,
@@ -329,9 +343,11 @@ class FakeDataGenerator:
                     ip_address TEXT,
                     created_at TEXT
                 )
-            ''')
+            """
+            )
         else:
-            cursor.execute('''
+            cursor.execute(
+                """
                 CREATE TABLE users (
                     id INTEGER PRIMARY KEY,
                     name TEXT,
@@ -340,35 +356,42 @@ class FakeDataGenerator:
                     address TEXT,
                     created_at TEXT
                 )
-            ''')
+            """
+            )
 
         # Insert data
         for i in range(records):
             if include_pii:
-                cursor.execute('''
+                cursor.execute(
+                    """
                     INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ''', (
-                    i + 1,
-                    self.faker.name(),
-                    self.faker.email(),
-                    self.faker.phone_number(),
-                    self.faker.address(),
-                    self.faker.ssn(),
-                    self.faker.credit_card_number(),
-                    self.faker.ipv4(),
-                    self.faker.iso8601(),
-                ))
+                """,
+                    (
+                        i + 1,
+                        self.faker.name(),
+                        self.faker.email(),
+                        self.faker.phone_number(),
+                        self.faker.address(),
+                        self.faker.ssn(),
+                        self.faker.credit_card_number(),
+                        self.faker.ipv4(),
+                        self.faker.iso8601(),
+                    ),
+                )
             else:
-                cursor.execute('''
+                cursor.execute(
+                    """
                     INSERT INTO users VALUES (?, ?, ?, ?, ?, ?)
-                ''', (
-                    i + 1,
-                    self.faker.name(),
-                    self.faker.email(),
-                    self.faker.phone_number(),
-                    self.faker.address(),
-                    self.faker.iso8601(),
-                ))
+                """,
+                    (
+                        i + 1,
+                        self.faker.name(),
+                        self.faker.email(),
+                        self.faker.phone_number(),
+                        self.faker.address(),
+                        self.faker.iso8601(),
+                    ),
+                )
 
         conn.commit()
         conn.close()
@@ -393,7 +416,7 @@ class FakeDataGenerator:
         """
         output_path = Path(output_path)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for i in range(lines):
                 if log_format == "apache":
                     line = self._generate_apache_log(include_pii)
@@ -411,8 +434,8 @@ class FakeDataGenerator:
     def _generate_apache_log(self, include_pii: bool) -> str:
         """Generate Apache-style log entry."""
         ip = self.faker.ipv4()
-        timestamp = datetime.now().strftime('%d/%b/%Y:%H:%M:%S +0000')
-        method = random.choice(['GET', 'POST', 'PUT', 'DELETE'])
+        timestamp = datetime.now().strftime("%d/%b/%Y:%H:%M:%S +0000")
+        method = random.choice(["GET", "POST", "PUT", "DELETE"])
         path = f"/{self.faker.uri_path()}"
         status = random.choice([200, 201, 301, 400, 404, 500])
         size = random.randint(100, 50000)
@@ -426,24 +449,24 @@ class FakeDataGenerator:
     def _generate_json_log(self, include_pii: bool) -> str:
         """Generate JSON-formatted log entry."""
         log_entry = {
-            'timestamp': datetime.now().isoformat(),
-            'level': random.choice(['INFO', 'WARNING', 'ERROR', 'DEBUG']),
-            'message': self.faker.sentence(),
-            'ip': self.faker.ipv4(),
-            'user_agent': self.faker.user_agent(),
+            "timestamp": datetime.now().isoformat(),
+            "level": random.choice(["INFO", "WARNING", "ERROR", "DEBUG"]),
+            "message": self.faker.sentence(),
+            "ip": self.faker.ipv4(),
+            "user_agent": self.faker.user_agent(),
         }
 
         if include_pii and random.random() > 0.7:
-            log_entry['user_email'] = self.faker.email()
-            log_entry['user_id'] = self.faker.uuid4()
+            log_entry["user_email"] = self.faker.email()
+            log_entry["user_id"] = self.faker.uuid4()
 
         return json.dumps(log_entry)
 
     def _generate_syslog(self, include_pii: bool) -> str:
         """Generate syslog-style entry."""
-        timestamp = datetime.now().strftime('%b %d %H:%M:%S')
+        timestamp = datetime.now().strftime("%b %d %H:%M:%S")
         hostname = self.faker.hostname()
-        process = random.choice(['sshd', 'kernel', 'systemd', 'cron'])
+        process = random.choice(["sshd", "kernel", "systemd", "cron"])
         pid = random.randint(1000, 99999)
         message = self.faker.sentence()
 
@@ -468,7 +491,7 @@ class FakeDataGenerator:
         """
         output_path = Path(output_path)
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for i in range(paragraphs):
                 paragraph = self.faker.paragraph(nb_sentences=5)
 

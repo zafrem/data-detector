@@ -94,31 +94,35 @@ class BulkDataGenerator:
                 text_parts.append(text_with_pii)
 
                 # Extract category from pattern_id
-                namespace, pattern_name = pattern_id.split('/')
+                namespace, pattern_name = pattern_id.split("/")
 
-                pii_items.append({
-                    'pattern_id': pattern_id,
-                    'namespace': namespace,
-                    'pattern_name': pattern_name,
-                    'value': value,
-                    'start_hint': len(' '.join(text_parts[:-1])) + 1 if len(text_parts) > 1 else 0,
-                })
+                pii_items.append(
+                    {
+                        "pattern_id": pattern_id,
+                        "namespace": namespace,
+                        "pattern_name": pattern_name,
+                        "value": value,
+                        "start_hint": (
+                            len(" ".join(text_parts[:-1])) + 1 if len(text_parts) > 1 else 0
+                        ),
+                    }
+                )
 
             except Exception as e:
                 logger.warning(f"Failed to generate pattern {pattern_id}: {e}")
                 continue
 
         # Combine all text parts
-        full_text = ' '.join(text_parts)
+        full_text = " ".join(text_parts)
 
         return {
-            'text': full_text,
-            'pii_items': pii_items,
-            'metadata': {
-                'num_pii_items': len(pii_items),
-                'patterns_used': include_patterns,
-                'text_length': len(full_text),
-            }
+            "text": full_text,
+            "pii_items": pii_items,
+            "metadata": {
+                "num_pii_items": len(pii_items),
+                "patterns_used": include_patterns,
+                "text_length": len(full_text),
+            },
         }
 
     def generate_bulk_labeled_data(
@@ -147,7 +151,7 @@ class BulkDataGenerator:
                 include_patterns=include_patterns,
                 num_pii_items=num_pii,
             )
-            record['record_id'] = i + 1
+            record["record_id"] = i + 1
             records.append(record)
 
             if (i + 1) % 100 == 0:
@@ -185,9 +189,9 @@ class BulkDataGenerator:
             include_patterns=include_patterns,
         )
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for record in records:
-                f.write(json.dumps(record, ensure_ascii=False) + '\n')
+                f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
         logger.info(f"✓ Saved {num_records} records to {output_path}")
         logger.info(f"  File size: {output_path.stat().st_size:,} bytes")
@@ -218,19 +222,19 @@ class BulkDataGenerator:
 
         # Create dataset with metadata
         dataset = {
-            'metadata': {
-                'num_records': len(records),
-                'generator': 'BulkDataGenerator',
-                'patterns_per_record_range': patterns_per_record,
-                'total_pii_items': sum(r['metadata']['num_pii_items'] for r in records),
-                'supported_patterns': (
+            "metadata": {
+                "num_records": len(records),
+                "generator": "BulkDataGenerator",
+                "patterns_per_record_range": patterns_per_record,
+                "total_pii_items": sum(r["metadata"]["num_pii_items"] for r in records),
+                "supported_patterns": (
                     self.gen.supported_patterns() if include_patterns is None else include_patterns
                 ),
             },
-            'records': records,
+            "records": records,
         }
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             json.dump(dataset, f, indent=2, ensure_ascii=False)
 
         logger.info(f"✓ Saved {num_records} records to {output_path}")
@@ -260,29 +264,33 @@ class BulkDataGenerator:
             include_patterns=include_patterns,
         )
 
-        with open(output_path, 'w', newline='', encoding='utf-8') as f:
+        with open(output_path, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
 
             # Header
-            writer.writerow([
-                'record_id',
-                'text',
-                'num_pii_items',
-                'text_length',
-                'patterns_used',
-                'pii_items_json',
-            ])
+            writer.writerow(
+                [
+                    "record_id",
+                    "text",
+                    "num_pii_items",
+                    "text_length",
+                    "patterns_used",
+                    "pii_items_json",
+                ]
+            )
 
             # Data rows
             for record in records:
-                writer.writerow([
-                    record['record_id'],
-                    record['text'],
-                    record['metadata']['num_pii_items'],
-                    record['metadata']['text_length'],
-                    ','.join(record['metadata']['patterns_used']),
-                    json.dumps(record['pii_items']),
-                ])
+                writer.writerow(
+                    [
+                        record["record_id"],
+                        record["text"],
+                        record["metadata"]["num_pii_items"],
+                        record["metadata"]["text_length"],
+                        ",".join(record["metadata"]["patterns_used"]),
+                        json.dumps(record["pii_items"]),
+                    ]
+                )
 
         logger.info(f"✓ Saved {num_records} records to {output_path}")
         logger.info(f"  File size: {output_path.stat().st_size:,} bytes")
@@ -314,29 +322,35 @@ class BulkDataGenerator:
         # Generate positive examples (with PII)
         for i in range(num_positive):
             record = self.generate_labeled_record(num_pii_items=random.randint(1, 5))
-            pairs.append({
-                'pair_id': i + 1,
-                'text': record['text'],
-                'has_pii': True,
-                'label': 1,
-                'pii_count': len(record['pii_items']),
-                'patterns': [item['pattern_id'] for item in record['pii_items']],
-            })
+            pairs.append(
+                {
+                    "pair_id": i + 1,
+                    "text": record["text"],
+                    "has_pii": True,
+                    "label": 1,
+                    "pii_count": len(record["pii_items"]),
+                    "patterns": [item["pattern_id"] for item in record["pii_items"]],
+                }
+            )
 
         # Generate negative examples (no PII)
         for i in range(num_negative):
-            text = ' '.join([
-                self.faker.paragraph(nb_sentences=random.randint(2, 5))
-                for _ in range(random.randint(1, 3))
-            ])
-            pairs.append({
-                'pair_id': num_positive + i + 1,
-                'text': text,
-                'has_pii': False,
-                'label': 0,
-                'pii_count': 0,
-                'patterns': [],
-            })
+            text = " ".join(
+                [
+                    self.faker.paragraph(nb_sentences=random.randint(2, 5))
+                    for _ in range(random.randint(1, 3))
+                ]
+            )
+            pairs.append(
+                {
+                    "pair_id": num_positive + i + 1,
+                    "text": text,
+                    "has_pii": False,
+                    "label": 0,
+                    "pii_count": 0,
+                    "patterns": [],
+                }
+            )
 
         # Shuffle pairs
         random.shuffle(pairs)
@@ -351,7 +365,7 @@ class BulkDataGenerator:
         output_path: Union[str, Path],
         num_pairs: int = 1000,
         positive_ratio: float = 0.7,
-        format: str = 'jsonl',
+        format: str = "jsonl",
     ) -> None:
         """
         Save detection pairs to file.
@@ -365,21 +379,21 @@ class BulkDataGenerator:
         output_path = Path(output_path)
         pairs = self.generate_detection_pairs(num_pairs, positive_ratio)
 
-        if format == 'jsonl':
-            with open(output_path, 'w', encoding='utf-8') as f:
+        if format == "jsonl":
+            with open(output_path, "w", encoding="utf-8") as f:
                 for pair in pairs:
-                    f.write(json.dumps(pair, ensure_ascii=False) + '\n')
-        elif format == 'json':
-            with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(json.dumps(pair, ensure_ascii=False) + "\n")
+        elif format == "json":
+            with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(pairs, f, indent=2, ensure_ascii=False)
-        elif format == 'csv':
-            with open(output_path, 'w', newline='', encoding='utf-8') as f:
-                fieldnames = ['pair_id', 'text', 'has_pii', 'label', 'pii_count', 'patterns']
+        elif format == "csv":
+            with open(output_path, "w", newline="", encoding="utf-8") as f:
+                fieldnames = ["pair_id", "text", "has_pii", "label", "pii_count", "patterns"]
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 for pair in pairs:
                     row = pair.copy()
-                    row['patterns'] = ','.join(row['patterns'])
+                    row["patterns"] = ",".join(row["patterns"])
                     writer.writerow(row)
         else:
             raise ValueError(f"Unsupported format: {format}")
@@ -397,21 +411,21 @@ class BulkDataGenerator:
         Returns:
             Dictionary with dataset statistics
         """
-        total_pii = sum(r['metadata']['num_pii_items'] for r in records)
+        total_pii = sum(r["metadata"]["num_pii_items"] for r in records)
         pattern_counts = {}
 
         for record in records:
-            for pii_item in record['pii_items']:
-                pattern_id = pii_item['pattern_id']
+            for pii_item in record["pii_items"]:
+                pattern_id = pii_item["pattern_id"]
                 pattern_counts[pattern_id] = pattern_counts.get(pattern_id, 0) + 1
 
         return {
-            'total_records': len(records),
-            'total_pii_items': total_pii,
-            'avg_pii_per_record': total_pii / len(records) if records else 0,
-            'avg_text_length': (
-                sum(r['metadata']['text_length'] for r in records) / len(records) if records else 0
+            "total_records": len(records),
+            "total_pii_items": total_pii,
+            "avg_pii_per_record": total_pii / len(records) if records else 0,
+            "avg_text_length": (
+                sum(r["metadata"]["text_length"] for r in records) / len(records) if records else 0
             ),
-            'pattern_distribution': pattern_counts,
-            'unique_patterns_used': len(pattern_counts),
+            "pattern_distribution": pattern_counts,
+            "unique_patterns_used": len(pattern_counts),
         }
