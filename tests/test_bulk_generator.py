@@ -116,7 +116,7 @@ class TestJSONLFormat:
         assert output_path.stat().st_size > 0
 
         # Verify each line is valid JSON
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             lines = f.readlines()
 
         assert len(lines) == 10
@@ -130,7 +130,7 @@ class TestJSONLFormat:
         output_path = temp_dir / "test.jsonl"
         bulk_gen.save_bulk_data_jsonl(output_path, num_records=5)
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             record = json.loads(f.readline())
 
         assert 'record_id' in record
@@ -155,7 +155,7 @@ class TestJSONFormat:
         output_path = temp_dir / "test.json"
         bulk_gen.save_bulk_data_json(output_path, num_records=5)
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             data = json.load(f)
 
         assert 'metadata' in data
@@ -167,7 +167,7 @@ class TestJSONFormat:
         output_path = temp_dir / "test.json"
         bulk_gen.save_bulk_data_json(output_path, num_records=5)
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             data = json.load(f)
 
         metadata = data['metadata']
@@ -190,7 +190,7 @@ class TestCSVFormat:
         assert output_path.stat().st_size > 0
 
         # Verify CSV structure
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             reader = csv.reader(f)
             header = next(reader)
             rows = list(reader)
@@ -207,7 +207,7 @@ class TestCSVFormat:
         output_path = temp_dir / "test.csv"
         bulk_gen.save_bulk_data_csv(output_path, num_records=3)
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             reader = csv.DictReader(f)
             row = next(reader)
 
@@ -263,7 +263,7 @@ class TestDetectionPairs:
 
         assert output_path.exists()
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             lines = f.readlines()
 
         assert len(lines) == 10
@@ -275,7 +275,7 @@ class TestDetectionPairs:
 
         assert output_path.exists()
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             pairs = json.load(f)
 
         assert len(pairs) == 10
@@ -289,7 +289,7 @@ class TestDetectionPairs:
 
         assert output_path.exists()
 
-        with open(output_path, 'r', encoding='utf-8') as f:
+        with open(output_path, encoding='utf-8') as f:
             reader = csv.DictReader(f)
             rows = list(reader)
 

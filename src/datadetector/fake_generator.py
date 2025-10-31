@@ -4,15 +4,13 @@ This module provides functionality to generate fake data that matches
 detection patterns, useful for testing, demos, and synthetic data generation.
 """
 
-import io
 import json
 import logging
 import random
-import re
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 try:
     from faker import Faker
@@ -77,7 +75,9 @@ class FakeDataGenerator:
 
             # Phone numbers
             "us/phone_01": lambda: self.faker.phone_number()[:14],
-            "kr/mobile_01": lambda: f"010-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}",
+            "kr/mobile_01": lambda: (
+                f"010-{random.randint(1000, 9999)}-{random.randint(1000, 9999)}"
+            ),
 
             # SSN/National IDs
             "us/ssn_01": lambda: self.faker.ssn(),
@@ -85,7 +85,9 @@ class FakeDataGenerator:
 
             # Credit cards
             "comm/credit_card_visa_01": lambda: self.faker.credit_card_number(card_type="visa"),
-            "comm/credit_card_mastercard_01": lambda: self.faker.credit_card_number(card_type="mastercard"),
+            "comm/credit_card_mastercard_01": lambda: (
+                self.faker.credit_card_number(card_type="mastercard")
+            ),
 
             # Names
             "kr/korean_name_01": lambda: self._generate_korean_name(),
@@ -102,9 +104,19 @@ class FakeDataGenerator:
             "comm/url_01": lambda: self.faker.url(),
 
             # Tokens
-            "comm/aws_access_key_01": lambda: "AKIA" + "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=16)),
-            "comm/github_token_01": lambda: "ghp_" + "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", k=36)),
-            "comm/google_api_key_01": lambda: "AIza" + "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_", k=35)),
+            "comm/aws_access_key_01": lambda: (
+                "AKIA" + "".join(random.choices("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789", k=16))
+            ),
+            "comm/github_token_01": lambda: (
+                "ghp_" + "".join(random.choices(
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_", k=36
+                ))
+            ),
+            "comm/google_api_key_01": lambda: (
+                "AIza" + "".join(random.choices(
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_", k=35
+                ))
+            ),
 
             # Coordinates
             "comm/latitude_01": lambda: f"{self.faker.latitude()}",
@@ -124,7 +136,9 @@ class FakeDataGenerator:
     def _generate_korean_name(self) -> str:
         """Generate a fake Korean name."""
         surnames = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임"]
-        given_chars = ["민", "서", "준", "지", "하", "도", "현", "수", "영", "우", "진", "은", "재", "윤"]
+        given_chars = [
+            "민", "서", "준", "지", "하", "도", "현", "수", "영", "우", "진", "은", "재", "윤"
+        ]
 
         surname = random.choice(surnames)
         given_name = random.choice(given_chars) + random.choice(given_chars)
@@ -178,7 +192,7 @@ class FakeDataGenerator:
                         value = self.from_pattern(pattern_id)
                         label = pattern_id.split('/')[-1].replace('_', ' ').title()
                         record += f"  {label}: {value}\n"
-                    except:
+                    except Exception:
                         pass
 
             lines.append(record)

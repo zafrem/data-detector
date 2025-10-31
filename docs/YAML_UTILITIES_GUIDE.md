@@ -15,7 +15,7 @@
 
 ## Overview
 
-The YAML utilities module (`datadetector.yaml_utils`) provides a comprehensive set of tools for reading, writing, and managing YAML pattern files. It offers two main classes:
+The YAML utilities module (`datadetector.utils.yaml_utils`) provides a comprehensive set of tools for reading, writing, and managing YAML pattern files. It offers two main classes:
 
 - **`YAMLHandler`** - General-purpose YAML file operations
 - **`PatternFileHandler`** - Specialized pattern file management
@@ -118,7 +118,7 @@ Reads a YAML file and returns its contents as a dictionary.
 
 **Example:**
 ```python
-from datadetector.yaml_utils import YAMLHandler
+from datadetector.utils.yaml_utils import YAMLHandler
 
 data = YAMLHandler.read_yaml("patterns/kr.yml")
 print(f"Namespace: {data['namespace']}")
@@ -143,7 +143,7 @@ Writes a dictionary to a YAML file.
 
 **Example:**
 ```python
-from datadetector.yaml_utils import YAMLHandler
+from datadetector.utils.yaml_utils import YAMLHandler
 
 # Create directory structure automatically
 YAMLHandler.write_yaml(
@@ -172,7 +172,7 @@ Updates an existing YAML file with new data.
 
 **Example:**
 ```python
-from datadetector.yaml_utils import YAMLHandler
+from datadetector.utils.yaml_utils import YAMLHandler
 
 # Merge with existing content
 updated = YAMLHandler.update_yaml(

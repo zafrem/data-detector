@@ -2,7 +2,7 @@
 
 import pytest
 
-from datadetector.yaml_utils import (
+from datadetector.utils.yaml_utils import (
     PatternFileHandler,
     YAMLHandler,
     read_yaml,

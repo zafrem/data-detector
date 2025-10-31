@@ -8,6 +8,22 @@ All notable changes to this project will be documented in this file.
 - **CI/CD Pipeline**: Updated GitHub Actions workflows
   - Updated `actions/upload-artifact` from v3 to v4 (deprecated v3 was causing build failures)
   - Added `load: true` to Docker build step to properly load image for testing
+- **Linting**: Fixed all ruff linting errors (58 errors fixed)
+  - Fixed line length issues (E501) in bulk_generator.py, fake_file_generators.py, fake_generator.py
+  - Replaced bare except statements with specific exception types
+  - Removed unused imports and variables
+  - Improved code formatting and readability
+
+### Changed
+- **Module Organization**: Moved `yaml_utils.py` to `utils/` folder
+  - New location: `src/datadetector/utils/yaml_utils.py`
+  - Updated all imports to use `datadetector.utils.yaml_utils`
+  - Maintained backward compatibility through `datadetector.__init__.py` exports
+  - Updated documentation to reflect new structure
+- **Dependencies**: Added missing optional dependencies to `pyproject.toml`
+  - Added `faker`, `Pillow`, `reportlab`, `python-docx`, `openpyxl`, `python-pptx` to test dependencies
+  - Created new `fake` optional dependency group for fake data generation features
+  - Fixed CI test failures due to missing dependencies
 
 ### Added
 - **Verification Functions System**: Added extensible verification function system for additional validation beyond regex matching

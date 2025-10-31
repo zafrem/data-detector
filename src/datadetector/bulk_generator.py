@@ -29,7 +29,9 @@ class BulkDataGenerator:
     - Benchmarking performance
     """
 
-    def __init__(self, faker_generator: Optional[FakeDataGenerator] = None, seed: Optional[int] = None):
+    def __init__(
+        self, faker_generator: Optional[FakeDataGenerator] = None, seed: Optional[int] = None
+    ):
         """
         Initialize bulk data generator.
 
@@ -221,7 +223,9 @@ class BulkDataGenerator:
                 'generator': 'BulkDataGenerator',
                 'patterns_per_record_range': patterns_per_record,
                 'total_pii_items': sum(r['metadata']['num_pii_items'] for r in records),
-                'supported_patterns': self.gen.supported_patterns() if include_patterns is None else include_patterns,
+                'supported_patterns': (
+                    self.gen.supported_patterns() if include_patterns is None else include_patterns
+                ),
             },
             'records': records,
         }
@@ -337,7 +341,9 @@ class BulkDataGenerator:
         # Shuffle pairs
         random.shuffle(pairs)
 
-        logger.info(f"✓ Generated {num_pairs} pairs ({num_positive} positive, {num_negative} negative)")
+        logger.info(
+            f"✓ Generated {num_pairs} pairs ({num_positive} positive, {num_negative} negative)"
+        )
         return pairs
 
     def save_detection_pairs(
@@ -368,7 +374,8 @@ class BulkDataGenerator:
                 json.dump(pairs, f, indent=2, ensure_ascii=False)
         elif format == 'csv':
             with open(output_path, 'w', newline='', encoding='utf-8') as f:
-                writer = csv.DictWriter(f, fieldnames=['pair_id', 'text', 'has_pii', 'label', 'pii_count', 'patterns'])
+                fieldnames = ['pair_id', 'text', 'has_pii', 'label', 'pii_count', 'patterns']
+                writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
                 for pair in pairs:
                     row = pair.copy()
@@ -402,7 +409,9 @@ class BulkDataGenerator:
             'total_records': len(records),
             'total_pii_items': total_pii,
             'avg_pii_per_record': total_pii / len(records) if records else 0,
-            'avg_text_length': sum(r['metadata']['text_length'] for r in records) / len(records) if records else 0,
+            'avg_text_length': (
+                sum(r['metadata']['text_length'] for r in records) / len(records) if records else 0
+            ),
             'pattern_distribution': pattern_counts,
             'unique_patterns_used': len(pattern_counts),
         }

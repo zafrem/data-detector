@@ -50,8 +50,9 @@ class TestOfficeFileGenerator:
     def test_create_word_file_content(self, generator, temp_dir):
         """Test Word file content structure."""
         pytest.importorskip("docx")
-        from datadetector.fake_file_generators import OfficeFileGenerator
         from docx import Document
+
+        from datadetector.fake_file_generators import OfficeFileGenerator
 
         office_gen = OfficeFileGenerator(generator)
         word_path = temp_dir / "test_content.docx"
@@ -78,8 +79,9 @@ class TestOfficeFileGenerator:
     def test_create_excel_file_content(self, generator, temp_dir):
         """Test Excel file content structure."""
         pytest.importorskip("openpyxl")
-        from datadetector.fake_file_generators import OfficeFileGenerator
         from openpyxl import load_workbook
+
+        from datadetector.fake_file_generators import OfficeFileGenerator
 
         office_gen = OfficeFileGenerator(generator)
         excel_path = temp_dir / "test_content.xlsx"
@@ -102,8 +104,9 @@ class TestOfficeFileGenerator:
     def test_create_excel_file_no_pii(self, generator, temp_dir):
         """Test Excel file without PII."""
         pytest.importorskip("openpyxl")
-        from datadetector.fake_file_generators import OfficeFileGenerator
         from openpyxl import load_workbook
+
+        from datadetector.fake_file_generators import OfficeFileGenerator
 
         office_gen = OfficeFileGenerator(generator)
         excel_path = temp_dir / "test_no_pii.xlsx"
@@ -119,8 +122,9 @@ class TestOfficeFileGenerator:
     def test_create_excel_file_large(self, generator, temp_dir):
         """Test creating large Excel file."""
         pytest.importorskip("openpyxl")
-        from datadetector.fake_file_generators import OfficeFileGenerator
         from openpyxl import load_workbook
+
+        from datadetector.fake_file_generators import OfficeFileGenerator
 
         office_gen = OfficeFileGenerator(generator)
         excel_path = temp_dir / "test_large.xlsx"
@@ -145,8 +149,9 @@ class TestOfficeFileGenerator:
     def test_create_powerpoint_file_content(self, generator, temp_dir):
         """Test PowerPoint file content structure."""
         pytest.importorskip("pptx")
-        from datadetector.fake_file_generators import OfficeFileGenerator
         from pptx import Presentation
+
+        from datadetector.fake_file_generators import OfficeFileGenerator
 
         office_gen = OfficeFileGenerator(generator)
         ppt_path = temp_dir / "test_content.pptx"
@@ -218,8 +223,9 @@ class TestImageGenerator:
     def test_create_image_with_text_sizes(self, generator, temp_dir):
         """Test creating images with different sizes."""
         pytest.importorskip("PIL")
-        from datadetector.fake_file_generators import ImageGenerator
         from PIL import Image
+
+        from datadetector.fake_file_generators import ImageGenerator
 
         img_gen = ImageGenerator(generator)
 
@@ -261,8 +267,9 @@ class TestImageGenerator:
     def test_create_screenshot_like_image_content(self, generator, temp_dir):
         """Test screenshot-like image size and format."""
         pytest.importorskip("PIL")
-        from datadetector.fake_file_generators import ImageGenerator
         from PIL import Image
+
+        from datadetector.fake_file_generators import ImageGenerator
 
         img_gen = ImageGenerator(generator)
         img_path = temp_dir / "screenshot_content.png"
@@ -484,9 +491,10 @@ class TestGeneratorsIntegration:
     def test_generators_with_detector(self, generator, temp_dir):
         """Test that generated files can be processed by detector."""
         pytest.importorskip("openpyxl")
+        from openpyxl import load_workbook
+
         from datadetector import Engine, load_registry
         from datadetector.fake_file_generators import OfficeFileGenerator, XMLGenerator
-        from openpyxl import load_workbook
 
         registry = load_registry()
         engine = Engine(registry)
@@ -518,7 +526,7 @@ class TestGeneratorsIntegration:
         xml_gen.create_xml_file(xml_path, records=5, include_pii=True)
 
         # Read XML and detect
-        with open(xml_path, "r", encoding="utf-8") as f:
+        with open(xml_path, encoding="utf-8") as f:
             xml_content = f.read()
 
         result = engine.find(xml_content)

@@ -34,7 +34,7 @@ print(data)
 Using the class directly:
 
 ```python
-from datadetector.yaml_utils import YAMLHandler
+from datadetector.utils.yaml_utils import YAMLHandler
 
 data = YAMLHandler.read_yaml("config.yml")
 ```

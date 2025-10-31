@@ -7,11 +7,10 @@ This module extends the fake data generator with support for:
 - XML files
 """
 
-import io
 import logging
 import random
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Union
 
 try:
     from PIL import Image, ImageDraw, ImageFont
@@ -161,7 +160,7 @@ class OfficeFileGenerator:
                 try:
                     if len(str(cell.value)) > max_length:
                         max_length = len(cell.value)
-                except:
+                except (TypeError, AttributeError):
                     pass
             adjusted_width = min(max_length + 2, 50)
             ws.column_dimensions[column[0].column_letter].width = adjusted_width
@@ -188,7 +187,10 @@ class OfficeFileGenerator:
         """
         try:
             from pptx import Presentation
-            from pptx.util import Inches, Pt
+            from pptx.util import (
+                Inches,  # noqa: F401
+                Pt,  # noqa: F401
+            )
         except ImportError:
             raise ImportError(
                 "python-pptx is required for PowerPoint generation. "
@@ -281,7 +283,7 @@ class ImageGenerator:
         try:
             font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 32)
             font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 20)
-        except:
+        except OSError:
             font_large = ImageFont.load_default()
             font_small = ImageFont.load_default()
 
@@ -337,7 +339,7 @@ class ImageGenerator:
         # Try to load font
         try:
             font = ImageFont.truetype("/System/Library/Fonts/Menlo.ttc", 14)
-        except:
+        except OSError:
             font = ImageFont.load_default()
 
         # Draw fake terminal/editor look
@@ -505,7 +507,8 @@ class PDFGenerator:
                 story.append(PageBreak())
 
             # Page heading
-            story.append(Paragraph(f"Section {page_num + 1}: {self.faker.catch_phrase()}", heading_style))
+            section_title = f"Section {page_num + 1}: {self.faker.catch_phrase()}"
+            story.append(Paragraph(section_title, heading_style))
             story.append(Spacer(1, 0.2 * inch))
 
             # Add paragraphs

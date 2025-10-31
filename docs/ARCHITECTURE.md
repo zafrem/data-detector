@@ -541,7 +541,8 @@ data-detector/
 │   ├── engine.py            # Core Engine class
 │   ├── registry.py          # PatternRegistry & load_registry
 │   ├── models.py            # Data models (Pattern, Policy, Results)
-│   ├── yaml_utils.py        # YAML utilities (NEW!)
+│   ├── utils/               # Utility modules
+│   │   └── yaml_utils.py    # YAML utilities
 │   ├── verification.py      # Verification functions (Luhn, IBAN)
 │   ├── cli.py               # Click CLI implementation
 │   └── server.py            # HTTP/gRPC server

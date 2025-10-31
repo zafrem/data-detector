@@ -48,12 +48,32 @@ dev = [
     "mypy>=1.5.0",
     "types-pyyaml",
     "types-jsonschema",
+    "faker>=20.0.0",
+    "Pillow>=10.0.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.0",
 ]
 test = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
     "pytest-asyncio>=0.21.0",
     "httpx>=0.25.0",
+    "faker>=20.0.0",
+    "Pillow>=10.0.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.0",
+]
+fake = [
+    "faker>=20.0.0",
+    "Pillow>=10.0.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.0",
 ]
 
 [project.scripts]

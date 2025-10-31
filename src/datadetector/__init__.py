@@ -19,7 +19,7 @@ from datadetector.fake_file_generators import (
 from datadetector.fake_generator import FakeDataGenerator
 from datadetector.models import FindResult, RedactionResult, ValidationResult
 from datadetector.registry import PatternRegistry, load_registry
-from datadetector.yaml_utils import (
+from datadetector.utils.yaml_utils import (
     PatternFileHandler,
     YAMLHandler,
     read_yaml,

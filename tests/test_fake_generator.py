@@ -161,7 +161,7 @@ class TestCSVGeneration:
         assert csv_path.exists()
 
         # Read and verify
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             rows = list(reader)
 
@@ -175,7 +175,7 @@ class TestCSVGeneration:
         csv_path = temp_dir / "test_no_pii.csv"
         generator.create_csv_file(csv_path, rows=5, include_pii=False)
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, encoding="utf-8") as f:
             reader = csv.DictReader(f)
             rows = list(reader)
 
@@ -188,7 +188,7 @@ class TestCSVGeneration:
         csv_path = temp_dir / "test_large.csv"
         generator.create_csv_file(csv_path, rows=1000, include_pii=True)
 
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, encoding="utf-8") as f:
             reader = csv.reader(f)
             row_count = sum(1 for _ in reader) - 1  # Exclude header
 
@@ -206,7 +206,7 @@ class TestJSONGeneration:
         assert json_path.exists()
 
         # Read and verify
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
 
         assert len(data) == 10
@@ -221,7 +221,7 @@ class TestJSONGeneration:
         json_path = temp_dir / "test_no_pii.json"
         generator.create_json_file(json_path, records=5, include_pii=False)
 
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
 
         assert len(data) == 5
@@ -233,7 +233,7 @@ class TestJSONGeneration:
         json_path = temp_dir / "test_structure.json"
         generator.create_json_file(json_path, records=1, include_pii=True)
 
-        with open(json_path, "r", encoding="utf-8") as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
 
         record = data[0]
@@ -318,7 +318,7 @@ class TestLogGeneration:
 
         assert log_path.exists()
 
-        with open(log_path, "r", encoding="utf-8") as f:
+        with open(log_path, encoding="utf-8") as f:
             lines = f.readlines()
 
         assert len(lines) == 100
@@ -331,7 +331,7 @@ class TestLogGeneration:
         log_path = temp_dir / "test_json.log"
         generator.create_log_file(log_path, lines=50, include_pii=True, log_format="json")
 
-        with open(log_path, "r", encoding="utf-8") as f:
+        with open(log_path, encoding="utf-8") as f:
             lines = f.readlines()
 
         assert len(lines) == 50
@@ -346,7 +346,7 @@ class TestLogGeneration:
         log_path = temp_dir / "test_syslog.log"
         generator.create_log_file(log_path, lines=50, include_pii=True, log_format="syslog")
 
-        with open(log_path, "r", encoding="utf-8") as f:
+        with open(log_path, encoding="utf-8") as f:
             lines = f.readlines()
 
         assert len(lines) == 50
@@ -357,9 +357,6 @@ class TestLogGeneration:
         """Test creating log without embedded PII."""
         log_path = temp_dir / "test_no_pii.log"
         generator.create_log_file(log_path, lines=100, include_pii=False, log_format="apache")
-
-        with open(log_path, "r", encoding="utf-8") as f:
-            content = f.read()
 
         # PII should appear less frequently or not in query strings
         assert log_path.exists()
@@ -375,7 +372,7 @@ class TestTextFileGeneration:
 
         assert text_path.exists()
 
-        with open(text_path, "r", encoding="utf-8") as f:
+        with open(text_path, encoding="utf-8") as f:
             content = f.read()
 
         # Should have multiple paragraphs (separated by blank lines)
@@ -394,7 +391,7 @@ class TestTextFileGeneration:
         text_path = temp_dir / "test_content.txt"
         generator.create_text_file(text_path, paragraphs=20, include_pii=True)
 
-        with open(text_path, "r", encoding="utf-8") as f:
+        with open(text_path, encoding="utf-8") as f:
             content = f.read()
 
         # Some paragraphs should have contact info
@@ -445,7 +442,7 @@ class TestIntegrationWithDetector:
         generator.create_csv_file(csv_path, rows=10, include_pii=True)
 
         # Read CSV content
-        with open(csv_path, "r", encoding="utf-8") as f:
+        with open(csv_path, encoding="utf-8") as f:
             content = f.read()
 
         # Detect PII
