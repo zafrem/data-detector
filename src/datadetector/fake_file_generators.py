@@ -460,7 +460,10 @@ class PDFGenerator:
         try:
             from reportlab.lib import colors  # type: ignore[import-untyped]
             from reportlab.lib.pagesizes import letter  # type: ignore[import-untyped]
-            from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore[import-untyped]
+            from reportlab.lib.styles import (  # type: ignore[import-untyped]
+                ParagraphStyle,
+                getSampleStyleSheet,
+            )
             from reportlab.lib.units import inch  # type: ignore[import-untyped]
             from reportlab.platypus import (  # type: ignore[import-untyped]
                 PageBreak,
