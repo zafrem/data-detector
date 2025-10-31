@@ -2,18 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.0.1] - 2025-10-10
-
-### Changed
-- **Repository Renamed**: Complete rebrand from `regex-vault` to `data-detector`
-  - Package name: `regex-vault` → `data-detector`
-  - Python module: `regexvault` → `datadetector`
-  - CLI command: `regex-vault` → `data-detector`
-  - Environment variables: `REGEX_VAULT_*` → `DATA_DETECTOR_*`
-  - All documentation and references updated
-  - Version reset to 0.0.1 for fresh start
-
-## [Unreleased]
+## [0.0.2] - 2025-10-31
 
 ### Fixed
 - **CI/CD Pipeline**: Updated GitHub Actions workflows
@@ -95,55 +84,33 @@ All notable changes to this project will be documented in this file.
 ### Security
 - Verification functions help prevent false positives by validating checksums and business logic
 
-## Test Coverage
-- 25 new tests for verification functionality
-  - 15 unit tests for verification functions
-  - 10 integration tests for verification with engine
-- All tests passing ✅
+## [0.0.1] - 2025-10-10
 
-## Migration Guide
+### Changed
+- **Repository Renamed**: Complete rebrand from `regex-vault` to `data-detector`
+  - Package name: `regex-vault` → `data-detector`
+  - Python module: `regexvault` → `datadetector`
+  - CLI command: `regex-vault` → `data-detector`
+  - Environment variables: `REGEX_VAULT_*` → `DATA_DETECTOR_*`
+  - All documentation and references updated
+  - Version reset to 0.0.1 for fresh start
 
-### For Pattern Files
-If you have custom patterns, you can now add verification:
+## [Unreleased]
 
-```yaml
-patterns:
-  - id: my_pattern_01
-    pattern: '[A-Z]{2}\d{10}'
-    verification: custom_verify  # Optional: reference to verification function
-```
+### Added
+- None
 
-### For Code
-Register custom verification functions before loading patterns:
+### Changed
+- None
 
-```python
-from datadetector.verification import register_verification_function
+### Fixed
+- None
 
-def my_verify(value: str) -> bool:
-    # Your validation logic
-    return True
+### Deprecated
+- None
 
-register_verification_function("custom_verify", my_verify)
+### Removed
+- None
 
-# Now load patterns that reference "custom_verify"
-registry = load_registry(paths=["patterns/"])
-```
-
-### Directory Loading
-You can now load all patterns from a directory:
-
-```python
-# Old way (still works)
-registry = load_registry(paths=[
-    "patterns/common.yml",
-    "patterns/kr.yml",
-    "patterns/us.yml"
-])
-
-# New way (simpler)
-registry = load_registry(paths=["patterns/"])
-```
-
-## Known Issues
-- Korean address patterns with named groups need refactoring for Python compatibility
-- Some test files skip tests that depend on all patterns loading
+### Security
+- None

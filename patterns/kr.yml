@@ -207,7 +207,7 @@ patterns:
   location: kr
   category: address
   description: Korean postal code (5 digits)
-  pattern: '[0-9]{5}'
+  pattern: '\b[0-9]{5}\b'
   mask: '*****'
   examples:
     match:
@@ -220,6 +220,8 @@ patterns:
     - '123456'
     - A1234
     - 1234A
+    - '012345'
+    - '123456789'
   policy:
     store_raw: false
     action_on_match: report

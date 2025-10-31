@@ -103,6 +103,7 @@ def load_registry(
         # Load default patterns from package
         default_dir = Path(__file__).parent.parent.parent / "patterns"
         paths = [
+            str(default_dir / "tokens.yml"),  # Load tokens first for faster detection
             str(default_dir / "common.yml"),
             str(default_dir / "kr.yml"),
             str(default_dir / "us.yml"),

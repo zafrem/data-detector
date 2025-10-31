@@ -148,17 +148,24 @@ patterns:
   - id: medicare_01
     location: us
     category: other
-    description: Medicare Beneficiary Identifier (1 letter + 10 alphanumeric)
-    pattern: '\b[A-Z][0-9]{3}[A-Z]{2}[0-9]{4}[A-Z]\b'
+    description: Medicare Beneficiary Identifier (MBI format, excludes S/L/O/I/B/Z)
+    pattern: '\b[ACDEFGHJKMNPQRTUVWXY][0-9]{3}[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{4}[ACDEFGHJKMNPQRTUVWXY]\b'
     flags: [IGNORECASE]
     mask: "A***AA****A"
     examples:
       match:
-        - "A123BC4567D"
+        - "A123CD4567E"
+        - "T987HN6543P"
+        - "M456GJ1234K"
       nomatch:
         - "123456789"
         - "A1234567890"
+        - "S123CD4567E"
+        - "A123OI4567Z"
+        - "L123BC4567S"
     policy:
       store_raw: false
       action_on_match: redact
       severity: critical
+    metadata:
+      note: "Medicare MBIs exclude S, L, O, I, B, Z to avoid confusion with 5, 1, 0, 1, 8, 2"

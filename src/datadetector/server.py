@@ -151,7 +151,7 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
     app = FastAPI(
         title="data-detector",
         description="PII detection and redaction service",
-        version="0.0.1",
+        version="0.0.2",
     )
 
     # Create server instance

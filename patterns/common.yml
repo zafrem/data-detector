@@ -5,8 +5,8 @@ patterns:
   - id: email_01
     location: comm
     category: email
-    description: Standard email address (RFC 5322 simplified)
-    pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    description: Standard email address (RFC 5322 simplified with RFC 1034 domain rules)
+    pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}'
     flags: [IGNORECASE]
     mask: "***@***.***"
     examples:
@@ -14,14 +14,20 @@ patterns:
         - "user@example.com"
         - "john.doe+tag@company.co.uk"
         - "test_user123@mail-server.org"
+        - "user@sub.domain.example.com"
       nomatch:
         - "invalid.email@"
         - "@example.com"
         - "user@"
+        - "user@-example.com"
+        - "user@example-.com"
+        - "user@.example.com"
     policy:
       store_raw: false
       action_on_match: redact
       severity: medium
+    metadata:
+      note: "Domain part follows RFC 1034/1035: labels must start/end with alphanumeric, hyphens only in middle"
 
   - id: ipv4_01
     location: comm
@@ -46,21 +52,29 @@ patterns:
   - id: ipv6_01
     location: comm
     category: ip
-    description: IPv6 address (simplified)
-    pattern: '(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}'
+    description: IPv6 address (full and compressed notation)
+    pattern: '(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))'
     flags: [IGNORECASE]
     mask: "****:****:****:****:****:****:****:****"
     examples:
       match:
         - "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
         - "2001:0db8:85a3:1234:5678:8a2e:0370:7334"
+        - "2001:db8:85a3::8a2e:370:7334"
+        - "::1"
+        - "fe80::"
+        - "::"
       nomatch:
         - "192.168.1.1"
         - "gggg:gggg:gggg:gggg:gggg:gggg:gggg:gggg"
+        - "02001:0db8:85a3:0000:0000:8a2e:0370:7334"
+        - "2001:0db8:85a3::8a2e::7334"
     policy:
       store_raw: false
       action_on_match: report
       severity: low
+    metadata:
+      note: "Supports full form, compressed notation (::), link-local addresses, and IPv4-mapped IPv6 addresses"
 
   - id: credit_card_visa_01
     location: comm

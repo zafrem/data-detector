@@ -8,6 +8,9 @@
 - 🔍 **Detection**: Find PII in text using multiple patterns
 - ✅ **Validation**: Validate text against specific patterns with optional verification functions
 - 🔒 **Redaction**: Mask, hash, or tokenize sensitive information
+- 🎲 **Fake Data Generation**: Generate fake PII for testing (CSV, JSON, Excel, Word, PowerPoint, PDF, Images, SQLite, XML, logs)
+- 📚 **Bulk Training Data**: Generate large labeled datasets for ML training with complete metadata
+- 🔄 **Async Support**: Full async/await API for concurrent processing
 - 🚀 **Multiple Interfaces**: Library API, CLI, and HTTP/gRPC server
 - ⚡ **High Performance**: p95 < 10ms for 1KB text (single namespace)
 - 🔄 **Hot Reload**: Non-disruptive pattern reloading
@@ -45,6 +48,136 @@ results = engine.find("My phone: 01012345678, email: test@example.com")
 # Redact
 redacted = engine.redact("SSN: 900101-1234567", namespaces=["kr"])
 print(redacted.redacted_text)
+```
+
+### Fake Data Generation
+
+Generate fake PII data for testing, demos, and development:
+
+```python
+from datadetector import FakeDataGenerator, OfficeFileGenerator, ImageGenerator, PDFGenerator
+
+# Create generator (use seed for reproducibility)
+generator = FakeDataGenerator(seed=12345)
+
+# Generate individual PII values
+email = generator.from_pattern("comm/email_01")  # user@example.com
+ssn = generator.from_pattern("us/ssn_01")  # 123-45-6789
+phone = generator.from_pattern("kr/mobile_01")  # 010-1234-5678
+aws_key = generator.from_pattern("comm/aws_access_key_01")  # AKIAIOSFODNN7EXAMPLE
+
+# Generate files with fake data
+generator.create_csv_file("users.csv", rows=1000, include_pii=True)
+generator.create_json_file("users.json", records=500, include_pii=True)
+generator.create_sqlite_file("users.db", records=1000, include_pii=True)
+generator.create_log_file("app.log", lines=5000, log_format="apache")
+
+# Generate Office files
+office_gen = OfficeFileGenerator(generator)
+office_gen.create_word_file("document.docx", paragraphs=10, include_pii=True)
+office_gen.create_excel_file("data.xlsx", rows=500, include_pii=True)
+office_gen.create_powerpoint_file("presentation.pptx", slides=10, include_pii=True)
+
+# Generate images with embedded text
+img_gen = ImageGenerator(generator)
+img_gen.create_image_with_text("document.png", width=800, height=600, include_pii=True)
+img_gen.create_screenshot_like_image("config.png", include_pii=True)
+
+# Generate PDF files
+pdf_gen = PDFGenerator(generator)
+pdf_gen.create_pdf_file("document.pdf", pages=5, include_pii=True)
+pdf_gen.create_pdf_invoice("invoice.pdf", include_pii=True)
+```
+
+**Supported Pattern Types:** emails, phone numbers, SSNs, credit cards, AWS/GitHub/Google API keys, IP addresses, coordinates, URLs, and more.
+
+**File Formats:** CSV, JSON, SQLite, XML, logs (Apache/JSON/syslog), text, Word (.docx), Excel (.xlsx), PowerPoint (.pptx), PDF, PNG/JPEG images.
+
+See [examples/fake_data_quickstart.py](examples/fake_data_quickstart.py) and [examples/fake_data_demo.py](examples/fake_data_demo.py) for complete examples.
+
+### Bulk Training Data Generation
+
+Generate large labeled datasets for machine learning training:
+
+```python
+from datadetector import BulkDataGenerator
+
+# Create bulk generator
+bulk_gen = BulkDataGenerator(seed=12345)
+
+# Generate 10,000 labeled training records in JSONL format
+bulk_gen.save_bulk_data_jsonl(
+    "training_data.jsonl",
+    num_records=10000,
+    patterns_per_record=(3, 10)
+)
+
+# Generate binary classification pairs (has PII / no PII)
+bulk_gen.save_detection_pairs(
+    "detection_pairs.jsonl",
+    num_pairs=5000,
+    positive_ratio=0.7,
+    format='jsonl'
+)
+
+# Generate with specific patterns only
+specific_patterns = ["comm/email_01", "us/ssn_01", "comm/credit_card_visa_01"]
+bulk_gen.save_bulk_data_json(
+    "email_ssn_data.json",
+    num_records=1000,
+    include_patterns=specific_patterns
+)
+
+# Get statistics about generated dataset
+records = bulk_gen.generate_bulk_labeled_data(num_records=100)
+stats = bulk_gen.generate_statistics(records)
+print(f"Total PII items: {stats['total_pii_items']}")
+print(f"Pattern distribution: {stats['pattern_distribution']}")
+```
+
+**Output Formats:**
+- **JSONL** - One JSON per line (streaming-friendly, ideal for ML pipelines)
+- **JSON** - Complete dataset with global metadata
+- **CSV** - Tabular format with JSON columns
+
+**Each Record Contains:**
+- `text`: Full text with embedded PII
+- `pii_items`: List of PII with pattern IDs, values, and positions
+- `metadata`: Number of PII items, patterns used, text length
+
+**Use Cases:**
+- Train PII detection models
+- Create labeled datasets for supervised learning
+- Binary classification training data
+- Testing at scale (millions of records)
+- Benchmarking detection performance
+
+See [examples/bulk_training_data_demo.py](examples/bulk_training_data_demo.py) for comprehensive examples.
+
+### Async Support
+
+Full async/await API for concurrent processing:
+
+```python
+import asyncio
+from datadetector import AsyncEngine, load_registry
+
+async def main():
+    registry = load_registry()
+    engine = AsyncEngine(registry)
+
+    # Process single text
+    result = await engine.find("Email: user@example.com")
+
+    # Process multiple texts concurrently
+    texts = ["Email: user1@example.com", "Phone: 010-1234-5678", ...]
+    results = await engine.find_batch(texts)
+
+    # Concurrent validation and redaction
+    validation = await engine.validate("010-1234-5678", "kr/mobile_01")
+    redaction = await engine.redact("SSN: 123-45-6789")
+
+asyncio.run(main())
 ```
 
 ### YAML Pattern Management

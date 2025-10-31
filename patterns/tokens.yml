@@ -8,7 +8,7 @@ patterns:
     description: Generic high-entropy token (20+ chars, base64url/hex, high entropy)
     pattern: '[A-Za-z0-9_\-+/=.]{20,}'
     verification: high_entropy_token
-    priority: 90
+    priority: 50
     mask: "[REDACTED_TOKEN]"
     examples:
       match:
@@ -33,7 +33,7 @@ patterns:
     category: token
     description: AWS Access Key ID (starts with AKIA, 20 chars)
     pattern: 'AKIA[0-9A-Z]{16}'
-    priority: 10
+    priority: 1
     mask: "AKIA****************"
     examples:
       match:
@@ -56,7 +56,7 @@ patterns:
     description: AWS Secret Access Key (40 chars, base64)
     pattern: '[A-Za-z0-9/+=]{40}'
     verification: high_entropy_token
-    priority: 15
+    priority: 5
     mask: "[REDACTED_AWS_SECRET]"
     examples:
       match:
@@ -79,7 +79,7 @@ patterns:
     description: GitHub Personal Access Token (starts with ghp_, gho_, ghu_, ghs_, or ghr_)
     pattern: 'gh[pousr]_[A-Za-z0-9_]{36,}'
     verification: high_entropy_token
-    priority: 10
+    priority: 1
     mask: "ghp_************************************"
     examples:
       match:
@@ -103,7 +103,7 @@ patterns:
     description: Stripe-like API Key (example pattern - use rk_test_ for testing)
     pattern: 'rk_(live|test)_[A-Za-z0-9]{24,}'
     verification: high_entropy_token
-    priority: 10
+    priority: 1
     mask: "rk_****_************************"
     examples:
       match:
@@ -126,7 +126,7 @@ patterns:
     category: token
     description: JSON Web Token (JWT) - three base64url parts separated by dots
     pattern: 'eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+'
-    priority: 20
+    priority: 2
     mask: "[REDACTED_JWT]"
     examples:
       match:
@@ -148,7 +148,7 @@ patterns:
     description: Slack Token (starts with xoxb-, xoxp-, xoxa-, or xoxr-)
     pattern: 'xox[bpar]-[A-Za-z0-9\-]{10,}'
     verification: high_entropy_token
-    priority: 10
+    priority: 1
     mask: "xox*-***************************"
     examples:
       match:
@@ -171,7 +171,7 @@ patterns:
     category: token
     description: Google API Key (starts with AIza)
     pattern: 'AIza[A-Za-z0-9\-_]{35}'
-    priority: 10
+    priority: 1
     mask: "AIza***********************************"
     examples:
       match:
@@ -194,7 +194,7 @@ patterns:
     description: Generic API key pattern (32+ random chars without common prefixes)
     pattern: '[A-Za-z0-9_\-+/=]{32,}'
     verification: high_entropy_token
-    priority: 95
+    priority: 60
     mask: "[REDACTED_API_KEY]"
     examples:
       match:
@@ -216,7 +216,7 @@ patterns:
     category: token
     description: Private key header (RSA, EC, SSH, PGP)
     pattern: '-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'
-    priority: 5
+    priority: 1
     mask: "[REDACTED_PRIVATE_KEY]"
     examples:
       match:

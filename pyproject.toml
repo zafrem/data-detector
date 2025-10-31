@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "data-detector"
-version = "0.0.1"
+version = "0.0.2"
 description = "A general-purpose engine that detects and masks personal information by country and information type"
 readme = "README.md"
 requires-python = ">=3.8"

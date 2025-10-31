@@ -163,7 +163,7 @@ class TestLocationFieldFiltering:
 
         comm_patterns = [p for p in registry.get_all_patterns() if p.location == "comm"]
 
-        assert len(comm_patterns) == 14, "Should have 14 common patterns"
+        assert len(comm_patterns) == 24, "Should have 24 common patterns (14 general + 10 tokens)"
         for pattern in comm_patterns:
             assert pattern.location == "comm"
             assert pattern.namespace == "comm"
@@ -350,10 +350,10 @@ class TestLocationFieldDocumentation:
         registry = load_registry()
 
         pattern_count = len(registry.get_all_patterns())
-        assert pattern_count == 51, f"Expected 51 patterns, found {pattern_count}"
+        assert pattern_count == 61, f"Expected 61 patterns (51 original + 10 tokens), found {pattern_count}"
 
         # All should have location
         patterns_with_location = [
             p for p in registry.get_all_patterns() if hasattr(p, "location") and p.location
         ]
-        assert len(patterns_with_location) == 51, "All patterns should have location field"
+        assert len(patterns_with_location) == 61, "All patterns should have location field"

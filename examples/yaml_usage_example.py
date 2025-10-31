@@ -7,8 +7,13 @@ This script shows how to:
 2. Add/update/remove patterns
 3. Query pattern files
 4. Use patterns with the detection engine
+
+Note: This example creates files in a temporary directory to avoid
+cluttering your current working directory.
 """
 
+import os
+import tempfile
 from datadetector import (
     Engine,
     PatternFileHandler,
@@ -16,6 +21,11 @@ from datadetector import (
     read_yaml,
     write_yaml,
 )
+
+# Create temporary directory for examples
+TEMP_DIR = tempfile.mkdtemp()
+PATTERN_FILE = os.path.join(TEMP_DIR, "custom_patterns.yml")
+BACKUP_FILE = os.path.join(TEMP_DIR, "custom_patterns.backup.yml")
 
 
 def example_1_create_pattern_file():
@@ -52,17 +62,17 @@ def example_1_create_pattern_file():
 
     # Create the pattern file
     PatternFileHandler.create_pattern_file(
-        file_path="custom_patterns.yml",
+        file_path=PATTERN_FILE,
         namespace="custom",
         description="Custom patterns for our application",
         patterns=patterns,
         overwrite=True,  # Overwrite if exists
     )
 
-    print("✅ Created custom_patterns.yml with 2 patterns")
+    print(f"✅ Created {PATTERN_FILE} with 2 patterns")
 
     # Read and display
-    data = read_yaml("custom_patterns.yml")
+    data = read_yaml(PATTERN_FILE)
     print(f"   Namespace: {data['namespace']}")
     print(f"   Description: {data['description']}")
     print(f"   Patterns: {len(data['patterns'])}")
@@ -84,12 +94,12 @@ def example_2_add_pattern():
         "policy": {"store_raw": False, "action_on_match": "redact", "severity": "high"},
     }
 
-    PatternFileHandler.add_pattern_to_file("custom_patterns.yml", new_pattern)
+    PatternFileHandler.add_pattern_to_file(PATTERN_FILE, new_pattern)
 
-    print("✅ Added session_token_01 to custom_patterns.yml")
+    print(f"✅ Added session_token_01 to {os.path.basename(PATTERN_FILE)}")
 
     # List all patterns
-    pattern_ids = PatternFileHandler.list_patterns_in_file("custom_patterns.yml")
+    pattern_ids = PatternFileHandler.list_patterns_in_file(PATTERN_FILE)
     print(f"   Total patterns: {len(pattern_ids)}")
     for pid in pattern_ids:
         print(f"   - {pid}")
@@ -102,19 +112,19 @@ def example_3_update_pattern():
     print("=" * 60)
 
     # Get current pattern
-    pattern = PatternFileHandler.get_pattern_from_file("custom_patterns.yml", "api_key_01")
+    pattern = PatternFileHandler.get_pattern_from_file(PATTERN_FILE, "api_key_01")
     print(f"Current severity: {pattern['policy']['severity']}")
 
     # Update severity
     success = PatternFileHandler.update_pattern_in_file(
-        file_path="custom_patterns.yml",
+        file_path=PATTERN_FILE,
         pattern_id="api_key_01",
         updates={"policy": {"severity": "critical", "action_on_match": "tokenize"}},
     )
 
     if success:
         # Get updated pattern
-        updated = PatternFileHandler.get_pattern_from_file("custom_patterns.yml", "api_key_01")
+        updated = PatternFileHandler.get_pattern_from_file(PATTERN_FILE, "api_key_01")
         print(f"✅ Updated api_key_01")
         print(f"   New severity: {updated['policy']['severity']}")
         print(f"   New action: {updated['policy']['action_on_match']}")
@@ -127,12 +137,12 @@ def example_4_query_patterns():
     print("=" * 60)
 
     # List all patterns
-    pattern_ids = PatternFileHandler.list_patterns_in_file("custom_patterns.yml")
+    pattern_ids = PatternFileHandler.list_patterns_in_file(PATTERN_FILE)
     print(f"Found {len(pattern_ids)} patterns:\n")
 
     # Get details for each
     for pid in pattern_ids:
-        pattern = PatternFileHandler.get_pattern_from_file("custom_patterns.yml", pid)
+        pattern = PatternFileHandler.get_pattern_from_file(PATTERN_FILE, pid)
         print(f"Pattern ID: {pid}")
         print(f"  Category: {pattern['category']}")
         print(f"  Description: {pattern['description']}")
@@ -149,7 +159,7 @@ def example_5_use_with_engine():
 
     # Load custom patterns (skip example validation for demo)
     registry = load_registry(
-        paths=["custom_patterns.yml"], validate_schema=False, validate_examples=False
+        paths=[PATTERN_FILE], validate_schema=False, validate_examples=False
     )
 
     print(f"✅ Loaded {len(registry)} patterns from custom namespace")
@@ -195,14 +205,14 @@ def example_6_remove_pattern():
 
     # Remove pattern
     success = PatternFileHandler.remove_pattern_from_file(
-        "custom_patterns.yml", "internal_id_01"
+        PATTERN_FILE, "internal_id_01"
     )
 
     if success:
         print("✅ Removed internal_id_01")
 
         # List remaining
-        pattern_ids = PatternFileHandler.list_patterns_in_file("custom_patterns.yml")
+        pattern_ids = PatternFileHandler.list_patterns_in_file(PATTERN_FILE)
         print(f"   Remaining patterns: {pattern_ids}")
     else:
         print("❌ Pattern not found")
@@ -215,15 +225,15 @@ def example_7_backup_and_restore():
     print("=" * 60)
 
     # Read current state
-    current = read_yaml("custom_patterns.yml")
+    current = read_yaml(PATTERN_FILE)
 
     # Create backup
-    write_yaml("custom_patterns.backup.yml", current, overwrite=True)
-    print("✅ Created backup: custom_patterns.backup.yml")
+    write_yaml(BACKUP_FILE, current, overwrite=True)
+    print(f"✅ Created backup: {os.path.basename(BACKUP_FILE)}")
 
     # Simulate modification
     PatternFileHandler.add_pattern_to_file(
-        "custom_patterns.yml",
+        PATTERN_FILE,
         {
             "id": "temp_pattern_01",
             "location": "custom",
@@ -236,31 +246,37 @@ def example_7_backup_and_restore():
     print("   Added temporary pattern")
 
     # Restore from backup
-    backup = read_yaml("custom_patterns.backup.yml")
-    write_yaml("custom_patterns.yml", backup, overwrite=True)
+    backup = read_yaml(BACKUP_FILE)
+    write_yaml(PATTERN_FILE, backup, overwrite=True)
 
     print("✅ Restored from backup")
 
 
 def cleanup():
     """Clean up example files."""
-    import os
-
     files_to_remove = [
-        "custom_patterns.yml",
-        "custom_patterns.backup.yml",
+        PATTERN_FILE,
+        BACKUP_FILE,
     ]
 
     for file in files_to_remove:
         if os.path.exists(file):
             os.remove(file)
             print(f"🧹 Cleaned up: {file}")
+    
+    # Try to remove temp directory if empty
+    try:
+        os.rmdir(TEMP_DIR)
+        print(f"🧹 Cleaned up temp directory: {TEMP_DIR}")
+    except OSError:
+        pass  # Directory not empty or doesn't exist
 
 
 def main():
     """Run all examples."""
     print("\n" + "=" * 60)
     print("YAML Utilities - Complete Examples")
+    print(f"Working in temporary directory: {TEMP_DIR}")
     print("=" * 60)
 
     try:
