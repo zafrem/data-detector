@@ -10,12 +10,12 @@ import random
 import sqlite3
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 try:
     from faker import Faker
 except ImportError:
-    Faker = None
+    Faker = None  # type: ignore[misc, assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class FakeDataGenerator:
         # Pattern-to-generator mapping
         self._pattern_generators = self._setup_pattern_generators()
 
-    def _setup_pattern_generators(self) -> Dict[str, callable]:
+    def _setup_pattern_generators(self) -> Dict[str, Callable[[], str]]:
         """Set up mapping from pattern IDs to generator functions."""
         return {
             # Email
@@ -458,7 +458,7 @@ class FakeDataGenerator:
 
         if include_pii and random.random() > 0.7:
             log_entry["user_email"] = self.faker.email()
-            log_entry["user_id"] = self.faker.uuid4()
+            log_entry["user_id"] = str(self.faker.uuid4())
 
         return json.dumps(log_entry)
 

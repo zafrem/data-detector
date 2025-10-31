@@ -10,7 +10,7 @@ import json
 import logging
 import random
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from datadetector.fake_generator import FakeDataGenerator
 
@@ -50,7 +50,7 @@ class BulkDataGenerator:
         self,
         include_patterns: Optional[List[str]] = None,
         num_pii_items: int = 5,
-    ) -> Dict:
+    ) -> Dict[str, Any]:
         """
         Generate a single labeled record with PII and metadata.
 
@@ -130,7 +130,7 @@ class BulkDataGenerator:
         num_records: int = 1000,
         patterns_per_record: Tuple[int, int] = (3, 8),
         include_patterns: Optional[List[str]] = None,
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         Generate bulk labeled training data.
 
@@ -299,7 +299,7 @@ class BulkDataGenerator:
         self,
         num_pairs: int = 1000,
         positive_ratio: float = 0.7,
-    ) -> List[Dict]:
+    ) -> List[Dict[str, Any]]:
         """
         Generate text pairs for binary classification (has PII / no PII).
 
@@ -401,7 +401,7 @@ class BulkDataGenerator:
         logger.info(f"✓ Saved {num_pairs} detection pairs to {output_path}")
         logger.info(f"  File size: {output_path.stat().st_size:,} bytes")
 
-    def generate_statistics(self, records: List[Dict]) -> Dict:
+    def generate_statistics(self, records: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Generate statistics about a dataset.
 
@@ -412,7 +412,7 @@ class BulkDataGenerator:
             Dictionary with dataset statistics
         """
         total_pii = sum(r["metadata"]["num_pii_items"] for r in records)
-        pattern_counts = {}
+        pattern_counts: Dict[str, int] = {}
 
         for record in records:
             for pii_item in record["pii_items"]:

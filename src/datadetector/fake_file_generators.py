@@ -10,12 +10,15 @@ This module extends the fake data generator with support for:
 import logging
 import random
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING, Union
+
+if TYPE_CHECKING:
+    from datadetector.fake_generator import FakeDataGenerator
 
 try:
     from PIL import Image, ImageDraw, ImageFont
 except ImportError:
-    Image = ImageDraw = ImageFont = None
+    Image = ImageDraw = ImageFont = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +26,7 @@ logger = logging.getLogger(__name__)
 class OfficeFileGenerator:
     """Generate Office files (Word, Excel, PowerPoint) with fake data."""
 
-    def __init__(self, faker_generator):
+    def __init__(self, faker_generator: "FakeDataGenerator") -> None:
         """
         Initialize with a FakeDataGenerator instance.
 
@@ -89,7 +92,7 @@ class OfficeFileGenerator:
             else:
                 doc.add_paragraph(text)
 
-        doc.save(output_path)
+        doc.save(str(output_path))
         logger.info(f"Created Word file: {output_path}")
 
     def create_excel_file(
@@ -110,8 +113,8 @@ class OfficeFileGenerator:
             ImportError: If openpyxl is not installed
         """
         try:
-            from openpyxl import Workbook
-            from openpyxl.styles import Font, PatternFill
+            from openpyxl import Workbook  # type: ignore[import-untyped]
+            from openpyxl.styles import Font, PatternFill  # type: ignore[import-untyped]
         except ImportError:
             raise ImportError(
                 "openpyxl is required for Excel file generation. "
@@ -232,14 +235,14 @@ class OfficeFileGenerator:
                 p.text = f"Phone: {self.faker.phone_number()}"
                 p.level = 1
 
-        prs.save(output_path)
+        prs.save(str(output_path))
         logger.info(f"Created PowerPoint file: {output_path} ({slides} slides)")
 
 
 class ImageGenerator:
     """Generate images with embedded text/PII."""
 
-    def __init__(self, faker_generator):
+    def __init__(self, faker_generator: "FakeDataGenerator") -> None:
         """
         Initialize with a FakeDataGenerator instance.
 
@@ -284,8 +287,8 @@ class ImageGenerator:
             font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 32)
             font_small = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 20)
         except OSError:
-            font_large = ImageFont.load_default()
-            font_small = ImageFont.load_default()
+            font_large = ImageFont.load_default()  # type: ignore[assignment]
+            font_small = ImageFont.load_default()  # type: ignore[assignment]
 
         # Add title
         title = "Fake Document"
@@ -340,7 +343,7 @@ class ImageGenerator:
         try:
             font = ImageFont.truetype("/System/Library/Fonts/Menlo.ttc", 14)
         except OSError:
-            font = ImageFont.load_default()
+            font = ImageFont.load_default()  # type: ignore[assignment]
 
         # Draw fake terminal/editor look
         draw.rectangle([(50, 50), (width - 50, height - 50)], fill=(30, 30, 30))
@@ -374,7 +377,7 @@ class ImageGenerator:
 class XMLGenerator:
     """Generate XML files with fake data."""
 
-    def __init__(self, faker_generator):
+    def __init__(self, faker_generator: "FakeDataGenerator") -> None:
         """
         Initialize with a FakeDataGenerator instance.
 
@@ -427,7 +430,7 @@ class XMLGenerator:
 class PDFGenerator:
     """Generate PDF files with fake data."""
 
-    def __init__(self, faker_generator):
+    def __init__(self, faker_generator: "FakeDataGenerator") -> None:
         """
         Initialize with a FakeDataGenerator instance.
 
@@ -455,11 +458,11 @@ class PDFGenerator:
             ImportError: If reportlab is not installed
         """
         try:
-            from reportlab.lib import colors
-            from reportlab.lib.pagesizes import letter
-            from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
-            from reportlab.lib.units import inch
-            from reportlab.platypus import (
+            from reportlab.lib import colors  # type: ignore[import-untyped]
+            from reportlab.lib.pagesizes import letter  # type: ignore[import-untyped]
+            from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet  # type: ignore[import-untyped]
+            from reportlab.lib.units import inch  # type: ignore[import-untyped]
+            from reportlab.platypus import (  # type: ignore[import-untyped]
                 PageBreak,
                 Paragraph,
                 SimpleDocTemplate,
@@ -643,7 +646,7 @@ class PDFGenerator:
         story.append(Spacer(1, 0.1 * inch))
 
         items_data = [["Item", "Quantity", "Price", "Total"]]
-        total = 0
+        total = 0.0
         for _ in range(random.randint(3, 8)):
             item = self.faker.catch_phrase()
             qty = random.randint(1, 10)
