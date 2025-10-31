@@ -1,11 +1,18 @@
 """Tests for fake file generators (Office, Image, XML)."""
 
+import sys
 import tempfile
 from pathlib import Path
 
 import pytest
 
 from datadetector import FakeDataGenerator
+
+# Skip PDF tests on Python 3.8 due to reportlab compatibility issue
+# with usedforsecurity parameter
+skip_pdf_on_py38 = pytest.mark.skipif(
+    sys.version_info < (3, 9), reason="reportlab has compatibility issues with Python 3.8"
+)
 
 
 @pytest.fixture
@@ -385,6 +392,7 @@ class TestXMLGenerator:
         assert len(root) == 1000
 
 
+@skip_pdf_on_py38
 class TestPDFGenerator:
     """Tests for PDF generation."""
 
