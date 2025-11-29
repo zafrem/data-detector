@@ -220,13 +220,15 @@ class TestEndToEndRAGWorkflow:
         query = "What's the status for customer john@example.com?"
         input_result = await middleware.scan_query(query, namespaces=["comm"])
         assert not input_result.blocked
-        sanitized_query = input_result.sanitized_text
+        # Verify query was sanitized
+        assert "[TOKEN:" in input_result.sanitized_text
 
         # Layer 2: Storage scanning (document indexing)
         document = "Customer john@example.com has account 12345"
         storage_result = await middleware.scan_document(document, namespaces=["comm"])
         assert storage_result.token_map is not None
-        sanitized_doc = storage_result.sanitized_text
+        # Verify document was sanitized
+        assert "[TOKEN:" in storage_result.sanitized_text
 
         # Simulate RAG processing (would retrieve and use LLM here)
         # For test, just create a mock response

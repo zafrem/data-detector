@@ -2,7 +2,6 @@
 
 import hashlib
 import logging
-import secrets
 from typing import Dict, List, Optional
 
 from datadetector.engine import Engine

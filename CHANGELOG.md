@@ -2,6 +2,60 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.3] - 2025-11-29
+
+### Added
+- **RAG Security Implementation**: Complete three-layer PII protection system for RAG applications
+  - New `rag_config.py` module for RAG-specific configuration
+  - New `rag_middleware.py` for request/response processing
+  - New `rag_models.py` with RAG-specific data models
+  - New `stream_engine.py` for streaming PII detection
+  - New `tokenization.py` for advanced token management
+  - MASK vs FAKE strategy comparison for RAG systems
+  - Token mapping and restoration capabilities
+
+- **Enhanced Documentation**: Comprehensive RAG integration guides
+  - `RAG_IMPLEMENTATION_SUMMARY.md` - Complete implementation overview
+  - `RAG_QUICKSTART.md` - Quick start guide for RAG integration
+  - `RAG_SECURITY_ARCHITECTURE.md` - Security architecture documentation
+  - `TOKEN_MAP_STORAGE.md` - Token storage and management guide
+  - Multi-language documentation (Korean, Chinese)
+  - Architecture documentation and templates
+
+- **New Examples**: RAG integration examples
+  - `langchain_integration.py` - LangChain integration example
+  - `rag_api_example.py` - RAG API usage example
+  - `rag_mask_vs_fake.py` - Strategy comparison example
+  - `rag_quickstart.py` - Quick start example
+
+- **Security Configuration**: RAG security policy configuration
+  - `config/rag_security_policy.yml` - Security policy configuration file
+  - Configurable PII protection levels and strategies
+
+### Changed
+- **Server Enhancement**: Updated FastAPI server with RAG middleware support
+- **Engine Enhancement**: Enhanced core engine with streaming capabilities
+- **Model Updates**: Extended data models to support RAG use cases
+- **Code Style**: Improved code formatting and style consistency
+
+### Fixed
+- **CI/CD Pipeline**: Fixed Ubuntu + Python 3.8 compatibility issues
+  - Resolved test failures on Ubuntu with Python 3.8
+  - Updated GitHub workflow configurations
+  - Improved cross-platform compatibility
+
+- **Testing**: Enhanced test coverage for new RAG features
+  - Added `test_rag_security.py` for RAG security testing
+  - Updated `test_fake_strategy.py` with additional test cases
+  - Improved fake file generator tests
+
+### Documentation
+- **Improvement Considerations**: Added comprehensive code quality assessment
+  - Performance optimization recommendations
+  - Maintainability improvements
+  - Production readiness guidelines
+  - Overall assessment: 6.3/10 with improvement roadmap
+
 ## [0.0.2] - 2025-10-31
 
 ### Fixed
