@@ -1,274 +1,162 @@
-# Verification Functions
+# Verification Functions Guide
 
 ## Overview
 
-Verification functions provide additional validation after regex matching. They're useful for patterns with checksums, validation algorithms, or complex business logic that can't be expressed in regex alone.
+Verification functions are a powerful feature that allows you to add an extra layer of validation on top of a regular expression match. While a regex can check the *format* of a piece of data (e.g., "is it a 16-digit number?"), a verification function can check its *semantic validity* (e.g., "does this 16-digit number pass the Luhn checksum algorithm for credit cards?").
 
-## How It Works
+This is essential for accurately detecting complex data types like credit card numbers, bank account numbers, and many national ID numbers, which have built-in validation rules.
 
-1. Regex pattern matches the text
-2. If `verification` is specified, the matched value is passed to the verification function
-3. Only if **both** regex and verification pass, the match is considered valid
+## How Verification Works
+
+The validation process happens in two stages:
+
+1.  **Regex Match**: First, the engine uses the pattern's regular expression to find a potential match in the text.
+2.  **Verification Function**: If a match is found AND the pattern has a `verification` field, the matched text is passed to the specified verification function.
+
+A piece of data is only considered a valid match if it passes **both** the regex and the verification function.
 
 ## Built-in Verification Functions
 
-### IBAN Mod-97
+Data Detector comes with several common verification functions built-in.
 
-Validates International Bank Account Numbers using the Mod-97 algorithm.
+### `iban_mod97`
 
+Validates an International Bank Account Number (IBAN) using the MOD-97 checksum algorithm.
+
+**Pattern Usage:**
 ```yaml
 - id: iban_01
-  location: co
+  location: comm
   category: iban
   pattern: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
   verification: iban_mod97
 ```
 
-Example:
-```python
-from datadetector.verification import iban_mod97
+### `luhn`
 
-print(iban_mod97("GB82WEST12345698765432"))  # True (valid)
-print(iban_mod97("GB82WEST12345698765433"))  # False (invalid check digit)
-```
+Validates a number using the Luhn algorithm. This is widely used for credit card numbers and some national ID numbers.
 
-### Luhn Algorithm
-
-Validates numbers using the Luhn checksum algorithm (credit cards, some national IDs).
-
+**Pattern Usage:**
 ```yaml
-- id: credit_card_visa_01
-  location: co
+- id: credit_card_01
+  location: comm
   category: credit_card
-  pattern: '4[0-9]{12}(?:[0-9]{3})?'
+  pattern: '\d{13,19}'
   verification: luhn
-```
-
-Example:
-```python
-from datadetector.verification import luhn
-
-print(luhn("4532015112830366"))  # True (valid Visa)
-print(luhn("4532015112830367"))  # False (invalid check digit)
 ```
 
 ## Creating Custom Verification Functions
 
-### 1. Define Your Function
+You can easily create and register your own verification functions to handle any custom validation logic your organization needs.
+
+### Step 1: Define the Function
+
+A verification function is a simple Python function that takes one argument (the matched string) and returns `True` if it's valid or `False` if it's not.
 
 ```python
-def custom_checksum(value: str) -> bool:
+# A simple custom checksum: returns True if the sum of the digits is even.
+def checksum_is_even(value: str) -> bool:
     """
-    Custom verification logic.
+    Checks if the sum of the digits in the string is an even number.
 
     Args:
-        value: The matched string from regex
+        value: The matched string from the regex.
 
     Returns:
-        True if valid, False otherwise
+        True if the sum of digits is even, False otherwise.
     """
-    # Example: Sum of digits must be even
-    digits = [int(c) for c in value if c.isdigit()]
-    return sum(digits) % 2 == 0
+    try:
+        digits = [int(c) for c in value if c.isdigit()]
+        return sum(digits) % 2 == 0
+    except (ValueError, TypeError):
+        # Always return False if the input is malformed.
+        return False
 ```
 
-### 2. Register the Function
+### Step 2: Register the Function
+
+Before you can use your function in a pattern, you must register it with a unique name. This must be done *before* you load the patterns that use it.
 
 ```python
 from datadetector.verification import register_verification_function
 
-register_verification_function("custom_checksum", custom_checksum)
+register_verification_function("checksum_is_even", checksum_is_even)
 ```
 
-### 3. Reference in Pattern
+### Step 3: Reference it in a Pattern
+
+In your YAML pattern file, use the registered name in the `verification` field.
 
 ```yaml
+# In custom_patterns.yml
+namespace: myorg
 patterns:
   - id: custom_id_01
     location: myorg
     category: other
     pattern: 'CID-\d{4}'
-    verification: custom_checksum  # Reference by name
+    verification: checksum_is_even  # Use the registered name
 ```
 
-### 4. Use in Code
+### Step 4: Putting it all together
+
+Here is a complete example of how to register and use a custom verification function.
 
 ```python
 from datadetector import Engine, load_registry
 from datadetector.verification import register_verification_function
 
-# Register custom function
-def custom_checksum(value: str) -> bool:
+# 1. Define the custom function
+def checksum_is_even(value: str) -> bool:
     digits = [int(c) for c in value if c.isdigit()]
     return sum(digits) % 2 == 0
 
-register_verification_function("custom_checksum", custom_checksum)
+# 2. Register it with a unique name
+register_verification_function("checksum_is_even", checksum_is_even)
 
-# Load patterns (must be after registration)
-registry = load_registry(paths=["patterns/custom.yml"])
+# 3. Load the registry (Data Detector will link the function to the pattern)
+registry = load_registry(paths=["patterns/custom_patterns.yml"])
 engine = Engine(registry)
 
-# Validate
-result = engine.validate("CID-1234", "myorg/custom_id_01")  # True (1+2+3+4=10, even)
-result = engine.validate("CID-1235", "myorg/custom_id_01")  # False (1+2+3+5=11, odd)
-```
+# 4. Validate data
+# Passes: 1+2+3+4 = 10 (even)
+result1 = engine.validate("CID-1234", "myorg/custom_id_01")
+print(f"CID-1234 is valid: {result1.is_valid}")  # True
 
-## Advanced Examples
-
-### Example 1: ISBN-10 Validation
-
-```python
-def isbn10_check(value: str) -> bool:
-    """Validate ISBN-10 check digit."""
-    digits = [int(c) if c.isdigit() else 10 for c in value if c.isdigit() or c == 'X']
-    if len(digits) != 10:
-        return False
-    checksum = sum((10 - i) * digit for i, digit in enumerate(digits))
-    return checksum % 11 == 0
-
-register_verification_function("isbn10", isbn10_check)
-```
-
-Pattern:
-```yaml
-- id: isbn10_01
-  location: intl
-  category: other
-  description: ISBN-10 with check digit validation
-  pattern: '(?:\d{9}[\dX]|\d-\d{3}-\d{5}-[\dX])'
-  verification: isbn10
-```
-
-### Example 2: Custom Business Logic
-
-```python
-def valid_department_code(value: str) -> bool:
-    """Validate department code against allowed departments."""
-    allowed_depts = {'ENG', 'SLS', 'MKT', 'HR', 'FIN'}
-    dept = value.split('-')[0]
-    return dept in allowed_depts
-
-register_verification_function("dept_code", valid_department_code)
-```
-
-Pattern:
-```yaml
-- id: dept_employee_id_01
-  location: acme
-  category: other
-  pattern: '[A-Z]{3}-\d{6}'
-  verification: dept_code
-  examples:
-    match: ["ENG-123456", "SLS-999999"]
-    nomatch: ["XXX-123456", "ENG-12345"]
-```
-
-### Example 3: Date Range Validation
-
-```python
-from datetime import datetime
-
-def valid_date_range(value: str) -> bool:
-    """Check if date is within allowed range."""
-    try:
-        # Assuming format YYYY-MM-DD
-        date = datetime.strptime(value, '%Y-%m-%d')
-        start = datetime(2020, 1, 1)
-        end = datetime(2030, 12, 31)
-        return start <= date <= end
-    except ValueError:
-        return False
-
-register_verification_function("date_range", valid_date_range)
-```
-
-## Management Functions
-
-### Get Verification Function
-
-```python
-from datadetector.verification import get_verification_function
-
-func = get_verification_function("iban_mod97")
-if func:
-    print(func("GB82WEST12345698765432"))
-```
-
-### Unregister Function
-
-```python
-from datadetector.verification import unregister_verification_function
-
-result = unregister_verification_function("custom_checksum")
-print(result)  # True if removed, False if not found
-```
-
-### List Available Functions
-
-```python
-from datadetector.verification import VERIFICATION_FUNCTIONS
-
-print(list(VERIFICATION_FUNCTIONS.keys()))
-# ['iban_mod97', 'luhn', ...]
+# Fails: 1+2+3+5 = 11 (odd)
+result2 = engine.validate("CID-1235", "myorg/custom_id_01")
+print(f"CID-1235 is valid: {result2.is_valid}")  # False
 ```
 
 ## Best Practices
 
-1. **Keep Functions Pure**: Verification functions should be stateless and deterministic
-2. **Handle Errors Gracefully**: Return `False` for invalid input, don't raise exceptions
-3. **Optimize Performance**: Verification runs on every match, so keep it fast
-4. **Document Thoroughly**: Explain the validation logic in docstrings
-5. **Test Extensively**: Write unit tests for your verification functions
-6. **Register Early**: Register custom functions before loading patterns
-7. **Use Meaningful Names**: Choose clear, descriptive function names
+1.  **Keep Functions Pure and Stateless**: A verification function should always return the same output for the same input. It should not rely on global state or external services, as this can lead to unpredictable behavior.
+2.  **Handle Errors Gracefully**: The function should never raise an exception for invalid input. Always wrap your logic in a `try...except` block and return `False` if an error occurs.
+3.  **Optimize for Performance**: Verification functions are executed for every potential match, so they need to be fast. Avoid slow operations like network requests or complex computations if possible.
+4.  **Document and Test Thoroughly**: Write clear docstrings explaining what your function does and write unit tests to ensure it works correctly for both valid and invalid inputs.
+5.  **Register Early**: Always register your custom functions before you call `load_registry`. The registry needs to know about the function when it's compiling the patterns.
+6.  **Use Meaningful Names**: Choose a clear and descriptive name for your function when you register it. This makes your pattern files easier to understand.
 
-## Testing Verification
+## Managing Verification Functions
+
+You can programmatically manage the registered functions.
+
+-   **Get a function**: `get_verification_function(name)`
+-   **Unregister a function**: `unregister_verification_function(name)`
+-   **List all functions**: `list(VERIFICATION_FUNCTIONS.keys())`
 
 ```python
-# Test standalone
-from datadetector.verification import iban_mod97
+from datadetector.verification import get_verification_function, unregister_verification_function, VERIFICATION_FUNCTIONS
 
-assert iban_mod97("GB82WEST12345698765432") == True
-assert iban_mod97("GB82WEST12345698765433") == False
+# Get a built-in function
+luhn_func = get_verification_function("luhn")
+if luhn_func:
+    print(luhn_func("4532015112830366")) # True
 
-# Test with engine
-from datadetector import Engine, load_registry
+# Unregister a custom function
+unregister_verification_function("checksum_is_even")
 
-registry = load_registry(paths=["patterns/common.yml"])
-engine = Engine(registry)
-
-# Valid IBAN - passes both regex and verification
-result = engine.validate("GB82WEST12345698765432", "co/iban_01")
-assert result.is_valid == True
-
-# Invalid IBAN - passes regex but fails verification
-result = engine.validate("GB82WEST12345698765433", "co/iban_01")
-assert result.is_valid == False
+# See what's available
+print(list(VERIFICATION_FUNCTIONS.keys()))
+# ['iban_mod97', 'luhn']
 ```
-
-## Examples in Pattern Files
-
-The verification is applied automatically when patterns are loaded:
-
-```yaml
-patterns:
-  # IBAN with verification
-  - id: iban_01
-    pattern: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
-    verification: iban_mod97
-    examples:
-      match: ["GB82WEST12345698765432"]  # Valid IBAN
-      nomatch:
-        - "GB82WEST1234569876543"  # Too short
-        - "ABCD1234567890123456"   # Invalid check digits
-
-  # Credit card with Luhn
-  - id: visa_card_01
-    pattern: '4[0-9]{15}'
-    verification: luhn
-    examples:
-      match: ["4532015112830366"]   # Valid Visa
-      nomatch: ["4532015112830367"]  # Invalid check digit
-```
-
-The example validation automatically considers verification, so patterns that fail verification won't pass the `nomatch` test even if they match the regex.

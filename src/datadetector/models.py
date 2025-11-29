@@ -48,6 +48,7 @@ class RedactionStrategy(str, Enum):
     MASK = "mask"
     HASH = "hash"
     TOKENIZE = "tokenize"
+    FAKE = "fake"  # Replace with realistic fake data
 
 
 @dataclass

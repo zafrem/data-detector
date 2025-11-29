@@ -18,7 +18,17 @@ from datadetector.fake_file_generators import (
 )
 from datadetector.fake_generator import FakeDataGenerator
 from datadetector.models import FindResult, RedactionResult, ValidationResult
+from datadetector.rag_config import RAGPolicyConfig, load_rag_policy
+from datadetector.rag_middleware import RAGSecurityMiddleware
+from datadetector.rag_models import (
+    SecurityAction,
+    SecurityLayer,
+    SecurityPolicy,
+    SeverityLevel,
+)
 from datadetector.registry import PatternRegistry, load_registry
+from datadetector.stream_engine import StreamEngine
+from datadetector.tokenization import SecureTokenizer
 from datadetector.utils.yaml_utils import (
     PatternFileHandler,
     YAMLHandler,
@@ -46,4 +56,14 @@ __all__ = [
     "read_yaml",
     "write_yaml",
     "update_yaml",
+    # RAG Security
+    "RAGSecurityMiddleware",
+    "StreamEngine",
+    "SecureTokenizer",
+    "SecurityAction",
+    "SecurityLayer",
+    "SecurityPolicy",
+    "SeverityLevel",
+    "RAGPolicyConfig",
+    "load_rag_policy",
 ]

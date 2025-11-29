@@ -15,6 +15,26 @@ from datadetector.registry import PatternRegistry
 
 logger = logging.getLogger(__name__)
 
+# Lazy import for fake data generator to avoid circular dependencies
+_fake_generator = None
+
+
+def _get_fake_generator():
+    """Get or create fake data generator instance."""
+    global _fake_generator
+    if _fake_generator is None:
+        try:
+            from datadetector.fake_generator import FakeDataGenerator
+
+            _fake_generator = FakeDataGenerator()
+        except ImportError:
+            logger.warning(
+                "FakeDataGenerator not available. Install faker package "
+                "to use FAKE redaction strategy."
+            )
+            _fake_generator = False
+    return _fake_generator if _fake_generator is not False else None
+
 
 class Engine:
     """
@@ -262,6 +282,25 @@ class Engine:
         elif strategy == RedactionStrategy.TOKENIZE:
             # Return token reference
             return f"[TOKEN:{match.ns_id}:{match.start}]"
+
+        elif strategy == RedactionStrategy.FAKE:
+            # Generate realistic fake data based on pattern type
+            fake_gen = _get_fake_generator()
+            if fake_gen is None:
+                # Fallback to masking if faker not available
+                logger.warning("FAKE strategy requested but faker not available, using MASK")
+                return self.default_mask_char * len(original)
+
+            try:
+                # Generate fake data from pattern
+                fake_value = fake_gen.from_pattern(match.ns_id)
+                if fake_value:
+                    return fake_value
+            except Exception as e:
+                logger.warning(f"Failed to generate fake data for {match.ns_id}: {e}")
+
+            # Fallback to masking
+            return self.default_mask_char * len(original)
 
         return self.default_mask_char * len(original)
 

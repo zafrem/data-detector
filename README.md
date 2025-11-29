@@ -1,20 +1,60 @@
 # Data Detector
 
-**data-detector** is a general-purpose engine that detects and masks personal information (mobile phone numbers, social security numbers, email addresses, etc.) by **country and information type**, using a "pattern file-based + library + daemon (server)."
+[![Data-Detector](./images/icon.jpg)](./images/icon.jpg)
+
+**Data Detector** is a high-performance, extensible engine for detecting, redacting, and generating sensitive data. It provides a comprehensive toolkit for everything from simple PII masking in logs to securing advanced AI pipelines.
+
+## Motivation
+
+In today's data-driven world, managing sensitive information is more critical than ever. Developers and data scientists need a tool that is not only fast and accurate but also flexible enough to handle a wide variety of data formats and use cases. Existing solutions were often too slow, too narrow in focus, or too difficult to extend.
+
+Data Detector was built to address these challenges. It was born from the need for a unified engine that could:
+
+1.  **Standardize PII Management**: Provide a single, consistent way to handle sensitive data across different applications and environments.
+2.  **Deliver High Performance**: Ensure that data protection doesn't become a bottleneck, even in high-throughput systems.
+3.  **Secure Modern AI Pipelines**: Offer specialized tools, like the `RAGSecurityMiddleware`, to prevent PII leakage in Retrieval-Augmented Generation (RAG) and other LLM applications, securing data at every stage—input, storage, and output.
+4.  **Empower Developers**: Make it easy to add new detection patterns, create fake data for testing, and integrate data protection into any workflow.
+
+## Solution Architecture
+
+Data Detector is built on a layered and highly efficient architecture designed for speed and extensibility.
+
+1.  **Pattern Files**: The foundation of the system is a set of human-readable YAML files located in the `patterns/` directory. These files define the sensitive data patterns to be detected, including their regex, validation rules, and redaction policies.
+
+2.  **The Pattern Registry**: When the application starts, the `PatternRegistry` loads all pattern files into memory. It pre-compiles and caches every regex pattern. This one-time-ahead compilation is the secret to Data Detector's high performance, as it eliminates the overhead of compiling patterns on every request.
+
+3.  **The Engine**: The core logic resides in the stateless `Engine`. It takes the pre-compiled patterns from the registry and uses them to perform its operations (find, redact, validate). The project provides multiple engine implementations to suit different needs:
+    *   `Engine`: A synchronous engine for general-purpose use.
+    *   `AsyncEngine`: An asyncio-based engine for high-concurrency applications.
+    *   `StreamEngine`: An engine designed for processing data streams with low memory overhead.
+
+4.  **Interfaces**: Data Detector can be used in multiple ways, providing flexibility for different environments:
+    *   **Library API**: A clean and simple Python API.
+    *   **CLI**: A command-line interface for quick scans and scripting.
+    *   **Server**: An HTTP/gRPC server for use as a centralized service.
+
+This architecture makes the system not only fast but also incredibly flexible. You can add new patterns without writing any code, and the engine's stateless design makes it easy to scale horizontally.
 
 ## Features
 
-- 🌍 **Global Support**: Patterns organized by country (ISO2) and information type
-- 🔍 **Detection**: Find PII in text using multiple patterns
-- ✅ **Validation**: Validate text against specific patterns with optional verification functions
-- 🔒 **Redaction**: Mask, hash, or tokenize sensitive information
-- 🎲 **Fake Data Generation**: Generate fake PII for testing (CSV, JSON, Excel, Word, PowerPoint, PDF, Images, SQLite, XML, logs)
-- 📚 **Bulk Training Data**: Generate large labeled datasets for ML training with complete metadata
-- 🔄 **Async Support**: Full async/await API for concurrent processing
-- 🚀 **Multiple Interfaces**: Library API, CLI, and HTTP/gRPC server
-- ⚡ **High Performance**: p95 < 10ms for 1KB text (single namespace)
-- 🔄 **Hot Reload**: Non-disruptive pattern reloading
-- 📊 **Observability**: Prometheus metrics and health checks
+- 🌍 **Global Support**: Patterns organized by country (ISO2) and information type.
+- 🔍 **Detection**: Find PII in text using multiple patterns.
+- ✅ **Validation**: Validate text against specific patterns with optional verification functions.
+- 🔒 **Redaction**: Mask, hash, or tokenize sensitive information.
+- 🎲 **Fake Data Generation**: Generate realistic fake PII for testing and development across various file formats (CSV, JSON, Office documents, images, and more).
+- 📚 **Bulk Training Data**: Generate large labeled datasets for ML model training.
+- 🛡️ **AI Security**: Specialized middleware to protect RAG/LLM pipelines from data leakage.
+- 🔄 **Async Support**: Full async/await API for high-concurrency processing.
+- 🚀 **Multiple Interfaces**: Use it as a library, a CLI, or a standalone server.
+- ⚡ **High Performance**: Designed for low latency and high throughput.
+- 🔄 **Hot Reload**: Reload patterns without restarting the server.
+- 📊 **Observability**: Prometheus metrics and health checks.
+
+## Performance
+
+Data Detector is engineered for high performance. Thanks to its architecture of pre-compiling and caching patterns, it can process a high volume of data with very low latency.
+
+While performance can vary based on the hardware, the number of patterns loaded, and the size of the input text, the system is designed to be highly efficient, capable of handling thousands of operations per second on modest hardware. The availability of synchronous, asynchronous, and streaming engines ensures you can choose the right tool for your performance needs.
 
 ## Quick Start
 ### Clone repository
@@ -192,23 +232,25 @@ PatternFileHandler.create_pattern_file(
     file_path="custom_patterns.yml",
     namespace="custom",
     description="My custom patterns",
-    patterns=[{
-        "id": "api_key_01",
-        "location": "custom",
-        "category": "token",
-        "pattern": r"API-[A-Z0-9]{32}",
-        "mask": "API-" + "*" * 32,
-        "policy": {
-            "store_raw": False,
-            "action_on_match": "redact",
-            "severity": "critical"
+    patterns=[
+        {
+            "id": "api_key_01",
+            "location": "custom",
+            "category": "token",
+            "pattern": r"API-[A-Z0-9]{32}",
+            "mask": "API-" + "*" * 32,
+            "policy": {
+                "store_raw": False,
+                "action_on_match": "redact",
+                "severity": "critical"
+            }
         }
-    }]
+    ]
 )
 
 # Add, update, or remove patterns
 PatternFileHandler.add_pattern_to_file("custom_patterns.yml", new_pattern)
-PatternFileHandler.update_pattern_in_file("custom_patterns.yml", "api_key_01", {...})
+PatternFileHandler.update_pattern_in_file("custom_patterns.yml", "api_key_01", {{...}})
 PatternFileHandler.remove_pattern_from_file("custom_patterns.yml", "api_key_01")
 ```
 
@@ -306,12 +348,6 @@ Built-in verification functions:
 
 You can also register custom verification functions. See [Verification Functions](docs/verification.md) for details.
 
-## Performance
-
-- **Latency**: p95 < 10ms for 1KB text with single namespace
-- **Throughput**: 500+ RPS on 1 vCPU, 512MB RAM
-- **Scalability**: Handles 1k+ patterns and 1k+ concurrent requests
-
 ## Security & Privacy
 
 - No raw PII is logged (only hashes/metadata)
@@ -361,15 +397,13 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 - 💬 [Discussions](https://github.com/yourusername/data-detector/discussions)
 
 
-# Next Step
-- Pattern Expansion: Support for additional countries like the EU, the UK, Canada, and Australia, as well as new PII types like Social Security Numbers, Vehicle Numbers, and Driver's License Numbers, will expand the usability of the pattern. Enhance the contribution guidelines to facilitate pattern additions by the community.
+## Next Steps
 
-- Web UI/Test Tool: Currently, text must be submitted via the CLI or gRPC. Providing a UI that allows users to directly input patterns and view results, such as a web-based demo or a VS Code extension, will improve the user experience.
+The following are planned enhancements for the future:
 
-- Asynchronous/Streaming API: Adding an asyncio-based asynchronous API for high-speed log processing or data pipeline integration, or providing Kafka/Flink connectors, will facilitate application to large-scale systems.
-
-- Automated Pattern Management: Maintaining the pattern catalog in a remote repository and implementing version control to automatically deploy pattern updates will improve operational convenience. Strictly defining the pattern format as a JSON schema will help prevent errors.
-
-- Other Language Bindings: While gRPC allows calls from various languages, providing wrapper libraries for Node.js and Java would increase developer adoption.
-
-- Monitoring and Deployment: In addition to the performance metrics presented in the README, adding benchmarks measuring memory usage and parallel processing performance in real environments, along with Kubernetes/Helm deployment examples and CI processes, would facilitate adoption by operations teams.
+-   **Pattern Expansion**: We plan to add support for more countries (e.g., EU, UK, Canada, Australia) and new PII types (e.g., Social Security Numbers, Vehicle Numbers, Driver's License Numbers). We will also improve the contribution guidelines to make it easier for the community to add new patterns.
+-   **Web UI/Test Tool**: To improve usability, we will develop a web-based UI or a VS Code extension that will allow users to test patterns and see results in real-time.
+-   **Enhanced Asynchronous/Streaming API**: For large-scale data processing, we will enhance our `asyncio`-based APIs and explore connectors for systems like Kafka and Flink.
+-   **Automated Pattern Management**: We will implement a system for managing the pattern catalog in a remote repository with version control, allowing for automatic updates and deployments.
+-   **Other Language Bindings**: To increase adoption, we will provide wrapper libraries for other popular languages, such as Node.js and Java.
+-   **Advanced Monitoring and Deployment**: We will provide more detailed benchmarks (including memory usage and parallel processing performance) and create deployment examples for Kubernetes/Helm to facilitate adoption by operations teams.

@@ -11,6 +11,8 @@ from starlette.responses import Response
 
 from datadetector.engine import Engine
 from datadetector.models import RedactionStrategy
+from datadetector.rag_middleware import RAGSecurityMiddleware
+from datadetector.rag_models import SecurityAction, SecurityLayer, SeverityLevel
 from datadetector.registry import PatternRegistry, load_registry
 
 logger = logging.getLogger(__name__)
@@ -97,6 +99,47 @@ class ReloadResponse(BaseModel):
     patterns_loaded: int
 
 
+# RAG-specific models
+class RAGQueryRequest(BaseModel):
+    """Request model for RAG query scanning."""
+
+    query: str
+    namespaces: Optional[List[str]] = None
+    action: Optional[str] = "sanitize"  # block, warn, sanitize, allow
+    severity_threshold: Optional[str] = "medium"
+
+
+class RAGDocumentRequest(BaseModel):
+    """Request model for RAG document scanning."""
+
+    document: str
+    namespaces: Optional[List[str]] = None
+    action: Optional[str] = "sanitize"
+    use_tokenization: Optional[bool] = True
+
+
+class RAGResponseRequest(BaseModel):
+    """Request model for RAG response scanning."""
+
+    response: str
+    namespaces: Optional[List[str]] = None
+    action: Optional[str] = "block"
+    severity_threshold: Optional[str] = "high"
+    token_map: Optional[Dict[str, str]] = None
+
+
+class RAGScanResponse(BaseModel):
+    """Response model for RAG scanning."""
+
+    sanitized_text: str
+    blocked: bool
+    pii_detected: bool
+    match_count: int
+    action_taken: str
+    reason: Optional[str] = None
+    token_map: Optional[Dict[str, str]] = None
+
+
 class DataDetectorServer:
     """Server wrapper for managing state."""
 
@@ -105,6 +148,7 @@ class DataDetectorServer:
         self.config = config or {}
         self.registry: Optional[PatternRegistry] = None
         self.engine: Optional[Engine] = None
+        self.rag_middleware: Optional[RAGSecurityMiddleware] = None
         self._load_patterns()
 
     def _load_patterns(self) -> None:
@@ -119,6 +163,7 @@ class DataDetectorServer:
             default_mask_char=self.config.get("redaction", {}).get("mask_char", "*"),
             hash_algorithm=self.config.get("redaction", {}).get("hash_algorithm", "sha256"),
         )
+        self.rag_middleware = RAGSecurityMiddleware(self.engine)
         logger.info(f"Loaded {len(self.registry)} patterns")
 
     def reload_patterns(self) -> Dict[str, Any]:
@@ -275,6 +320,136 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
         """Reload patterns from files."""
         result = server.reload_patterns()
         return ReloadResponse(**result)
+
+    # RAG-specific endpoints
+    @app.post("/rag/scan-query", response_model=RAGScanResponse)
+    async def rag_scan_query(request: RAGQueryRequest) -> RAGScanResponse:
+        """
+        Layer 1: Scan user query before RAG processing.
+
+        Blocks or sanitizes queries containing PII before they enter
+        the RAG pipeline.
+        """
+        if server.rag_middleware is None:
+            raise HTTPException(status_code=500, detail="RAG middleware not initialized")
+
+        try:
+            from datadetector.rag_models import SecurityPolicy
+
+            # Create policy from request
+            policy = SecurityPolicy(
+                layer=SecurityLayer.INPUT,
+                action=SecurityAction(request.action or "sanitize"),
+                severity_threshold=SeverityLevel(request.severity_threshold or "medium"),
+            )
+
+            result = await server.rag_middleware.scan_query(
+                request.query,
+                namespaces=request.namespaces,
+                policy=policy,
+            )
+
+            return RAGScanResponse(
+                sanitized_text=result.sanitized_text,
+                blocked=result.blocked,
+                pii_detected=result.has_pii,
+                match_count=result.match_count,
+                action_taken=result.action_taken.value,
+                reason=result.reason,
+                token_map=result.token_map.tokens if result.token_map else None,
+            )
+        except Exception as e:
+            logger.error(f"RAG query scan error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.post("/rag/scan-document", response_model=RAGScanResponse)
+    async def rag_scan_document(request: RAGDocumentRequest) -> RAGScanResponse:
+        """
+        Layer 2: Scan document before indexing in vector store.
+
+        Sanitizes or tokenizes PII in documents before they are
+        embedded and stored.
+        """
+        if server.rag_middleware is None:
+            raise HTTPException(status_code=500, detail="RAG middleware not initialized")
+
+        try:
+            from datadetector.rag_models import SecurityPolicy
+
+            # Create policy with tokenization support
+            policy = SecurityPolicy(
+                layer=SecurityLayer.STORAGE,
+                action=SecurityAction(request.action or "sanitize"),
+                redaction_strategy=(
+                    RedactionStrategy.TOKENIZE
+                    if request.use_tokenization
+                    else RedactionStrategy.MASK
+                ),
+                preserve_format=True,
+            )
+
+            result = await server.rag_middleware.scan_document(
+                request.document,
+                namespaces=request.namespaces,
+                policy=policy,
+            )
+
+            return RAGScanResponse(
+                sanitized_text=result.sanitized_text,
+                blocked=result.blocked,
+                pii_detected=result.has_pii,
+                match_count=result.match_count,
+                action_taken=result.action_taken.value,
+                reason=result.reason,
+                token_map=result.token_map.tokens if result.token_map else None,
+            )
+        except Exception as e:
+            logger.error(f"RAG document scan error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.post("/rag/scan-response", response_model=RAGScanResponse)
+    async def rag_scan_response(request: RAGResponseRequest) -> RAGScanResponse:
+        """
+        Layer 3: Scan LLM response before returning to user.
+
+        Blocks or sanitizes LLM responses that contain leaked PII.
+        """
+        if server.rag_middleware is None:
+            raise HTTPException(status_code=500, detail="RAG middleware not initialized")
+
+        try:
+            from datadetector.rag_models import SecurityPolicy, TokenMap
+
+            # Create policy for output
+            policy = SecurityPolicy(
+                layer=SecurityLayer.OUTPUT,
+                action=SecurityAction(request.action or "block"),
+                severity_threshold=SeverityLevel(request.severity_threshold or "high"),
+            )
+
+            # Build token map if provided
+            token_map = None
+            if request.token_map:
+                token_map = TokenMap(tokens=request.token_map)
+
+            result = await server.rag_middleware.scan_response(
+                request.response,
+                namespaces=request.namespaces,
+                policy=policy,
+                token_map=token_map,
+            )
+
+            return RAGScanResponse(
+                sanitized_text=result.sanitized_text,
+                blocked=result.blocked,
+                pii_detected=result.has_pii,
+                match_count=result.match_count,
+                action_taken=result.action_taken.value,
+                reason=result.reason,
+            )
+        except Exception as e:
+            logger.error(f"RAG response scan error: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/metrics")
     async def metrics() -> Response:
