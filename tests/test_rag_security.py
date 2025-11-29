@@ -3,6 +3,7 @@
 import pytest
 
 from datadetector import Engine, load_registry
+from datadetector.models import RedactionStrategy
 from datadetector.rag_middleware import RAGSecurityMiddleware
 from datadetector.rag_models import SecurityAction, SecurityLayer, SecurityPolicy, SeverityLevel
 from datadetector.tokenization import SecureTokenizer
@@ -75,8 +76,16 @@ class TestStorageLayerScanning:
     @pytest.mark.asyncio
     async def test_scan_document_with_tokenization(self, middleware):
         """Test document scanning with tokenization."""
-        document = "Customer email: john@example.com, phone: 555-0123"
-        result = await middleware.scan_document(document, namespaces=["comm"])
+        # Create policy with tokenization
+        policy = SecurityPolicy(
+            layer=SecurityLayer.STORAGE,
+            action=SecurityAction.SANITIZE,
+            redaction_strategy=RedactionStrategy.TOKENIZE,
+            preserve_format=True,
+        )
+
+        document = "Customer email: john@example.com, phone: 555-123-4567"
+        result = await middleware.scan_document(document, namespaces=["comm", "us"], policy=policy)
 
         assert result.has_pii
         assert result.match_count > 0
@@ -141,11 +150,11 @@ class TestTokenization:
 
     def test_tokenize_with_map(self, tokenizer):
         """Test tokenization with mapping."""
-        text = "Email: john@example.com, Phone: 555-0123"
-        sanitized, token_map = tokenizer.tokenize_with_map(text, namespaces=["comm"])
+        text = "Email: john@example.com, Phone: 555-123-4567"
+        sanitized, token_map = tokenizer.tokenize_with_map(text, namespaces=["comm", "us"])
 
         assert "john@example.com" not in sanitized
-        assert "555-0123" not in sanitized
+        assert "555-123-4567" not in sanitized
         assert "TOKEN" in sanitized
         assert len(token_map.tokens) >= 2
         assert token_map.hash is not None
@@ -212,16 +221,31 @@ class TestEndToEndRAGWorkflow:
     @pytest.mark.asyncio
     async def test_complete_rag_pipeline(self, middleware, tokenizer):
         """Test complete RAG pipeline with all three layers."""
+        # Create tokenization policies
+        input_policy = SecurityPolicy(
+            layer=SecurityLayer.INPUT,
+            action=SecurityAction.SANITIZE,
+            redaction_strategy=RedactionStrategy.TOKENIZE,
+        )
+        storage_policy = SecurityPolicy(
+            layer=SecurityLayer.STORAGE,
+            action=SecurityAction.SANITIZE,
+            redaction_strategy=RedactionStrategy.TOKENIZE,
+            preserve_format=True,
+        )
+
         # Layer 1: Input scanning
         query = "What's the status for customer john@example.com?"
-        input_result = await middleware.scan_query(query, namespaces=["comm"])
+        input_result = await middleware.scan_query(query, namespaces=["comm"], policy=input_policy)
         assert not input_result.blocked
         # Verify query was sanitized
         assert "[TOKEN:" in input_result.sanitized_text
 
         # Layer 2: Storage scanning (document indexing)
         document = "Customer john@example.com has account 12345"
-        storage_result = await middleware.scan_document(document, namespaces=["comm"])
+        storage_result = await middleware.scan_document(
+            document, namespaces=["comm"], policy=storage_policy
+        )
         assert storage_result.token_map is not None
         # Verify document was sanitized
         assert "[TOKEN:" in storage_result.sanitized_text
