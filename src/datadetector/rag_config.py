@@ -2,7 +2,7 @@
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
 
@@ -19,7 +19,7 @@ class RAGPolicyConfig:
     Loads and manages security policies from YAML configuration.
     """
 
-    def __init__(self, config_path: Optional[str] = None):
+    def __init__(self, config_path: Optional[Union[str, Path]] = None) -> None:
         """
         Initialize policy configuration.
 
@@ -31,7 +31,7 @@ class RAGPolicyConfig:
             config_path = Path(__file__).parent.parent.parent / "config" / "rag_security_policy.yml"
 
         self.config_path = Path(config_path)
-        self.config: Dict = {}
+        self.config: Dict[str, Any] = {}
         self.load()
 
     def load(self) -> None:
@@ -149,7 +149,7 @@ class RAGPolicyConfig:
         layer_config = self.config.get(layer_key, {})
         return layer_config.get("namespaces")
 
-    def get_global_setting(self, key: str, default=None):
+    def get_global_setting(self, key: str, default: Any = None) -> Any:
         """
         Get global configuration setting.
 

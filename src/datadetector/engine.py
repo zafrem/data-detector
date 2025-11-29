@@ -2,7 +2,10 @@
 
 import hashlib
 import logging
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+
+if TYPE_CHECKING:
+    from datadetector.fake_generator import FakeDataGenerator
 
 from datadetector.models import (
     FindResult,
@@ -16,10 +19,10 @@ from datadetector.registry import PatternRegistry
 logger = logging.getLogger(__name__)
 
 # Lazy import for fake data generator to avoid circular dependencies
-_fake_generator = None
+_fake_generator: Optional[Union["FakeDataGenerator", bool]] = None
 
 
-def _get_fake_generator():
+def _get_fake_generator() -> Optional["FakeDataGenerator"]:
     """Get or create fake data generator instance."""
     global _fake_generator
     if _fake_generator is None:
@@ -33,7 +36,7 @@ def _get_fake_generator():
                 "to use FAKE redaction strategy."
             )
             _fake_generator = False
-    return _fake_generator if _fake_generator is not False else None
+    return _fake_generator if _fake_generator is not False else None  # type: ignore[return-value]
 
 
 class Engine:

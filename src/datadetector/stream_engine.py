@@ -2,10 +2,22 @@
 
 import asyncio
 import logging
-from typing import AsyncIterator, List, Optional
+import sys
+from typing import Any, AsyncIterator, Callable, List, Optional
 
 from datadetector.engine import Engine
 from datadetector.models import FindResult, RedactionStrategy
+
+# Compatibility for Python 3.8 (asyncio.to_thread added in 3.9)
+if sys.version_info >= (3, 9):
+    to_thread = asyncio.to_thread
+else:
+
+    async def to_thread(func: Callable[..., Any], *args: Any, **kwargs: Any) -> Any:
+        """Compatibility function for asyncio.to_thread (Python 3.9+)."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, lambda: func(*args, **kwargs))
+
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +67,7 @@ class StreamEngine:
         """
         async for chunk in text_stream:
             async with self._semaphore:
-                result = await asyncio.to_thread(
+                result = await to_thread(
                     self.engine.find,
                     chunk,
                     namespaces=namespaces,
@@ -83,7 +95,7 @@ class StreamEngine:
 
         async def scan_one(text: str) -> FindResult:
             async with self._semaphore:
-                return await asyncio.to_thread(
+                return await to_thread(
                     self.engine.find,
                     text,
                     namespaces=namespaces,
@@ -112,7 +124,7 @@ class StreamEngine:
         """
         async for chunk in text_stream:
             async with self._semaphore:
-                result = await asyncio.to_thread(
+                result = await to_thread(
                     self.engine.redact,
                     chunk,
                     namespaces=namespaces,
@@ -147,7 +159,7 @@ class StreamEngine:
             # For now, scan full document
             # TODO: Implement proper chunking with boundary awareness
             async with self._semaphore:
-                return await asyncio.to_thread(
+                return await to_thread(
                     self.engine.find,
                     doc,
                     namespaces=namespaces,
