@@ -2,7 +2,7 @@
 
 import hashlib
 import logging
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from datadetector.engine import Engine
 from datadetector.rag_models import TokenMap
@@ -42,7 +42,7 @@ class SecureTokenizer:
         self,
         text: str,
         namespaces: Optional[List[str]] = None,
-    ) -> tuple[str, TokenMap]:
+    ) -> Tuple[str, TokenMap]:
         """
         Tokenize PII and return mapping for reversal.
 

@@ -28,9 +28,7 @@ class RAGPolicyConfig:
         """
         if config_path is None:
             # Use default config
-            config_path = (
-                Path(__file__).parent.parent.parent / "config" / "rag_security_policy.yml"
-            )
+            config_path = Path(__file__).parent.parent.parent / "config" / "rag_security_policy.yml"
 
         self.config_path = Path(config_path)
         self.config: Dict = {}
@@ -92,12 +90,8 @@ class RAGPolicyConfig:
         return SecurityPolicy(
             layer=SecurityLayer.INPUT,
             action=SecurityAction(layer_config.get("action", "sanitize")),
-            severity_threshold=SeverityLevel(
-                layer_config.get("severity_threshold", "medium")
-            ),
-            redaction_strategy=RedactionStrategy(
-                layer_config.get("redaction_strategy", "mask")
-            ),
+            severity_threshold=SeverityLevel(layer_config.get("severity_threshold", "medium")),
+            redaction_strategy=RedactionStrategy(layer_config.get("redaction_strategy", "mask")),
             log_matches=layer_config.get("log_matches", True),
         )
 
@@ -114,9 +108,7 @@ class RAGPolicyConfig:
         return SecurityPolicy(
             layer=SecurityLayer.STORAGE,
             action=SecurityAction(layer_config.get("action", "sanitize")),
-            severity_threshold=SeverityLevel(
-                layer_config.get("severity_threshold", "low")
-            ),
+            severity_threshold=SeverityLevel(layer_config.get("severity_threshold", "low")),
             redaction_strategy=RedactionStrategy(
                 layer_config.get("redaction_strategy", "tokenize")
             ),
@@ -137,12 +129,8 @@ class RAGPolicyConfig:
         return SecurityPolicy(
             layer=SecurityLayer.OUTPUT,
             action=SecurityAction(layer_config.get("action", "block")),
-            severity_threshold=SeverityLevel(
-                layer_config.get("severity_threshold", "high")
-            ),
-            redaction_strategy=RedactionStrategy(
-                layer_config.get("redaction_strategy", "mask")
-            ),
+            severity_threshold=SeverityLevel(layer_config.get("severity_threshold", "high")),
+            redaction_strategy=RedactionStrategy(layer_config.get("redaction_strategy", "mask")),
             log_matches=layer_config.get("log_matches", True),
             allow_detokenization=layer_config.get("allow_detokenization", False),
         )

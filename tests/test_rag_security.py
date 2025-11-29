@@ -98,9 +98,7 @@ class TestStorageLayerScanning:
         )
 
         document = "Confidential: SSN 123-45-6789"
-        result = await middleware.scan_document(
-            document, namespaces=["us"], policy=policy
-        )
+        result = await middleware.scan_document(document, namespaces=["us"], policy=policy)
 
         assert result.blocked
         assert result.action_taken == SecurityAction.BLOCK
@@ -130,9 +128,7 @@ class TestOutputLayerScanning:
         )
 
         response = "Contact email: support@example.com"
-        result = await middleware.scan_response(
-            response, namespaces=["comm"], policy=policy
-        )
+        result = await middleware.scan_response(response, namespaces=["comm"], policy=policy)
 
         assert result.has_pii
         assert not result.blocked
@@ -235,9 +231,7 @@ class TestEndToEndRAGWorkflow:
         llm_response = "The account status is active"
 
         # Layer 3: Output scanning
-        output_result = await middleware.scan_response(
-            llm_response, namespaces=["comm"]
-        )
+        output_result = await middleware.scan_response(llm_response, namespaces=["comm"])
         assert not output_result.blocked  # No PII in this response
         assert output_result.sanitized_text == llm_response
 
@@ -248,9 +242,7 @@ class TestEndToEndRAGWorkflow:
         document = "Customer: john@example.com, SSN: 123-45-6789"
 
         # Tokenize for storage
-        sanitized, token_map = tokenizer.tokenize_with_map(
-            document, namespaces=["comm", "us"]
-        )
+        sanitized, token_map = tokenizer.tokenize_with_map(document, namespaces=["comm", "us"])
 
         # Store sanitized version (no PII)
         assert "john@example.com" not in sanitized

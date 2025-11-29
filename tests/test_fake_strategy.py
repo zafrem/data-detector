@@ -59,9 +59,7 @@ class TestFakeStrategy:
     def test_fake_multiple_pii(self, engine):
         """Test fake replacement with multiple PII types."""
         text = "Email: john@example.com, Phone: 555-0123, SSN: 123-45-6789"
-        result = engine.redact(
-            text, namespaces=["comm", "us"], strategy=RedactionStrategy.FAKE
-        )
+        result = engine.redact(text, namespaces=["comm", "us"], strategy=RedactionStrategy.FAKE)
 
         # Original values should be gone
         assert "john@example.com" not in result.redacted_text
@@ -93,14 +91,10 @@ class TestFakeStrategy:
         text = "Contact: john@example.com, Phone: 555-1234"
 
         # MASK strategy
-        mask_result = engine.redact(
-            text, namespaces=["comm"], strategy=RedactionStrategy.MASK
-        )
+        mask_result = engine.redact(text, namespaces=["comm"], strategy=RedactionStrategy.MASK)
 
         # FAKE strategy
-        fake_result = engine.redact(
-            text, namespaces=["comm"], strategy=RedactionStrategy.FAKE
-        )
+        fake_result = engine.redact(text, namespaces=["comm"], strategy=RedactionStrategy.FAKE)
 
         # Both should redact
         assert "john@example.com" not in mask_result.redacted_text
@@ -156,8 +150,7 @@ class TestFakeStrategyPerformance:
 
         # FAKE should be slower but not drastically (< 10x)
         assert fake_time / mask_time < 10, (
-            f"FAKE strategy too slow compared to MASK: "
-            f"{fake_time/mask_time:.1f}x slower"
+            f"FAKE strategy too slow compared to MASK: " f"{fake_time/mask_time:.1f}x slower"
         )
 
 
@@ -181,14 +174,10 @@ class TestFakeWithRAG:
         """
 
         # MASK strategy
-        mask_result = engine.redact(
-            document, namespaces=["comm"], strategy=RedactionStrategy.MASK
-        )
+        mask_result = engine.redact(document, namespaces=["comm"], strategy=RedactionStrategy.MASK)
 
         # FAKE strategy
-        fake_result = engine.redact(
-            document, namespaces=["comm"], strategy=RedactionStrategy.FAKE
-        )
+        fake_result = engine.redact(document, namespaces=["comm"], strategy=RedactionStrategy.FAKE)
 
         # Both should remove PII
         assert "john.doe@company.com" not in mask_result.redacted_text

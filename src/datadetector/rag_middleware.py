@@ -122,9 +122,7 @@ class RAGSecurityMiddleware:
             elif policy.action == SecurityAction.SANITIZE:
                 # Sanitize based on strategy
                 if policy.redaction_strategy.value == "tokenize":
-                    sanitized_text, token_map = self.tokenizer.tokenize_with_map(
-                        query, namespaces
-                    )
+                    sanitized_text, token_map = self.tokenizer.tokenize_with_map(query, namespaces)
                 else:
                     redact_result = self.engine.redact(
                         query,
@@ -306,8 +304,7 @@ class RAGSecurityMiddleware:
                 blocked = True
                 action_taken = SecurityAction.BLOCK
                 reason = (
-                    f"Response contains {len(high_severity_matches)} "
-                    "high-severity PII matches"
+                    f"Response contains {len(high_severity_matches)} " "high-severity PII matches"
                 )
                 sanitized_text = "[RESPONSE BLOCKED: Contains sensitive information]"
 

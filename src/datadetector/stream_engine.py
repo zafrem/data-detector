@@ -80,6 +80,7 @@ class StreamEngine:
         Returns:
             List of FindResult objects
         """
+
         async def scan_one(text: str) -> FindResult:
             async with self._semaphore:
                 return await asyncio.to_thread(
@@ -141,6 +142,7 @@ class StreamEngine:
         Returns:
             List of FindResult objects per document
         """
+
         async def process_one(doc: str) -> FindResult:
             # For now, scan full document
             # TODO: Implement proper chunking with boundary awareness
