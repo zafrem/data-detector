@@ -1,13 +1,10 @@
 """Tests for restore_tokens.py utility."""
 
 import os
-import tempfile
+import sys
 from pathlib import Path
-import pytest
-
 
 # Import the module
-import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from restore_tokens import restore_tokens_yml
 
@@ -111,8 +108,9 @@ class TestRestoreTokens:
 """
         tokens_file.write_text(fake_content)
 
-        # Make file read-only to cause write error
-        os.chmod(str(tokens_file), 0o444)
+        # Make file read-only to test error handling (0o444 = read-only for all)
+        # This is intentionally restrictive for testing purposes
+        os.chmod(str(tokens_file), 0o444)  # noqa: S103
 
         try:
             result = restore_tokens_yml(str(tokens_file))

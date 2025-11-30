@@ -1,13 +1,10 @@
 """Tests for RAG policy configuration loader."""
 
-import tempfile
-from pathlib import Path
-import pytest
 import yaml
 
+from datadetector.models import RedactionStrategy
 from datadetector.rag_config import RAGPolicyConfig, load_rag_policy
 from datadetector.rag_models import SecurityAction, SecurityLayer, SeverityLevel
-from datadetector.models import RedactionStrategy
 
 
 class TestRAGPolicyConfig:
