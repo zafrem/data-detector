@@ -9,16 +9,34 @@ install:  ## Install package
 install-dev:  ## Install package with dev dependencies
 	pip install -e ".[dev,test]"
 
-test:  ## Run tests
-	pytest --cov=datadetector --cov-report=term-missing --cov-report=html
+test:  ## Run tests with coverage
+	pytest --cov=. --cov-report=term-missing --cov-report=html
 
 test-verbose:  ## Run tests with verbose output
-	pytest -v --cov=datadetector --cov-report=term-missing
+	pytest -v --cov=. --cov-report=term-missing
 
-lint:  ## Run linters
+lint:  ## Run linters (ruff, black, mypy)
 	ruff check src/ tests/
 	black --check src/ tests/
 	mypy src/
+
+check:  ## Run all checks (lint + tests) - mimics GitHub Actions
+	@echo "Running ruff..."
+	@ruff check src/ tests/
+	@echo "✓ Ruff passed"
+	@echo ""
+	@echo "Running black..."
+	@black --check src/ tests/
+	@echo "✓ Black passed"
+	@echo ""
+	@echo "Running mypy..."
+	@mypy src/
+	@echo "✓ Mypy passed"
+	@echo ""
+	@echo "Running tests with coverage..."
+	@pytest --cov=. --cov-report=term
+	@echo ""
+	@echo "✓ All checks passed!"
 
 format:  ## Format code
 	black src/ tests/

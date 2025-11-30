@@ -14,7 +14,7 @@ class TestRestoreTokens:
 
     def test_restore_tokens_file_not_found(self):
         """Test handling of non-existent file."""
-        result = restore_tokens_yml('/nonexistent/path/tokens.yml')
+        result = restore_tokens_yml("/nonexistent/path/tokens.yml")
         assert result is False
 
     def test_restore_tokens_already_correct(self, tmp_path):
@@ -51,7 +51,7 @@ class TestRestoreTokens:
         assert result is True
         # Verify correct pattern is present (allowing for whitespace differences)
         new_content = tokens_file.read_text()
-        assert '[sp]k_(live|test)_' in new_content
+        assert "[sp]k_(live|test)_" in new_content
         assert 'provider: "Stripe"' in new_content
 
     def test_restore_tokens_with_fake_pattern(self, tmp_path):
@@ -91,10 +91,10 @@ class TestRestoreTokens:
 
         # Verify pattern was changed
         new_content = tokens_file.read_text()
-        assert '[sp]k_(live|test)_' in new_content
-        assert 'Stripe API Key' in new_content
+        assert "[sp]k_(live|test)_" in new_content
+        assert "Stripe API Key" in new_content
         assert 'provider: "Stripe"' in new_content
-        assert 'other_pattern' in new_content  # Other patterns preserved
+        assert "other_pattern" in new_content  # Other patterns preserved
 
     def test_restore_tokens_write_error(self, tmp_path):
         """Test handling of write errors."""
@@ -128,26 +128,29 @@ class TestRestoreTokens:
     def test_main_function_success(self, tmp_path, monkeypatch):
         """Test main function with successful restoration."""
         tokens_file = tmp_path / "tokens.yml"
-        tokens_file.write_text("""patterns:
+        tokens_file.write_text(
+            """patterns:
   - id: stripe_key_01
     location: comm
     category: token
     description: Stripe-like API Key (example pattern - use rk_test_ for testing)
     pattern: 'rk_(live|test)_[A-Za-z0-9]{24,}'
-""")
+"""
+        )
 
         # Patch the default path
         import restore_tokens
+
         original_func = restore_tokens.restore_tokens_yml
 
         def mock_restore():
             return original_func(str(tokens_file))
 
-        monkeypatch.setattr(restore_tokens, 'restore_tokens_yml', mock_restore)
+        monkeypatch.setattr(restore_tokens, "restore_tokens_yml", mock_restore)
 
         # This would normally be tested by running the script,
         # but we can at least verify the function exists
-        assert hasattr(restore_tokens, '__name__')
+        assert hasattr(restore_tokens, "__name__")
 
     def test_restore_preserves_other_content(self, tmp_path):
         """Test that restoration preserves content outside stripe_key_01."""
@@ -191,7 +194,7 @@ patterns:
 
         new_content = tokens_file.read_text()
         # Check stripe pattern was updated
-        assert '[sp]k_(live|test)_' in new_content
+        assert "[sp]k_(live|test)_" in new_content
         # Check other patterns preserved
-        assert 'github_token' in new_content
-        assert 'aws_key' in new_content
+        assert "github_token" in new_content
+        assert "aws_key" in new_content

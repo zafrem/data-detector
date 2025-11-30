@@ -48,7 +48,7 @@ class TestRAGPolicyConfig:
                 "allow_detokenization": True,
             },
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -76,7 +76,7 @@ class TestRAGPolicyConfig:
                 "log_matches": True,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -96,7 +96,7 @@ class TestRAGPolicyConfig:
                 "enabled": False,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -118,7 +118,7 @@ class TestRAGPolicyConfig:
                 "preserve_format": True,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -139,7 +139,7 @@ class TestRAGPolicyConfig:
                 "enabled": False,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -161,7 +161,7 @@ class TestRAGPolicyConfig:
                 "allow_detokenization": False,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -182,7 +182,7 @@ class TestRAGPolicyConfig:
                 "enabled": False,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -200,7 +200,7 @@ class TestRAGPolicyConfig:
                 "namespaces": ["kr", "us", "comm"],
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -216,7 +216,7 @@ class TestRAGPolicyConfig:
                 "enabled": True,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -233,7 +233,7 @@ class TestRAGPolicyConfig:
                 "enable_logging": True,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -251,7 +251,7 @@ class TestRAGPolicyConfig:
                 "max_tokens": 1000,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -267,7 +267,7 @@ class TestRAGPolicyConfig:
                 "enabled": True,
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         config = RAGPolicyConfig(str(config_file))
@@ -284,7 +284,7 @@ class TestRAGPolicyConfig:
                 "action": "block",
             }
         }
-        with open(config_file, 'w') as f:
+        with open(config_file, "w") as f:
             yaml.dump(config_data, f)
 
         policy = load_rag_policy(str(config_file))
