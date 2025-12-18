@@ -207,78 +207,88 @@ patterns:
     location: comm
     category: location
     description: Latitude coordinate (decimal degrees)
-    pattern: '(?<!\d)[-+]?(?:[0-8]?[0-9](?:\.[0-9]+)?|90(?:\.0+)?)(?!\d)'
+    pattern: '(?<!\d)[-+]?(?:[0-8]?[0-9](?:\.[0-9]{4,})|90(?:\.0{4,})?)(?!\d)'
     mask: "**.******"
     examples:
       match:
         - "37.7749"
         - "-40.7128"
-        - "90.0"
-        - "-90"
-        - "0.0"
+        - "90.0000"
+        - "-90.000000"
+        - "0.0000"
         - "+45.123456"
       nomatch:
         - "91.0"
         - "-91.5"
         - "180.0"
         - "abc"
+        - "2024"
+        - "01"
+        - "15"
     policy:
       store_raw: false
       action_on_match: report
       severity: medium
     metadata:
-      note: "Valid range: -90 to +90 degrees"
+      note: "Valid range: -90 to +90 degrees. Requires at least 4 decimal places to avoid matching dates."
+    priority: 150
 
   - id: longitude_01
     location: comm
     category: location
     description: Longitude coordinate (decimal degrees)
-    pattern: '(?<!\d)[-+]?(?:1[0-7][0-9](?:\.[0-9]+)?|[0-9]?[0-9](?:\.[0-9]+)?|180(?:\.0+)?)(?!\d)'
+    pattern: '(?<!\d)[-+]?(?:1[0-7][0-9](?:\.[0-9]{4,})|[0-9]?[0-9](?:\.[0-9]{4,})|180(?:\.0{4,})?)(?!\d)'
     mask: "***.******"
     examples:
       match:
         - "122.4194"
         - "-74.0060"
-        - "180.0"
-        - "-180"
-        - "0.0"
+        - "180.0000"
+        - "-180.000000"
+        - "0.0000"
         - "+123.456789"
       nomatch:
         - "181.0"
         - "-181.5"
         - "200.0"
         - "xyz"
+        - "2024"
+        - "12"
+        - "01"
     policy:
       store_raw: false
       action_on_match: report
       severity: medium
     metadata:
-      note: "Valid range: -180 to +180 degrees"
+      note: "Valid range: -180 to +180 degrees. Requires at least 4 decimal places to avoid matching dates."
+    priority: 150
 
   - id: coordinates_pair_01
     location: comm
     category: location
     description: Latitude/Longitude coordinate pair (decimal degrees)
-    pattern: '(?<!\d)[-+]?(?:[0-8]?[0-9](?:\.[0-9]+)?|90(?:\.0+)?)\s*,\s*[-+]?(?:1[0-7][0-9](?:\.[0-9]+)?|[0-9]?[0-9](?:\.[0-9]+)?|180(?:\.0+)?)(?!\d)'
+    pattern: '(?<!\d)[-+]?(?:[0-8]?[0-9](?:\.[0-9]{4,})|90(?:\.0{4,})?)\s*,\s*[-+]?(?:1[0-7][0-9](?:\.[0-9]{4,})|[0-9]?[0-9](?:\.[0-9]{4,})|180(?:\.0{4,})?)(?!\d)'
     mask: "**.******, ***.******"
     examples:
       match:
         - "37.7749, -122.4194"
         - "40.7128,-74.0060"
-        - "0.0, 0.0"
-        - "-90, 180"
-        - "+45.123, -123.456"
+        - "0.0000, 0.0000"
+        - "-90.0000, 180.0000"
+        - "+45.123456, -123.456789"
       nomatch:
         - "91.0, 122.4194"
         - "37.7749, 181.0"
         - "37.7749 122.4194"
         - "invalid, coords"
+        - "2024, 12"
     policy:
       store_raw: false
       action_on_match: report
       severity: medium
     metadata:
-      note: "Format: latitude, longitude with optional whitespace around comma"
+      note: "Format: latitude, longitude with optional whitespace around comma. Requires at least 4 decimal places."
+    priority: 150
 
   - id: coordinates_dms_01
     location: comm

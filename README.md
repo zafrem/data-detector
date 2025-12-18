@@ -1,6 +1,6 @@
 # Data Detector
 
-[![Data-Detector](./images/icon.jpg)](./images/icon.jpg)
+[![Data-Detector](./images/icon.jpg)](./images/icon.png)
 
 **Data Detector** is a high-performance, extensible engine for detecting, redacting, and generating sensitive data. It provides a comprehensive toolkit for everything from simple PII masking in logs to securing advanced AI pipelines.
 

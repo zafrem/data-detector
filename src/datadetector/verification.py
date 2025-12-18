@@ -172,12 +172,359 @@ def high_entropy_token(value: str) -> bool:
     return entropy >= min_entropy
 
 
+def not_timestamp(value: str) -> bool:
+    """
+    Verify that a numeric string is NOT a timestamp.
+
+    Rejects values that look like:
+    - Unix timestamps (10 digits, 1000000000-9999999999)
+    - Unix timestamps in milliseconds (13 digits, 1000000000000-9999999999999)
+    - Compact datetime formats (14+ digits like YYYYMMDDHHMMSS)
+
+    Args:
+        value: String to check
+
+    Returns:
+        True if NOT a timestamp (safe to classify as PII), False if looks like timestamp
+    """
+    # Remove common separators to get just digits
+    digits_only = "".join(c for c in value if c.isdigit())
+
+    if not digits_only:
+        return True
+
+    length = len(digits_only)
+
+    # 10-digit Unix timestamp range check (2001-2286)
+    if length == 10:
+        try:
+            num = int(digits_only)
+            # Unix timestamp range: 1000000000 (Sep 2001) to 9999999999 (Nov 2286)
+            if 1000000000 <= num <= 9999999999:
+                return False  # Likely a timestamp
+        except ValueError:
+            pass
+
+    # 13-digit Unix timestamp in milliseconds (2001-2286)
+    if length == 13:
+        try:
+            num = int(digits_only)
+            # Unix timestamp ms range: 1000000000000 to 9999999999999
+            if 1000000000000 <= num <= 9999999999999:
+                return False  # Likely a timestamp in ms
+        except ValueError:
+            pass
+
+    # 14-digit compact datetime (YYYYMMDDHHMMSS)
+    if length == 14:
+        # Check if it looks like a date: YYYY (19xx or 20xx), MM (01-12), DD (01-31)
+        try:
+            year = int(digits_only[:4])
+            month = int(digits_only[4:6])
+            day = int(digits_only[6:8])
+            hour = int(digits_only[8:10])
+            minute = int(digits_only[10:12])
+            second = int(digits_only[12:14])
+
+            # Check if components are in valid ranges
+            if (1900 <= year <= 2099 and
+                1 <= month <= 12 and
+                1 <= day <= 31 and
+                0 <= hour <= 23 and
+                0 <= minute <= 59 and
+                0 <= second <= 59):
+                return False  # Likely a compact datetime
+        except (ValueError, IndexError):
+            pass
+
+    # Not a recognized timestamp format
+    return True
+
+
+def korean_zipcode_valid(value: str) -> bool:
+    """
+    Verify Korean postal code is valid and not a timestamp component.
+
+    Korean postal codes are 5 digits (00000-99999).
+    This function rejects:
+    - Sequential numbers (12345, 11111, etc.)
+    - Timestamps components
+    - Error codes and other numeric IDs
+
+    Args:
+        value: 5-digit string to verify
+
+    Returns:
+        True if likely a valid Korean postal code, False otherwise
+    """
+    # Remove any separators
+    digits_only = "".join(c for c in value if c.isdigit())
+
+    if len(digits_only) != 5:
+        return False
+
+    # Reject sequential patterns (12345, 54321, etc.)
+    is_sequential_up = all(int(digits_only[i]) == int(digits_only[i-1]) + 1
+                          for i in range(1, len(digits_only)))
+    is_sequential_down = all(int(digits_only[i]) == int(digits_only[i-1]) - 1
+                            for i in range(1, len(digits_only)))
+
+    if is_sequential_up or is_sequential_down:
+        return False
+
+    # Reject all same digit (00000, 11111, etc.)
+    if len(set(digits_only)) == 1:
+        return False
+
+    # Reject numbers that are too round (multiples of 10000, like 50000, 60000)
+    # Real postal codes have more variation
+    try:
+        num = int(digits_only)
+        if num % 10000 == 0:
+            return False
+    except ValueError:
+        return False
+
+    # Accept as likely valid postal code
+    return True
+
+
+def us_zipcode_valid(value: str) -> bool:
+    """
+    Verify US postal code is valid and not a timestamp component.
+
+    US postal codes are 5 digits (00000-99999) or ZIP+4 (00000-0000).
+    This function rejects:
+    - Sequential numbers in the base 5 digits (12345, 54321, etc.)
+    - Timestamps components
+    - Error codes and other numeric IDs
+
+    Args:
+        value: 5 or 9-digit string (with optional hyphen) to verify
+
+    Returns:
+        True if likely a valid US postal code, False otherwise
+    """
+    # Remove any separators
+    digits_only = "".join(c for c in value if c.isdigit())
+
+    # US ZIP can be 5 digits or 9 digits (ZIP+4)
+    if len(digits_only) not in [5, 9]:
+        return False
+
+    # Check the first 5 digits (the base ZIP code)
+    base_zip = digits_only[:5]
+
+    # Reject sequential patterns in base ZIP (12345, 54321, etc.)
+    is_sequential_up = all(int(base_zip[i]) == int(base_zip[i-1]) + 1
+                          for i in range(1, len(base_zip)))
+    is_sequential_down = all(int(base_zip[i]) == int(base_zip[i-1]) - 1
+                            for i in range(1, len(base_zip)))
+
+    if is_sequential_up or is_sequential_down:
+        return False
+
+    # Reject all same digit in base ZIP (00000, 11111, etc.)
+    if len(set(base_zip)) == 1:
+        return False
+
+    # Reject numbers that are too round (multiples of 10000, like 50000, 60000)
+    # Real postal codes have more variation
+    try:
+        num = int(base_zip)
+        if num % 10000 == 0:
+            return False
+    except ValueError:
+        return False
+
+    # Accept as likely valid postal code
+    return True
+
+
+def korean_bank_account_valid(value: str) -> bool:
+    """
+    Verify Korean bank account is valid and not a timestamp.
+
+    This function provides additional validation beyond regex matching
+    to reject timestamps and other numeric sequences.
+
+    Args:
+        value: Bank account string to verify
+
+    Returns:
+        True if likely a valid bank account, False if likely timestamp/other
+    """
+    # Remove common separators
+    digits_only = "".join(c for c in value if c.isdigit())
+
+    if not digits_only:
+        return False
+
+    length = len(digits_only)
+
+    # Check if it starts with a known Korean bank prefix
+    # Common prefixes: 110, 120, 150, 190, 830 (Kookmin), 1002 (Woori), 301 (Nonghyup), 3333 (Kakao), 100 (K Bank/Toss)
+    has_known_prefix = False
+    known_prefixes = ['110', '120', '150', '190', '830', '1002', '301', '3333', '100']
+    for prefix in known_prefixes:
+        if digits_only.startswith(prefix):
+            has_known_prefix = True
+            break
+
+    # If it has a known bank prefix, be more lenient - it's likely a real bank account
+    # Still check for obvious timestamps though
+    if has_known_prefix:
+        # For accounts with known prefixes, only reject obvious timestamps
+        if length == 10:
+            try:
+                num = int(digits_only)
+                # Very tight timestamp range to avoid false positives
+                if 1600000000 <= num <= 1800000000:
+                    return False  # Current era timestamps (2020-2027)
+            except ValueError:
+                pass
+        return True  # Accept if it has a known bank prefix
+
+    # For accounts without known prefixes, be more strict
+    # Reject if it's a known timestamp length and range
+    # 10 digits: Unix timestamp
+    if length == 10:
+        try:
+            num = int(digits_only)
+            if 1000000000 <= num <= 9999999999:
+                return False  # Likely Unix timestamp
+        except ValueError:
+            pass
+
+    # 13 digits: Unix timestamp in milliseconds
+    if length == 13:
+        try:
+            num = int(digits_only)
+            if 1000000000000 <= num <= 9999999999999:
+                return False  # Likely Unix timestamp ms
+        except ValueError:
+            pass
+
+    # 14 digits: Compact datetime (YYYYMMDDHHMMSS)
+    if length == 14:
+        try:
+            year = int(digits_only[:4])
+            month = int(digits_only[4:6])
+            day = int(digits_only[6:8])
+
+            # Check if first 8 digits look like YYYYMMDD
+            if (1900 <= year <= 2099 and 1 <= month <= 12 and 1 <= day <= 31):
+                return False  # Likely compact datetime
+        except (ValueError, IndexError):
+            pass
+
+    # Check for sequential patterns in longer numbers (but only for non-prefixed accounts)
+    if length >= 10 and not has_known_prefix:
+        # Reject if too many sequential digits (like 123456789...)
+        sequential_count = 0
+        max_sequential = 0
+        for i in range(1, len(digits_only)):
+            if int(digits_only[i]) == int(digits_only[i-1]) + 1:
+                sequential_count += 1
+                max_sequential = max(max_sequential, sequential_count)
+            else:
+                sequential_count = 0
+
+        # If we see 6+ consecutive sequential digits, likely not a real account
+        if max_sequential >= 6:
+            return False
+
+    return True
+
+
+def generic_number_not_timestamp(value: str) -> bool:
+    """
+    Verify that a numeric string is likely NOT a timestamp (for generic patterns).
+
+    This is less strict than korean_bank_account_valid and is suitable for
+    generic numeric patterns that don't have known prefixes.
+
+    Args:
+        value: String to check
+
+    Returns:
+        True if NOT a timestamp (safe to classify as account/ID), False if looks like timestamp
+    """
+    # Check if value contains separators (hyphens, spaces)
+    # If it has separators, it's more likely a formatted account number than a timestamp
+    has_separators = any(c in value for c in ['-', ' ', '/'])
+
+    # Remove common separators
+    digits_only = "".join(c for c in value if c.isdigit())
+
+    if not digits_only:
+        return True
+
+    length = len(digits_only)
+
+    # If the value has separators (like "123-456-789"), be more lenient
+    # Timestamps are rarely written with separators
+    if has_separators:
+        # Only reject if it's clearly a datetime pattern
+        if length >= 14:
+            try:
+                year = int(digits_only[:4])
+                month = int(digits_only[4:6])
+                day = int(digits_only[6:8])
+
+                # Check if first 8 digits look like YYYYMMDD
+                if (1900 <= year <= 2099 and 1 <= month <= 12 and 1 <= day <= 31):
+                    return False  # Likely compact datetime even with separators
+            except (ValueError, IndexError):
+                pass
+        return True  # Has separators and not a datetime - likely a real account/ID
+
+    # No separators - be more strict about timestamps
+    # 10 digits: Unix timestamp
+    if length == 10:
+        try:
+            num = int(digits_only)
+            if 1000000000 <= num <= 9999999999:
+                return False  # Likely Unix timestamp
+        except ValueError:
+            pass
+
+    # 13 digits: Unix timestamp in milliseconds
+    if length == 13:
+        try:
+            num = int(digits_only)
+            if 1000000000000 <= num <= 9999999999999:
+                return False  # Likely Unix timestamp ms
+        except ValueError:
+            pass
+
+    # 14+ digits: Compact datetime (YYYYMMDDHHMMSS)
+    if length >= 14:
+        try:
+            year = int(digits_only[:4])
+            month = int(digits_only[4:6])
+            day = int(digits_only[6:8])
+
+            # Check if first 8 digits look like YYYYMMDD
+            if (1900 <= year <= 2099 and 1 <= month <= 12 and 1 <= day <= 31):
+                return False  # Likely compact datetime
+        except (ValueError, IndexError):
+            pass
+
+    return True
+
+
 # Registry of verification functions
 VERIFICATION_FUNCTIONS: Dict[str, Callable[[str], bool]] = {
     "iban_mod97": iban_mod97,
     "luhn": luhn,
     "dms_coordinate": dms_coordinate,
     "high_entropy_token": high_entropy_token,
+    "not_timestamp": not_timestamp,
+    "korean_zipcode_valid": korean_zipcode_valid,
+    "us_zipcode_valid": us_zipcode_valid,
+    "korean_bank_account_valid": korean_bank_account_valid,
+    "generic_number_not_timestamp": generic_number_not_timestamp,
 }
 
 
