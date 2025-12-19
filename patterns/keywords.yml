@@ -1,0 +1,533 @@
+# Keyword-to-Pattern Mapping Registry
+# Maps contextual keywords (column names, labels, descriptions) to pattern IDs
+
+keywords:
+  # ========== SSN Keywords ==========
+  ssn:
+    categories: [ssn]
+    patterns: [us/ssn_01, us/itin_01]
+    priority: high
+
+  social_security:
+    categories: [ssn]
+    patterns: [us/ssn_01]
+    priority: high
+
+  social_security_number:
+    categories: [ssn]
+    patterns: [us/ssn_01]
+    priority: high
+
+  itin:
+    categories: [ssn]
+    patterns: [us/itin_01]
+    priority: high
+
+  taxpayer_id:
+    categories: [ssn]
+    patterns: [us/itin_01]
+    priority: high
+
+  # Korean SSN
+  resident_registration:
+    categories: [ssn]
+    patterns: [kr/rrn_01]
+    priority: high
+
+  rrn:
+    categories: [ssn]
+    patterns: [kr/rrn_01]
+    priority: high
+
+  주민등록번호:
+    categories: [ssn]
+    patterns: [kr/rrn_01]
+    priority: high
+
+  주민번호:
+    categories: [ssn]
+    patterns: [kr/rrn_01]
+    priority: high
+
+  외국인등록번호:
+    categories: [other]
+    patterns: [kr/alien_registration_01]
+    priority: high
+
+  # ========== Bank Account Keywords ==========
+  bank_account:
+    categories: [bank]
+    patterns: [kr/bank_account_*]
+    priority: high
+
+  account_number:
+    categories: [bank]
+    patterns: [kr/bank_account_*]
+    priority: medium
+
+  account_no:
+    categories: [bank]
+    patterns: [kr/bank_account_*]
+    priority: medium
+
+  계좌번호:
+    categories: [bank]
+    patterns: [kr/bank_account_*]
+    priority: high
+
+  계좌:
+    categories: [bank]
+    patterns: [kr/bank_account_*]
+    priority: medium
+
+  은행계좌:
+    categories: [bank]
+    patterns: [kr/bank_account_*]
+    priority: high
+
+  # Specific bank names
+  kb_account:
+    patterns: [kr/bank_account_01]
+    priority: high
+
+  shinhan_account:
+    patterns: [kr/bank_account_02]
+    priority: high
+
+  woori_account:
+    patterns: [kr/bank_account_03]
+    priority: high
+
+  hana_account:
+    patterns: [kr/bank_account_04]
+    priority: high
+
+  nh_account:
+    patterns: [kr/bank_account_05]
+    priority: high
+
+  ibk_account:
+    patterns: [kr/bank_account_06]
+    priority: high
+
+  # ========== Address/Zipcode Keywords ==========
+  zipcode:
+    categories: [address]
+    patterns: [us/zipcode_01, kr/zipcode_01]
+    priority: high
+
+  zip_code:
+    categories: [address]
+    patterns: [us/zipcode_01, kr/zipcode_01]
+    priority: high
+
+  postal_code:
+    categories: [address]
+    patterns: [us/zipcode_01, kr/zipcode_01]
+    priority: high
+
+  zip:
+    categories: [address]
+    patterns: [us/zipcode_01]
+    priority: high
+
+  우편번호:
+    categories: [address]
+    patterns: [kr/zipcode_01]
+    priority: high
+
+  # ========== Phone Keywords ==========
+  phone:
+    categories: [phone]
+    patterns: [us/phone_01, kr/phone_01, kr/phone_02, kr/phone_03]
+    priority: high
+
+  phone_number:
+    categories: [phone]
+    patterns: [us/phone_01, kr/phone_01, kr/phone_02, kr/phone_03]
+    priority: high
+
+  telephone:
+    categories: [phone]
+    patterns: [us/phone_01, kr/phone_01, kr/phone_02, kr/phone_03]
+    priority: high
+
+  mobile:
+    categories: [phone]
+    patterns: [kr/phone_02]
+    priority: high
+
+  cell:
+    categories: [phone]
+    patterns: [kr/phone_02]
+    priority: high
+
+  전화번호:
+    categories: [phone]
+    patterns: [kr/phone_01, kr/phone_02, kr/phone_03]
+    priority: high
+
+  휴대폰:
+    categories: [phone]
+    patterns: [kr/phone_02]
+    priority: high
+
+  핸드폰:
+    categories: [phone]
+    patterns: [kr/phone_02]
+    priority: high
+
+  # ========== Credit Card Keywords ==========
+  credit_card:
+    categories: [credit_card]
+    patterns: [comm/credit_card_01, comm/credit_card_02]
+    priority: high
+
+  card_number:
+    categories: [credit_card]
+    patterns: [comm/credit_card_01, comm/credit_card_02]
+    priority: medium
+
+  card_no:
+    categories: [credit_card]
+    patterns: [comm/credit_card_01, comm/credit_card_02]
+    priority: medium
+
+  cc_number:
+    categories: [credit_card]
+    patterns: [comm/credit_card_01, comm/credit_card_02]
+    priority: high
+
+  신용카드:
+    categories: [credit_card]
+    patterns: [comm/credit_card_01, comm/credit_card_02]
+    priority: high
+
+  카드번호:
+    categories: [credit_card]
+    patterns: [comm/credit_card_01, comm/credit_card_02]
+    priority: high
+
+  # ========== Email Keywords ==========
+  email:
+    categories: [email]
+    patterns: [comm/email_01]
+    priority: high
+
+  email_address:
+    categories: [email]
+    patterns: [comm/email_01]
+    priority: high
+
+  이메일:
+    categories: [email]
+    patterns: [comm/email_01]
+    priority: high
+
+  # ========== Passport Keywords ==========
+  passport:
+    categories: [passport]
+    patterns: [us/passport_01, kr/passport_01, kr/passport_02]
+    priority: high
+
+  passport_number:
+    categories: [passport]
+    patterns: [us/passport_01, kr/passport_01, kr/passport_02]
+    priority: high
+
+  passport_no:
+    categories: [passport]
+    patterns: [us/passport_01, kr/passport_01, kr/passport_02]
+    priority: high
+
+  여권번호:
+    categories: [passport]
+    patterns: [kr/passport_01, kr/passport_02]
+    priority: high
+
+  # ========== Driver License Keywords ==========
+  driver_license:
+    categories: [other]
+    patterns: [us/driver_license_ca_01, kr/driver_license_01]
+    priority: high
+
+  drivers_license:
+    categories: [other]
+    patterns: [us/driver_license_ca_01, kr/driver_license_01]
+    priority: high
+
+  dl_number:
+    categories: [other]
+    patterns: [us/driver_license_ca_01, kr/driver_license_01]
+    priority: high
+
+  운전면허:
+    categories: [other]
+    patterns: [kr/driver_license_01]
+    priority: high
+
+  운전면허번호:
+    categories: [other]
+    patterns: [kr/driver_license_01]
+    priority: high
+
+  # ========== Business Registration Keywords ==========
+  business_registration:
+    categories: [other]
+    patterns: [kr/business_registration_01]
+    priority: high
+
+  business_number:
+    categories: [other]
+    patterns: [kr/business_registration_01]
+    priority: high
+
+  사업자등록번호:
+    categories: [other]
+    patterns: [kr/business_registration_01]
+    priority: high
+
+  사업자번호:
+    categories: [other]
+    patterns: [kr/business_registration_01]
+    priority: high
+
+  # ========== EIN Keywords ==========
+  ein:
+    categories: [other]
+    patterns: [us/ein_01]
+    priority: high
+
+  employer_id:
+    categories: [other]
+    patterns: [us/ein_01]
+    priority: high
+
+  tax_id:
+    categories: [other]
+    patterns: [us/ein_01]
+    priority: medium
+
+  # ========== Medicare Keywords ==========
+  medicare:
+    categories: [other]
+    patterns: [us/medicare_01]
+    priority: high
+
+  mbi:
+    categories: [other]
+    patterns: [us/medicare_01]
+    priority: high
+
+  medicare_number:
+    categories: [other]
+    patterns: [us/medicare_01]
+    priority: high
+
+  # ========== IP Address Keywords ==========
+  ip_address:
+    categories: [ip]
+    patterns: [comm/ipv4_01, comm/ipv6_01]
+    priority: high
+
+  ip:
+    categories: [ip]
+    patterns: [comm/ipv4_01, comm/ipv6_01]
+    priority: medium
+
+  ipv4:
+    categories: [ip]
+    patterns: [comm/ipv4_01]
+    priority: high
+
+  ipv6:
+    categories: [ip]
+    patterns: [comm/ipv6_01]
+    priority: high
+
+  # ========== Location Keywords ==========
+  latitude:
+    categories: [location]
+    patterns: [comm/latitude_01]
+    priority: high
+
+  longitude:
+    categories: [location]
+    patterns: [comm/longitude_01]
+    priority: high
+
+  lat:
+    categories: [location]
+    patterns: [comm/latitude_01]
+    priority: high
+
+  lon:
+    categories: [location]
+    patterns: [comm/longitude_01]
+    priority: high
+
+  lng:
+    categories: [location]
+    patterns: [comm/longitude_01]
+    priority: high
+
+  coordinate:
+    categories: [location]
+    patterns: [comm/latitude_01, comm/longitude_01, comm/dms_coordinate_01]
+    priority: medium
+
+  # ========== Token/API Key Keywords ==========
+  api_key:
+    categories: [token]
+    patterns: [comm/generic_api_key_01, comm/google_api_key_01, comm/openai_key_01]
+    priority: high
+
+  token:
+    categories: [token]
+    patterns: [comm/jwt_token_01, comm/bearer_token_01, comm/github_token_01, comm/slack_token_01]
+    priority: medium
+
+  jwt:
+    categories: [token]
+    patterns: [comm/jwt_token_01]
+    priority: high
+
+  bearer:
+    categories: [token]
+    patterns: [comm/bearer_token_01]
+    priority: high
+
+  aws_key:
+    categories: [token]
+    patterns: [comm/aws_access_key_01, comm/aws_secret_key_01]
+    priority: high
+
+  github_token:
+    categories: [token]
+    patterns: [comm/github_token_01]
+    priority: high
+
+  slack_token:
+    categories: [token]
+    patterns: [comm/slack_token_01]
+    priority: high
+
+  stripe_key:
+    categories: [token]
+    patterns: [comm/stripe_key_01]
+    priority: high
+
+  openai_key:
+    categories: [token]
+    patterns: [comm/openai_key_01]
+    priority: high
+
+  private_key:
+    categories: [token]
+    patterns: [comm/private_key_01]
+    priority: high
+
+  secret:
+    categories: [token]
+    patterns: [comm/aws_secret_key_01, comm/generic_api_key_01]
+    priority: medium
+
+# Category-based groupings
+categories:
+  ssn:
+    description: Social Security Numbers and equivalents
+    patterns:
+      - us/ssn_01
+      - us/itin_01
+      - kr/rrn_01
+
+  bank:
+    description: Bank account numbers
+    patterns:
+      - kr/bank_account_01
+      - kr/bank_account_02
+      - kr/bank_account_03
+      - kr/bank_account_04
+      - kr/bank_account_05
+      - kr/bank_account_06
+      - kr/bank_account_07
+      - kr/bank_account_08
+      - kr/bank_account_09
+      - kr/bank_account_10
+      - kr/bank_account_11
+      - kr/bank_account_12
+      - kr/bank_account_13
+      - kr/bank_account_14
+      - kr/bank_account_15
+      - kr/bank_account_16
+
+  address:
+    description: Address-related information
+    patterns:
+      - us/zipcode_01
+      - kr/zipcode_01
+
+  phone:
+    description: Phone numbers
+    patterns:
+      - us/phone_01
+      - kr/phone_01
+      - kr/phone_02
+      - kr/phone_03
+
+  credit_card:
+    description: Credit card numbers
+    patterns:
+      - comm/credit_card_01
+      - comm/credit_card_02
+
+  email:
+    description: Email addresses
+    patterns:
+      - comm/email_01
+
+  passport:
+    description: Passport numbers
+    patterns:
+      - us/passport_01
+      - kr/passport_01
+      - kr/passport_02
+
+  other:
+    description: Other identification numbers
+    patterns:
+      - us/ein_01
+      - us/driver_license_ca_01
+      - us/medicare_01
+      - kr/business_registration_01
+      - kr/driver_license_01
+      - kr/alien_registration_01
+
+  ip:
+    description: IP addresses
+    patterns:
+      - comm/ipv4_01
+      - comm/ipv6_01
+
+  location:
+    description: Geographic coordinates
+    patterns:
+      - comm/latitude_01
+      - comm/longitude_01
+      - comm/dms_coordinate_01
+
+  token:
+    description: API keys and tokens
+    patterns:
+      - comm/jwt_token_01
+      - comm/aws_access_key_01
+      - comm/aws_secret_key_01
+      - comm/github_token_01
+      - comm/slack_token_01
+      - comm/stripe_key_01
+      - comm/openai_key_01
+      - comm/google_api_key_01
+      - comm/generic_api_key_01
+      - comm/bearer_token_01
+      - comm/basic_auth_01
+      - comm/private_key_01

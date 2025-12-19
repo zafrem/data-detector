@@ -117,7 +117,7 @@ class TestRestoreTokens:
             # On some systems this might still succeed, so we check the result
             # but don't strictly require failure
             if not result:
-                assert True  # Write error was caught
+                pass  # Write error was caught as expected
             else:
                 # File system allowed write despite read-only flag
                 assert result is True

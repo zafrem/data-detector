@@ -15,6 +15,7 @@ from datadetector.models import (
     ValidationResult,
 )
 from datadetector.registry import PatternRegistry
+from datadetector.context import ContextHint, ContextFilter, KeywordRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,8 @@ class Engine:
         registry: PatternRegistry,
         default_mask_char: str = "*",
         hash_algorithm: str = "sha256",
+        keyword_registry: Optional[KeywordRegistry] = None,
+        enable_context_filtering: bool = True,
     ) -> None:
         """
         Initialize engine with pattern registry.
@@ -59,10 +62,23 @@ class Engine:
             registry: PatternRegistry with loaded patterns
             default_mask_char: Default character to use for masking
             hash_algorithm: Hash algorithm for hashing strategy
+            keyword_registry: Optional keyword registry for context filtering.
+                            If None and enable_context_filtering=True, creates default.
+            enable_context_filtering: Whether to enable context-aware filtering.
+                                    Set to False to disable the feature entirely.
         """
         self.registry = registry
         self.default_mask_char = default_mask_char
         self.hash_algorithm = hash_algorithm
+
+        # Context filtering support
+        self.enable_context_filtering = enable_context_filtering
+        if enable_context_filtering:
+            self.keyword_registry = keyword_registry or KeywordRegistry()
+            self.context_filter = ContextFilter(self.keyword_registry)
+        else:
+            self.keyword_registry = None
+            self.context_filter = None
 
     def find(
         self,
@@ -71,6 +87,7 @@ class Engine:
         allow_overlaps: bool = False,
         include_matched_text: bool = False,
         stop_on_first_match: bool = False,
+        context: Optional[ContextHint] = None,
     ) -> FindResult:
         """
         Find all PII matches in text.
@@ -86,6 +103,10 @@ class Engine:
                                This can significantly improve performance when you only
                                need to detect if PII exists, not find all occurrences.
                                Patterns are checked in priority order (low to high).
+            context: Optional context hint for pattern filtering. Significantly improves
+                    performance by only checking relevant patterns based on keywords,
+                    categories, or field names. Example:
+                    ContextHint(keywords=["ssn", "bank_account"])
 
         Returns:
             FindResult with all matches
@@ -99,6 +120,22 @@ class Engine:
         patterns = []
         for ns in namespaces:
             patterns.extend(self.registry.get_namespace_patterns(ns))
+
+        # Apply context filtering if enabled and context provided
+        if context is not None and self.enable_context_filtering and self.context_filter:
+            # Get pattern IDs before filtering
+            all_pattern_ids = [p.full_id for p in patterns]
+
+            # Filter pattern IDs based on context
+            filtered_pattern_ids = self.context_filter.filter_patterns(context, all_pattern_ids)
+
+            # Keep only filtered patterns
+            patterns = [p for p in patterns if p.full_id in filtered_pattern_ids]
+
+            logger.debug(
+                f"Context filtering: {len(all_pattern_ids)} -> {len(patterns)} patterns "
+                f"(keywords={context.keywords}, categories={context.categories})"
+            )
 
         # Sort patterns by priority (lower = higher priority)
         # This ensures high-priority patterns are checked first.
@@ -219,6 +256,7 @@ class Engine:
         namespaces: Optional[List[str]] = None,
         strategy: Optional[RedactionStrategy] = None,
         allow_overlaps: bool = False,
+        context: Optional[ContextHint] = None,
     ) -> RedactionResult:
         """
         Redact PII from text.
@@ -228,6 +266,8 @@ class Engine:
             namespaces: List of namespaces to search. If None, searches all.
             strategy: Redaction strategy (mask/hash/tokenize). If None, uses mask.
             allow_overlaps: Whether to allow overlapping matches
+            context: Optional context hint for pattern filtering. Improves performance
+                    by only checking relevant patterns.
 
         Returns:
             RedactionResult with redacted text and match information
@@ -241,6 +281,7 @@ class Engine:
             namespaces=namespaces,
             allow_overlaps=allow_overlaps,
             include_matched_text=True,
+            context=context,
         )
 
         if not find_result.has_matches:

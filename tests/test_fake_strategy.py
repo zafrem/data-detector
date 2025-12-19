@@ -151,7 +151,7 @@ class TestFakeStrategyPerformance:
 
         # FAKE should be slower but not drastically (< 10x)
         assert fake_time / mask_time < 10, (
-            f"FAKE strategy too slow compared to MASK: " f"{fake_time/mask_time:.1f}x slower"
+            f"FAKE strategy too slow compared to MASK: {fake_time/mask_time:.1f}x slower"
         )
 
 

@@ -135,8 +135,8 @@ class StreamEngine:
     async def process_documents(
         self,
         documents: List[str],
-        chunk_size: int = 512,
-        chunk_overlap: int = 50,
+        chunk_size: int = 512,  # Reserved for future chunking implementation
+        chunk_overlap: int = 50,  # Reserved for future chunking implementation
         namespaces: Optional[List[str]] = None,
     ) -> List[FindResult]:
         """
@@ -147,13 +147,20 @@ class StreamEngine:
 
         Args:
             documents: List of documents to process
-            chunk_size: Characters per chunk
-            chunk_overlap: Overlap between chunks to catch boundary PII
+            chunk_size: Characters per chunk (reserved for future implementation)
+            chunk_overlap: Overlap between chunks to catch boundary PII (reserved for future implementation)
             namespaces: Pattern namespaces to search
 
         Returns:
             List of FindResult objects per document
+
+        Note:
+            Chunking parameters are currently reserved for future implementation.
+            Documents are processed as a whole.
         """
+        # Note: chunk_size and chunk_overlap are reserved for future chunking feature
+        _ = chunk_size  # Suppress unused parameter warning
+        _ = chunk_overlap  # Suppress unused parameter warning
 
         async def process_one(doc: str) -> FindResult:
             # For now, scan full document

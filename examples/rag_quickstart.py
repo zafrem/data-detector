@@ -79,7 +79,7 @@ async def main():
 
     # Store token map securely for later reversal
     if result.token_map:
-        print(f"\nToken map (store securely):")
+        print("\nToken map (store securely):")
         for token, original in list(result.token_map.tokens.items())[:3]:
             print(f"  {token} -> [REDACTED]")
         print(f"  ... and {len(result.token_map.tokens) - 3} more")
@@ -148,7 +148,7 @@ async def main():
     print(f"Query: {query_with_ssn}")
     print(f"Blocked: {result.blocked}")
     print(f"Action: {result.action_taken.value}")
-    print(f"Allowed to proceed: Yes (with warning)")
+    print("Allowed to proceed: Yes (with warning)")
 
     # ============================================================
     # EXAMPLE: Tokenization and Reversal

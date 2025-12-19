@@ -34,6 +34,9 @@ PATTERN_MATCHES = Counter(
     ["namespace", "pattern_id"],
 )
 
+# Error messages
+ERROR_RAG_NOT_INITIALIZED = "RAG middleware not initialized"
+
 
 # Request/Response models
 class FindRequest(BaseModel):
@@ -331,7 +334,7 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
         the RAG pipeline.
         """
         if server.rag_middleware is None:
-            raise HTTPException(status_code=500, detail="RAG middleware not initialized")
+            raise HTTPException(status_code=500, detail=ERROR_RAG_NOT_INITIALIZED)
 
         try:
             from datadetector.rag_models import SecurityPolicy
@@ -371,7 +374,7 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
         embedded and stored.
         """
         if server.rag_middleware is None:
-            raise HTTPException(status_code=500, detail="RAG middleware not initialized")
+            raise HTTPException(status_code=500, detail=ERROR_RAG_NOT_INITIALIZED)
 
         try:
             from datadetector.rag_models import SecurityPolicy
@@ -415,7 +418,7 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
         Blocks or sanitizes LLM responses that contain leaked PII.
         """
         if server.rag_middleware is None:
-            raise HTTPException(status_code=500, detail="RAG middleware not initialized")
+            raise HTTPException(status_code=500, detail=ERROR_RAG_NOT_INITIALIZED)
 
         try:
             from datadetector.rag_models import SecurityPolicy, TokenMap

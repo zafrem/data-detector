@@ -180,14 +180,14 @@ class SecureTokenizer:
     def encrypt_token_map(
         self,
         token_map: TokenMap,
-        encryption_key: Optional[bytes] = None,
+        encryption_key: Optional[bytes] = None,  # Reserved for future encryption implementation
     ) -> bytes:
         """
         Encrypt token map for secure storage.
 
         Args:
             token_map: Token map to encrypt
-            encryption_key: Encryption key (generates if None)
+            encryption_key: Encryption key (reserved for future implementation)
 
         Returns:
             Encrypted token map bytes
@@ -196,6 +196,9 @@ class SecureTokenizer:
             Requires cryptography library for production use.
             This is a placeholder implementation.
         """
+        # Note: encryption_key reserved for future encryption feature
+        _ = encryption_key  # Suppress unused parameter warning
+
         # TODO: Implement proper encryption using cryptography library
         # For now, just return JSON bytes
         import json
@@ -212,14 +215,14 @@ class SecureTokenizer:
     def decrypt_token_map(
         self,
         encrypted_data: bytes,
-        encryption_key: bytes,
+        encryption_key: bytes,  # Reserved for future encryption implementation
     ) -> TokenMap:
         """
         Decrypt token map from storage.
 
         Args:
             encrypted_data: Encrypted token map
-            encryption_key: Decryption key
+            encryption_key: Decryption key (reserved for future implementation)
 
         Returns:
             Decrypted TokenMap
@@ -227,6 +230,9 @@ class SecureTokenizer:
         Note:
             Requires cryptography library for production use.
         """
+        # Note: encryption_key reserved for future encryption feature
+        _ = encryption_key  # Suppress unused parameter warning
+
         # TODO: Implement proper decryption
         import json
 

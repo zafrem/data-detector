@@ -1,5 +1,6 @@
 """RAG security middleware for three-layer PII protection."""
 
+import asyncio
 import logging
 from typing import List, Optional
 
@@ -92,6 +93,9 @@ class RAGSecurityMiddleware:
             ...     raise ValueError("Query contains PII")
             >>> # Use result.sanitized_text for processing
         """
+        # Yield control to event loop (makes function truly async)
+        await asyncio.sleep(0)
+
         policy = policy or self.input_policy
 
         # Find PII in query
@@ -185,6 +189,9 @@ class RAGSecurityMiddleware:
             >>> # Store result.sanitized_text in vector DB
             >>> # Store result.token_map securely for later reversal
         """
+        # Yield control to event loop (makes function truly async)
+        await asyncio.sleep(0)
+
         policy = policy or self.storage_policy
 
         # Find PII in document
@@ -275,6 +282,9 @@ class RAGSecurityMiddleware:
             ...     return "[RESPONSE BLOCKED: Contains PII]"
             >>> return result.sanitized_text
         """
+        # Yield control to event loop (makes function truly async)
+        await asyncio.sleep(0)
+
         policy = policy or self.output_policy
 
         # Detokenize if authorized and map provided

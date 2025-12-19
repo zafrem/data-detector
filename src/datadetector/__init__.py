@@ -9,6 +9,13 @@ __version__ = "0.0.2"
 
 from datadetector.async_engine import AsyncEngine
 from datadetector.bulk_generator import BulkDataGenerator
+from datadetector.context import (
+    ContextFilter,
+    ContextHint,
+    KeywordRegistry,
+    create_context_from_field_name,
+)
+from datadetector import context_presets
 from datadetector.engine import Engine
 from datadetector.fake_file_generators import (
     ImageGenerator,
@@ -56,6 +63,12 @@ __all__ = [
     "read_yaml",
     "write_yaml",
     "update_yaml",
+    # Context-aware filtering
+    "ContextHint",
+    "ContextFilter",
+    "KeywordRegistry",
+    "create_context_from_field_name",
+    "context_presets",
     # RAG Security
     "RAGSecurityMiddleware",
     "StreamEngine",
