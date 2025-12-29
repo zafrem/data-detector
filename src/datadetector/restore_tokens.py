@@ -42,8 +42,8 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
 
     Args:
         file_path: Path to the tokens.yml file. If None, attempts to find it in:
-                   1. ./patterns/tokens.yml (current directory)
-                   2. ../patterns/tokens.yml (parent directory)
+                   1. ./pattern-engine/regex/hash/tokens.yml (current directory)
+                   2. ../pattern-engine/regex/hash/tokens.yml (parent directory)
                    3. Package installation directory
 
     Returns:
@@ -52,9 +52,9 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
     if file_path is None:
         # Try to find the tokens.yml file
         candidates = [
-            Path("patterns/tokens.yml"),  # Current directory
-            Path("../patterns/tokens.yml"),  # Parent directory
-            Path(__file__).parent.parent.parent / "patterns" / "tokens.yml",  # From package
+            Path("pattern-engine/regex/hash/tokens.yml"),  # Current directory
+            Path("../pattern-engine/regex/hash/tokens.yml"),  # Parent directory
+            Path(__file__).parent.parent.parent / "pattern-engine" / "regex" / "hash" / "tokens.yml",  # From package
         ]
 
         for candidate in candidates:
@@ -63,7 +63,7 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
                 break
 
         if file_path is None:
-            print("✗ Error: Could not find patterns/tokens.yml")
+            print("✗ Error: Could not find pattern-engine/regex/hash/tokens.yml")
             print("  Searched in:")
             for candidate in candidates:
                 print(f"    - {candidate.absolute()}")

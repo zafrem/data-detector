@@ -101,12 +101,19 @@ def load_registry(
 
     if paths is None:
         # Load default patterns from package
-        default_dir = Path(__file__).parent.parent.parent / "patterns"
+        config_dir = Path(__file__).parent.parent.parent / "config"
+        pii_patterns_dir = Path(__file__).parent.parent.parent / "pattern-engine" / "regex" / "pii"
         paths = [
-            str(default_dir / "tokens.yml"),  # Load tokens first for faster detection
-            str(default_dir / "common.yml"),
-            str(default_dir / "kr.yml"),
-            str(default_dir / "us.yml"),
+            str(config_dir / "tokens.yml"),  # Load tokens first for faster detection
+            str(pii_patterns_dir / "common"),  # Load all common patterns
+            str(pii_patterns_dir / "us"),  # Load all US patterns
+            str(pii_patterns_dir / "kr"),  # Load all KR patterns
+            str(pii_patterns_dir / "cn"),  # Load all CN patterns
+            str(pii_patterns_dir / "jp"),  # Load all JP patterns
+            str(pii_patterns_dir / "tw"),  # Load all TW patterns
+            str(pii_patterns_dir / "in"),  # Load all IN patterns
+            str(pii_patterns_dir / "eu"),  # Load all EU patterns (GDPR compliance)
+            str(pii_patterns_dir / "iban.yml"),  # IBAN patterns
         ]
 
     for path_str in paths:

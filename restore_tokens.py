@@ -32,12 +32,12 @@ What it changes:
 import re
 import os
 
-def restore_tokens_yml(file_path='patterns/tokens.yml'):
+def restore_tokens_yml(file_path='pattern-engine/regex/hash/tokens.yml'):
     """
     Restore the original Stripe pattern in tokens.yml.
 
     Args:
-        file_path: Path to the tokens.yml file (default: patterns/tokens.yml)
+        file_path: Path to the tokens.yml file (default: pattern-engine/regex/hash/tokens.yml)
 
     Returns:
         bool: True if restoration was successful, False otherwise

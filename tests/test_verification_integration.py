@@ -15,7 +15,7 @@ class TestVerificationIntegration:
     @pytest.fixture
     def engine(self):
         """Load engine with IBAN patterns."""
-        registry = load_registry(paths=["patterns/iban.yml"])
+        registry = load_registry(paths=["pattern-engine/regex/pii/iban.yml"])
         return Engine(registry)
 
     def test_iban_validation_with_verification(self, engine):
@@ -54,7 +54,7 @@ class TestVerificationIntegration:
     def test_pattern_without_verification(self):
         """Test that patterns without verification work normally."""
         # Email pattern doesn't have verification
-        registry = load_registry(paths=["patterns/common.yml"])
+        registry = load_registry(paths=["pattern-engine/regex/pii/common"])
         engine = Engine(registry)
         result = engine.validate("user@example.com", "comm/email_01")
         assert result.is_valid

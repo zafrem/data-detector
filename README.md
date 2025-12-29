@@ -314,7 +314,7 @@ curl -X POST http://localhost:8080/find \
 - [Configuration](docs/configuration.md) - Server and registry configuration
 - [API Reference](docs/api-reference.md) - Complete API documentation
 - [Supported Patterns](docs/supported-patterns.md) - Built-in pattern catalog
-- [Testing](TESTING.md) - Test suite documentation and coverage
+- [Testing](tests/TESTING.md) - Test suite documentation and coverage
 
 ## Supported Pattern Types
 

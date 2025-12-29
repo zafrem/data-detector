@@ -8,7 +8,7 @@ from datadetector import Engine, load_registry
 @pytest.fixture
 def token_registry():
     """Load token patterns registry."""
-    return load_registry(paths=["patterns/tokens.yml"])
+    return load_registry(paths=["pattern-engine/regex/hash/tokens.yml"])
 
 
 @pytest.fixture

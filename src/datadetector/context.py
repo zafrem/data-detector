@@ -54,8 +54,8 @@ class KeywordRegistry:
             keywords_file: Path to keywords.yml file. If None, uses default location.
         """
         if keywords_file is None:
-            # Default to patterns/keywords.yml
-            keywords_file = Path(__file__).parent.parent.parent / "patterns" / "keywords.yml"
+            # Default to config/keywords.yml
+            keywords_file = Path(__file__).parent.parent.parent / "config" / "keywords.yml"
 
         self.keywords_file = keywords_file
         self.keyword_map: Dict[str, Dict] = {}
