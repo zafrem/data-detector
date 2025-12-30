@@ -25,6 +25,16 @@ from datadetector.fake_file_generators import (
 )
 from datadetector.fake_generator import FakeDataGenerator
 from datadetector.models import FindResult, RedactionResult, ValidationResult
+from datadetector.nlp import (
+    NLPConfig,
+    NLPProcessor,
+    LanguageDetector,
+    StopwordFilter,
+    KoreanTokenizer,
+    ChineseTokenizer,
+    SmartTokenizer,
+    PreprocessedText,
+)
 from datadetector.rag_config import RAGPolicyConfig, load_rag_policy
 from datadetector.rag_middleware import RAGSecurityMiddleware
 from datadetector.rag_models import (
@@ -69,6 +79,15 @@ __all__ = [
     "KeywordRegistry",
     "create_context_from_field_name",
     "context_presets",
+    # NLP Processing
+    "NLPConfig",
+    "NLPProcessor",
+    "LanguageDetector",
+    "StopwordFilter",
+    "KoreanTokenizer",
+    "ChineseTokenizer",
+    "SmartTokenizer",
+    "PreprocessedText",
     # RAG Security
     "RAGSecurityMiddleware",
     "StreamEngine",

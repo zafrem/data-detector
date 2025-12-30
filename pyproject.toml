@@ -75,6 +75,11 @@ fake = [
     "openpyxl>=3.1.0",
     "python-pptx>=0.6.0",
 ]
+nlp = [
+    "langdetect>=1.0.9",
+    "konlpy>=0.6.0",
+    "jieba>=0.42.1",
+]
 
 [project.scripts]
 data-detector = "datadetector.cli:main"

@@ -29,6 +29,34 @@ redacted = engine.redact("Contact me at test@example.com")
 print(redacted.redacted_text)
 ```
 
+### NLP-Enhanced Detection (Korean)
+
+For improved Korean PII detection with grammatical particle handling:
+
+```python
+from datadetector import Engine, load_registry, NLPConfig
+
+# Configure NLP for Korean particle processing
+nlp_config = NLPConfig(
+    enable_language_detection=True,
+    enable_korean_particles=True
+)
+
+registry = load_registry()
+engine = Engine(registry, nlp_config=nlp_config)
+
+# Detects PII even with Korean particles attached
+text = "전화번호는 010-1234-5678은 입니다"
+results = engine.find(text, namespaces=["kr"])
+```
+
+Install NLP dependencies:
+```bash
+pip install data-detector[nlp]
+```
+
+See [NLP Features Documentation](docs/nlp-features.md) for more details.
+
 ### CLI Usage
 
 ```bash
@@ -60,7 +88,7 @@ For detailed guides and references, please see the following:
 
 - **Guides**: [Quick Start](docs/quickstart.md) | [Architecture](docs/ARCHITECTURE.md) | [Configuration](docs/configuration.md)
 - **Patterns**: [Supported Patterns](docs/supported-patterns.md) | [Custom Patterns](docs/custom-patterns.md) | [Pattern Structure](docs/patterns.md)
-- **Features**: [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
+- **Features**: [NLP Processing](docs/nlp-features.md) | [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
 - **API**: [API Reference](docs/api-reference.md)
 
 ## License

@@ -16,6 +16,7 @@ from datadetector.models import (
 )
 from datadetector.registry import PatternRegistry
 from datadetector.context import ContextHint, ContextFilter, KeywordRegistry
+from datadetector.nlp import NLPConfig, NLPProcessor
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class Engine:
         hash_algorithm: str = "sha256",
         keyword_registry: Optional[KeywordRegistry] = None,
         enable_context_filtering: bool = True,
+        nlp_config: Optional[NLPConfig] = None,
     ) -> None:
         """
         Initialize engine with pattern registry.
@@ -66,6 +68,8 @@ class Engine:
                             If None and enable_context_filtering=True, creates default.
             enable_context_filtering: Whether to enable context-aware filtering.
                                     Set to False to disable the feature entirely.
+            nlp_config: Optional NLP configuration for language detection, tokenization,
+                       and stopword filtering. If None, NLP features are disabled.
         """
         self.registry = registry
         self.default_mask_char = default_mask_char
@@ -79,6 +83,12 @@ class Engine:
         else:
             self.keyword_registry = None
             self.context_filter = None
+
+        # NLP preprocessing support
+        self.nlp_config = nlp_config
+        self.nlp_processor = None
+        if nlp_config and nlp_config.is_enabled():
+            self.nlp_processor = NLPProcessor(nlp_config)
 
     def find(
         self,
@@ -116,6 +126,17 @@ class Engine:
 
         matches: List[Match] = []
 
+        # Apply NLP preprocessing if enabled
+        search_text = text
+        preprocessed = None
+        if self.nlp_processor:
+            preprocessed = self.nlp_processor.preprocess(text)
+            search_text = preprocessed.processed_text
+            logger.debug(
+                f"NLP preprocessing: lang={preprocessed.detected_language}, "
+                f"tokens={len(preprocessed.tokens) if preprocessed.tokens else 'N/A'}"
+            )
+
         # Collect patterns from requested namespaces
         patterns = []
         for ns in namespaces:
@@ -145,9 +166,14 @@ class Engine:
 
         # Search for each pattern
         for pattern in patterns:
-            for regex_match in pattern.compiled.finditer(text):
+            for regex_match in pattern.compiled.finditer(search_text):
                 start, end = regex_match.span()
                 matched_value = regex_match.group(0)
+
+                # Map back to original positions if NLP preprocessing was used
+                if preprocessed:
+                    start, end = preprocessed.map_to_original(start, end)
+                    matched_value = text[start:end]
 
                 # Apply verification function if specified
                 if pattern.verification_func is not None:
