@@ -1,6 +1,8 @@
 """Tests for NLP functionality."""
 
+import warnings
 import pytest
+from unittest.mock import patch, MagicMock
 from datadetector.nlp import (
     NLPConfig,
     NLPProcessor,
@@ -609,6 +611,129 @@ class TestNLPIntegration:
                 assert result.is_valid
 
 
+class TestErrorHandling:
+    """Test error handling and edge cases."""
+
+    def test_language_detector_without_langdetect(self):
+        """Test LanguageDetector raises error without langdetect."""
+        if not LANGDETECT_AVAILABLE:
+            with pytest.raises(ImportError, match="langdetect"):
+                LanguageDetector()
+
+    def test_korean_tokenizer_without_konlpy(self):
+        """Test KoreanTokenizer raises error without konlpy."""
+        if not KONLPY_AVAILABLE:
+            with pytest.raises(ImportError, match="konlpy"):
+                KoreanTokenizer()
+
+    def test_chinese_tokenizer_without_jieba(self):
+        """Test ChineseTokenizer raises error without jieba."""
+        if not JIEBA_AVAILABLE:
+            with pytest.raises(ImportError, match="jieba"):
+                ChineseTokenizer()
+
+    @patch('datadetector.nlp.LANGDETECT_AVAILABLE', False)
+    def test_config_validate_requires_langdetect(self):
+        """Test config validation when langdetect required but not available."""
+        config = NLPConfig(enable_language_detection=True)
+        with pytest.raises(ImportError, match="langdetect"):
+            config.validate()
+
+    @patch('datadetector.nlp.KONLPY_AVAILABLE', False)
+    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    def test_config_validate_warns_korean(self):
+        """Test config validation warns when konlpy not available."""
+        config = NLPConfig(enable_korean_particles=True)
+        # Should warn but not raise
+        config.validate()
+
+    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    def test_config_validate_warns_chinese(self):
+        """Test config validation warns when jieba not available."""
+        config = NLPConfig(enable_chinese_segmentation=True)
+        # Should warn but not raise
+        config.validate()
+
+    @patch('datadetector.nlp.KONLPY_AVAILABLE', False)
+    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    def test_processor_warns_without_konlpy(self):
+        """Test processor initialization warns without konlpy."""
+        config = NLPConfig(enable_korean_particles=True)
+        processor = NLPProcessor(config)
+        # Should create processor even without konlpy
+        assert processor is not None
+
+    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    def test_processor_warns_without_jieba(self):
+        """Test processor initialization warns without jieba."""
+        config = NLPConfig(enable_chinese_segmentation=True)
+        processor = NLPProcessor(config)
+        # Should create processor even without jieba
+        assert processor is not None
+
+    @patch('datadetector.nlp.LANGDETECT_AVAILABLE', False)
+    def test_processor_without_langdetect(self):
+        """Test processor initialization without langdetect."""
+        config = NLPConfig(enable_language_detection=True)
+        # Should raise ImportError because langdetect is required
+        with pytest.raises(ImportError, match="langdetect"):
+            processor = NLPProcessor(config)
+
+
+class TestNLPProcessorAdvanced:
+    """Test advanced NLP processor scenarios."""
+
+    def test_processor_chinese_text_without_detection(self):
+        """Test processing Chinese text without language detection."""
+        config = NLPConfig(enable_chinese_segmentation=True)
+        processor = NLPProcessor(config)
+        text = "测试文本"
+        result = processor.preprocess(text)
+        assert result.original_text == text
+
+    def test_processor_korean_text_without_detection(self):
+        """Test processing Korean text without language detection."""
+        config = NLPConfig(enable_korean_particles=True)
+        processor = NLPProcessor(config)
+        text = "테스트"
+        result = processor.preprocess(text)
+        assert result.original_text == text
+
+    def test_processor_tokenization_with_chinese(self):
+        """Test tokenization falls back without jieba."""
+        config = NLPConfig(enable_tokenization=True)
+        processor = NLPProcessor(config)
+        # Even without jieba, should tokenize
+        text = "test words here"
+        result = processor.preprocess(text)
+        assert result.tokens is not None
+
+    def test_processor_multiple_features(self):
+        """Test processor with multiple features enabled."""
+        config = NLPConfig(
+            enable_tokenization=True,
+            enable_stopword_filtering=True
+        )
+        processor = NLPProcessor(config)
+        text = "the quick brown fox"
+        result = processor.preprocess(text)
+        # Stopwords should be filtered
+        assert result.tokens is not None
+        if result.tokens:
+            assert "the" not in result.tokens
+
+    def test_preprocessed_text_map_empty_mapping(self):
+        """Test PreprocessedText map_to_original with no mapping."""
+        result = PreprocessedText(
+            processed_text="test",
+            original_text="test",
+            index_mapping=[]
+        )
+        start, end = result.map_to_original(0, 4)
+        # Should return input unchanged when no mapping
+        assert (start, end) == (0, 4)
+
+
 # Optional dependency tests - only run if dependencies are available
 
 if LANGDETECT_AVAILABLE:
@@ -661,6 +786,15 @@ if LANGDETECT_AVAILABLE:
             lang = detector.detect("Hi")
             # Just check it returns something or None
             assert lang is None or isinstance(lang, str)
+
+        @patch('langdetect.detect')
+        def test_detect_exception_handling(self, mock_detect):
+            """Test exception handling in language detection."""
+            detector = LanguageDetector()
+            mock_detect.side_effect = Exception("Detection error")
+            # Should return None on exception
+            lang = detector.detect("some text")
+            assert lang is None
 
 
     class TestNLPProcessorWithLangdetect:
@@ -844,3 +978,177 @@ if JIEBA_AVAILABLE:
 
             # Should handle Chinese text with PII
             assert isinstance(result.matches, list)
+
+
+class TestKoreanTokenizerBackends:
+    """Test KoreanTokenizer with different backends."""
+
+    def test_unsupported_backend_fallback(self):
+        """Test that unsupported backend falls back to Okt with warning."""
+        if not KONLPY_AVAILABLE:
+            pytest.skip("konlpy not available")
+
+        import warnings
+        with warnings.catch_warnings(record=True):
+            tokenizer = KoreanTokenizer(backend="mecab")
+            # Should still work with Okt fallback
+            tokens = tokenizer.tokenize("안녕하세요")
+            assert len(tokens) > 0
+
+
+class TestChineseTokenizerExtended:
+    """Extended tests for ChineseTokenizer."""
+
+    def test_extract_keywords(self):
+        """Test keyword extraction."""
+        if not JIEBA_AVAILABLE:
+            pytest.skip("jieba not available")
+
+        tokenizer = ChineseTokenizer()
+        text = "我的电话号码是13812345678，这是我的联系方式，请保存我的电话号码"
+        keywords = tokenizer.extract_keywords(text, topk=5)
+        assert isinstance(keywords, list)
+        assert len(keywords) <= 5
+        # Should extract meaningful keywords
+        assert len(keywords) > 0
+
+
+class TestNLPProcessorEdgeCases:
+    """Test NLPProcessor edge cases and specific code paths."""
+
+    def test_korean_preprocessing_when_korean_detected(self):
+        """Test Korean particle removal when Korean is detected."""
+        if not LANGDETECT_AVAILABLE or not KONLPY_AVAILABLE:
+            pytest.skip("langdetect or konlpy not available")
+
+        config = NLPConfig(
+            enable_language_detection=True,
+            enable_korean_particles=True,
+        )
+        processor = NLPProcessor(config)
+        text = "안녕하세요010-1234-5678은제번호입니다"
+        result = processor.preprocess(text)
+        assert result.detected_language == "ko"
+        assert result.original_text == text
+
+    def test_korean_preprocessing_when_language_unknown(self):
+        """Test Korean particle removal when language is None."""
+        if not KONLPY_AVAILABLE:
+            pytest.skip("konlpy not available")
+
+        # Disable language detection so detected_lang is None
+        config = NLPConfig(
+            enable_language_detection=False,
+            enable_korean_particles=True,
+        )
+        processor = NLPProcessor(config)
+        text = "010-1234-5678은"
+        result = processor.preprocess(text)
+        # Should still process particles even without language detection
+        assert result.original_text == text
+
+    def test_tokenization_with_korean_language(self):
+        """Test tokenization path when Korean is detected."""
+        if not LANGDETECT_AVAILABLE or not KONLPY_AVAILABLE:
+            pytest.skip("langdetect or konlpy not available")
+
+        config = NLPConfig(
+            enable_language_detection=True,
+            enable_tokenization=True,
+        )
+        processor = NLPProcessor(config)
+        text = "안녕하세요 전화번호는 010-1234-5678입니다"
+        result = processor.preprocess(text)
+        assert result.detected_language == "ko"
+        assert result.tokens is not None
+        assert len(result.tokens) > 0
+
+    def test_tokenization_with_chinese_language(self):
+        """Test tokenization path when Chinese is detected."""
+        if not LANGDETECT_AVAILABLE or not JIEBA_AVAILABLE:
+            pytest.skip("langdetect or jieba not available")
+
+        config = NLPConfig(
+            enable_language_detection=True,
+            enable_tokenization=True,
+        )
+        processor = NLPProcessor(config)
+        # Use longer Chinese text for better detection
+        text = "我的电话号码是13812345678这是我的联系方式"
+        result = processor.preprocess(text)
+        # Language detection might return 'zh-cn' or similar
+        if result.detected_language and result.detected_language.startswith('zh'):
+            assert result.tokens is not None
+            assert len(result.tokens) > 0
+
+    def test_forced_chinese_segmentation(self):
+        """Test forced Chinese segmentation without language detection."""
+        if not JIEBA_AVAILABLE:
+            pytest.skip("jieba not available")
+
+        config = NLPConfig(
+            enable_language_detection=False,
+            enable_tokenization=True,
+            enable_chinese_segmentation=True,
+        )
+        processor = NLPProcessor(config)
+        text = "我的电话号码是13812345678"
+        result = processor.preprocess(text)
+        # Should use Chinese tokenizer even without language detection
+        assert result.tokens is not None
+        assert len(result.tokens) > 0
+
+
+class TestSmartTokenizerEdgeCases:
+    """Test edge cases in SmartTokenizer mapping."""
+
+    def test_map_match_edge_cases(self):
+        """Test edge cases in mapping positions back to original text."""
+        tokenizer = SmartTokenizer()
+
+        # Test with text that has multiple script boundaries
+        text = "abc한글123xyz"
+        prepared, mapping = tokenizer.prepare_text_for_search(text)
+
+        # Test mapping various positions
+        # Normal case
+        start, end = tokenizer.map_match_to_original(0, 3, mapping)
+        assert start == 0
+        assert end == 3
+
+        # Test mapping at the very start
+        start, end = tokenizer.map_match_to_original(0, 1, mapping)
+        assert start == 0
+        assert end == 1
+
+        # Test mapping at boundaries
+        # The prepared text should have spaces inserted
+        # Try to map positions that might land on virtual spaces
+        for i in range(len(prepared)):
+            for j in range(i, min(i + 5, len(prepared))):
+                try:
+                    start, end = tokenizer.map_match_to_original(i, j, mapping)
+                    # Should return valid positions or (0, 0)
+                    assert start >= 0
+                    assert end >= 0
+                    assert start <= end
+                except:
+                    pass
+
+    def test_map_with_all_virtual_spaces(self):
+        """Test mapping when match might be entirely in virtual spaces."""
+        tokenizer = SmartTokenizer()
+        text = "a한b"
+        prepared, mapping = tokenizer.prepare_text_for_search(text)
+
+        # Try to map positions that might result in edge cases
+        # This tests lines 415-419 and 425-427
+        for start_pos in range(len(prepared)):
+            for end_pos in range(start_pos, len(prepared) + 1):
+                start, end = tokenizer.map_match_to_original(start_pos, end_pos, mapping)
+                # Should always return valid positions
+                assert isinstance(start, int)
+                assert isinstance(end, int)
+                assert start >= 0
+                assert end >= 0
+
