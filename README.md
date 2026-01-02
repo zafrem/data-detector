@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/Data%20Detector.png" alt="Data Detector Logo" width="200">
+</p>
+
 # Data Detector
 
 **Data Detector** is a high-performance engine for detecting, redacting, and generating sensitive data (PII).
