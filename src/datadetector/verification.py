@@ -7,8 +7,17 @@ For the actual implementation and documentation, see:
 pattern-engine/verification/python/verification.py
 """
 
+import sys
+from pathlib import Path
+
+# Add pattern-engine to path if running from source (not installed package)
+# This handles both Unix (with symlink) and Windows (without symlink support)
+_pattern_engine_dir = Path(__file__).parent.parent.parent / "pattern-engine"
+if _pattern_engine_dir.exists() and str(_pattern_engine_dir) not in sys.path:
+    sys.path.insert(0, str(_pattern_engine_dir))
+
 # Import all verification functions from the centralized location
-from verification.python.verification import (
+from verification.python.verification import (  # noqa: E402
     contains_letter,
     dms_coordinate,
     generic_number_not_timestamp,
@@ -24,7 +33,6 @@ from verification.python.verification import (
     us_ssn_valid,
     us_zipcode_valid,
 )
-
 
 # Re-export all the imported functions for convenience
 __all__ = [

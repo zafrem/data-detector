@@ -101,10 +101,17 @@ datadetector = ["py.typed"]
 [tool.black]
 line-length = 100
 target-version = ["py38", "py39", "py310", "py311", "py312"]
+extend-exclude = '''
+/(
+  # Exclude symlinked verification module from pattern-engine submodule
+  | src/verification
+)/
+'''
 
 [tool.ruff]
 line-length = 100
 target-version = "py38"
+extend-exclude = ["src/verification"]
 
 [tool.ruff.lint]
 select = [
