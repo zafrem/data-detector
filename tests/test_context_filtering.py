@@ -35,7 +35,7 @@ class TestContextHint:
         assert hint.categories == []
         assert hint.pattern_ids == []
         assert hint.exclude_patterns == []
-        assert hint.strategy == 'loose'
+        assert hint.strategy == "loose"
 
     def test_context_hint_with_keywords(self):
         """ContextHint should normalize keywords to lowercase."""
@@ -46,13 +46,13 @@ class TestContextHint:
 
     def test_context_hint_strategies(self):
         """ContextHint should support different strategies."""
-        strict = ContextHint(strategy='strict')
-        loose = ContextHint(strategy='loose')
-        none = ContextHint(strategy='none')
+        strict = ContextHint(strategy="strict")
+        loose = ContextHint(strategy="loose")
+        none = ContextHint(strategy="none")
 
-        assert strict.strategy == 'strict'
-        assert loose.strategy == 'loose'
-        assert none.strategy == 'none'
+        assert strict.strategy == "strict"
+        assert loose.strategy == "loose"
+        assert none.strategy == "none"
 
 
 class TestKeywordRegistry:
@@ -127,55 +127,52 @@ class TestContextFiltering:
         """Should only check SSN patterns when context specifies SSN."""
         text = "SSN: 123-45-6789, Email: user@example.com"
 
-        context = ContextHint(keywords=["ssn"], strategy='strict')
+        context = ContextHint(keywords=["ssn"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should find SSN
-        ssn_matches = [m for m in result.matches if 'ssn' in m.ns_id.lower()]
+        ssn_matches = [m for m in result.matches if "ssn" in m.ns_id.lower()]
         assert len(ssn_matches) > 0
 
         # Should NOT find email (not in context)
-        email_matches = [m for m in result.matches if 'email' in m.ns_id.lower()]
+        email_matches = [m for m in result.matches if "email" in m.ns_id.lower()]
         assert len(email_matches) == 0
 
     def test_find_with_email_context(self, engine):
         """Should only check email patterns when context specifies email."""
         text = "SSN: 123-45-6789, Email: user@example.com"
 
-        context = ContextHint(keywords=["email"], strategy='strict')
+        context = ContextHint(keywords=["email"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should find email
-        email_matches = [m for m in result.matches if 'email' in m.ns_id.lower()]
+        email_matches = [m for m in result.matches if "email" in m.ns_id.lower()]
         assert len(email_matches) > 0
 
         # Should NOT find SSN (not in context)
-        ssn_matches = [m for m in result.matches if 'ssn' in m.ns_id.lower()]
+        ssn_matches = [m for m in result.matches if "ssn" in m.ns_id.lower()]
         assert len(ssn_matches) == 0
 
     def test_find_with_category_context(self, engine):
         """Should filter by category."""
         text = "Phone: (555) 123-4567, Email: user@example.com"
 
-        context = ContextHint(categories=['phone'], strategy='strict')
+        context = ContextHint(categories=["phone"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should find phone
-        phone_matches = [m for m in result.matches if m.category.value == 'phone']
+        phone_matches = [m for m in result.matches if m.category.value == "phone"]
         assert len(phone_matches) > 0
 
         # Should NOT find email
-        email_matches = [m for m in result.matches if m.category.value == 'email']
+        email_matches = [m for m in result.matches if m.category.value == "email"]
         assert len(email_matches) == 0
 
     def test_find_with_pattern_ids(self, engine):
         """Should use explicit pattern IDs."""
         text = "SSN: 123-45-6789, ZIP: 90210"
 
-        context = ContextHint(
-            pattern_ids=['us/ssn_01', 'us/zipcode_01'],
-            strategy='strict'
-        )
+        context = ContextHint(pattern_ids=["us/ssn_01", "us/zipcode_01"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should find both
@@ -183,21 +180,19 @@ class TestContextFiltering:
 
         # All matches should be from specified patterns
         for match in result.matches:
-            assert match.ns_id in ['us/ssn_01', 'us/zipcode_01']
+            assert match.ns_id in ["us/ssn_01", "us/zipcode_01"]
 
     def test_find_with_exclude_patterns(self, engine):
         """Should exclude specified patterns."""
         text = "SSN: 123-45-6789, ITIN: 900-12-3456"
 
         context = ContextHint(
-            categories=['ssn'],
-            exclude_patterns=['us/itin_01'],
-            strategy='strict'
+            categories=["ssn"], exclude_patterns=["us/itin_01"], strategy="strict"
         )
         result = engine.find(text, context=context)
 
         # Should NOT find ITIN (excluded)
-        itin_matches = [m for m in result.matches if m.ns_id == 'us/itin_01']
+        itin_matches = [m for m in result.matches if m.ns_id == "us/itin_01"]
         assert len(itin_matches) == 0
 
     def test_find_loose_strategy_fallback(self, engine):
@@ -205,7 +200,7 @@ class TestContextFiltering:
         text = "Some random text: 123-45-6789"
 
         # Use non-existent keyword
-        context = ContextHint(keywords=["nonexistent_keyword"], strategy='loose')
+        context = ContextHint(keywords=["nonexistent_keyword"], strategy="loose")
         result = engine.find(text, context=context)
 
         # Should still find SSN (fallback to all patterns)
@@ -216,18 +211,18 @@ class TestContextFiltering:
         text = "SSN: 123-45-6789"
 
         # Use email keyword but text has SSN
-        context = ContextHint(keywords=["email"], strategy='strict')
+        context = ContextHint(keywords=["email"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should NOT find SSN (strict mode, no fallback)
-        ssn_matches = [m for m in result.matches if 'ssn' in m.ns_id.lower()]
+        ssn_matches = [m for m in result.matches if "ssn" in m.ns_id.lower()]
         assert len(ssn_matches) == 0
 
     def test_find_none_strategy(self, engine):
         """None strategy should check all patterns."""
         text = "SSN: 123-45-6789, Email: user@example.com"
 
-        context = ContextHint(keywords=["ssn"], strategy='none')
+        context = ContextHint(keywords=["ssn"], strategy="none")
         result = engine.find(text, context=context)
 
         # Should find both SSN and email (strategy='none' means check all)
@@ -237,7 +232,7 @@ class TestContextFiltering:
         """Redaction should work with context filtering."""
         text = "SSN: 123-45-6789, Email: user@example.com"
 
-        context = ContextHint(keywords=["ssn"], strategy='strict')
+        context = ContextHint(keywords=["ssn"], strategy="strict")
         result = engine.redact(text, context=context)
 
         # Should redact SSN
@@ -249,14 +244,11 @@ class TestContextFiltering:
         """Should expand wildcard patterns."""
         text = "Bank: 123-456789-01234"
 
-        context = ContextHint(
-            pattern_ids=['kr/bank_account_*'],
-            strategy='strict'
-        )
+        context = ContextHint(pattern_ids=["kr/bank_account_*"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should find bank account
-        bank_matches = [m for m in result.matches if 'bank_account' in m.ns_id]
+        bank_matches = [m for m in result.matches if "bank_account" in m.ns_id]
         assert len(bank_matches) > 0
 
 
@@ -268,7 +260,7 @@ class TestCreateContextFromFieldName:
         context = create_context_from_field_name("user_ssn")
 
         assert "ssn" in context.keywords
-        assert context.strategy == 'loose'
+        assert context.strategy == "loose"
 
     def test_create_from_complex_field_name(self):
         """Should extract multiple keywords from complex field name."""
@@ -281,9 +273,9 @@ class TestCreateContextFromFieldName:
 
     def test_create_with_strategy(self):
         """Should respect strategy parameter."""
-        context = create_context_from_field_name("user_ssn", strategy='strict')
+        context = create_context_from_field_name("user_ssn", strategy="strict")
 
-        assert context.strategy == 'strict'
+        assert context.strategy == "strict"
 
     def test_create_filters_short_keywords(self):
         """Should filter out single-character keywords."""
@@ -306,7 +298,7 @@ class TestPerformanceWithContext:
         result_no_context = engine.find(text)
 
         # With context - checks only SSN patterns
-        context = ContextHint(keywords=["ssn"], strategy='strict')
+        context = ContextHint(keywords=["ssn"], strategy="strict")
         result_with_context = engine.find(text, context=context)
 
         # Both should find the SSN
@@ -326,30 +318,30 @@ class TestKoreanContextFiltering:
         """Should find Korean RRN with Korean keyword."""
         text = "주민등록번호: 990101-1234567"
 
-        context = ContextHint(keywords=["주민등록번호"], strategy='strict')
+        context = ContextHint(keywords=["주민등록번호"], strategy="strict")
         result = engine.find(text, context=context)
 
-        rrn_matches = [m for m in result.matches if 'rrn' in m.ns_id or 'corporate' in m.ns_id]
+        rrn_matches = [m for m in result.matches if "rrn" in m.ns_id or "corporate" in m.ns_id]
         assert len(rrn_matches) > 0
 
     def test_korean_bank_account_with_context(self, engine):
         """Should find Korean bank account with Korean keyword."""
         text = "계좌번호: 123-456789-01234"
 
-        context = ContextHint(keywords=["계좌번호"], strategy='strict')
+        context = ContextHint(keywords=["계좌번호"], strategy="strict")
         result = engine.find(text, context=context)
 
-        bank_matches = [m for m in result.matches if 'bank_account' in m.ns_id]
+        bank_matches = [m for m in result.matches if "bank_account" in m.ns_id]
         assert len(bank_matches) > 0
 
     def test_korean_zipcode_with_context(self, engine):
         """Should find Korean zipcode with Korean keyword."""
         text = "우편번호: 06234"
 
-        context = ContextHint(keywords=["우편번호"], strategy='strict')
+        context = ContextHint(keywords=["우편번호"], strategy="strict")
         result = engine.find(text, context=context)
 
-        zip_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
+        zip_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
         assert len(zip_matches) > 0
 
 
@@ -364,9 +356,9 @@ class TestDisableContextFiltering:
         text = "SSN: 123-45-6789"
 
         # Context should be ignored when feature is disabled
-        context = ContextHint(keywords=["email"], strategy='strict')
+        context = ContextHint(keywords=["email"], strategy="strict")
         result = engine.find(text, context=context)
 
         # Should still find SSN (context filtering disabled)
-        ssn_matches = [m for m in result.matches if 'ssn' in m.ns_id.lower()]
+        ssn_matches = [m for m in result.matches if "ssn" in m.ns_id.lower()]
         assert len(ssn_matches) > 0

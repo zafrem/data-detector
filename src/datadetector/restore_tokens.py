@@ -54,7 +54,11 @@ def restore_tokens_yml(file_path: Optional[str] = None) -> bool:
         candidates = [
             Path("pattern-engine/regex/hash/tokens.yml"),  # Current directory
             Path("../pattern-engine/regex/hash/tokens.yml"),  # Parent directory
-            Path(__file__).parent.parent.parent / "pattern-engine" / "regex" / "hash" / "tokens.yml",  # From package
+            Path(__file__).parent.parent.parent
+            / "pattern-engine"
+            / "regex"
+            / "hash"
+            / "tokens.yml",  # From package
         ]
 
         for candidate in candidates:

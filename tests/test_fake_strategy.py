@@ -150,9 +150,9 @@ class TestFakeStrategyPerformance:
         fake_time = time.perf_counter() - start
 
         # FAKE should be slower but not drastically (< 10x)
-        assert fake_time / mask_time < 10, (
-            f"FAKE strategy too slow compared to MASK: {fake_time/mask_time:.1f}x slower"
-        )
+        assert (
+            fake_time / mask_time < 10
+        ), f"FAKE strategy too slow compared to MASK: {fake_time/mask_time:.1f}x slower"
 
 
 class TestFakeWithRAG:

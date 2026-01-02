@@ -1,23 +1,25 @@
 """Tests for NLP functionality."""
 
 import warnings
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from datadetector.nlp import (
+    CHINESE_STOPWORDS,
+    ENGLISH_STOPWORDS,
+    JIEBA_AVAILABLE,
+    KONLPY_AVAILABLE,
+    KOREAN_STOPWORDS,
+    LANGDETECT_AVAILABLE,
+    ChineseTokenizer,
+    KoreanTokenizer,
+    LanguageDetector,
     NLPConfig,
     NLPProcessor,
-    LanguageDetector,
-    StopwordFilter,
-    KoreanTokenizer,
-    ChineseTokenizer,
-    SmartTokenizer,
     PreprocessedText,
-    KOREAN_STOPWORDS,
-    ENGLISH_STOPWORDS,
-    CHINESE_STOPWORDS,
-    LANGDETECT_AVAILABLE,
-    KONLPY_AVAILABLE,
-    JIEBA_AVAILABLE,
+    SmartTokenizer,
+    StopwordFilter,
 )
 
 
@@ -194,7 +196,8 @@ class TestSmartTokenizer:
 
         # Find the phone number in prepared text
         import re
-        match = re.search(r'\d{3}-\d{4}-\d{4}', prepared)
+
+        match = re.search(r"\d{3}-\d{4}-\d{4}", prepared)
         if match:
             start, end = match.span()
             orig_start, orig_end = tokenizer.map_match_to_original(start, end, mapping)
@@ -362,9 +365,7 @@ class TestPreprocessedText:
     def test_create_preprocessed_text(self):
         """Test creating PreprocessedText object."""
         result = PreprocessedText(
-            processed_text="test",
-            original_text="test",
-            index_mapping=[0, 1, 2, 3]
+            processed_text="test", original_text="test", index_mapping=[0, 1, 2, 3]
         )
         assert result.processed_text == "test"
         assert result.original_text == "test"
@@ -377,7 +378,7 @@ class TestPreprocessedText:
             original_text="test",
             index_mapping=[0, 1, 2, 3],
             detected_language="en",
-            tokens=["test"]
+            tokens=["test"],
         )
         assert result.detected_language == "en"
         assert result.tokens == ["test"]
@@ -387,7 +388,7 @@ class TestPreprocessedText:
         result = PreprocessedText(
             processed_text="abc 가나다",
             original_text="abc가나다",
-            index_mapping=[0, 1, 2, -1, 3, 4, 5]
+            index_mapping=[0, 1, 2, -1, 3, 4, 5],
         )
         orig_start, orig_end = result.map_to_original(0, 3)
         assert orig_start == 0
@@ -395,11 +396,7 @@ class TestPreprocessedText:
 
     def test_empty_preprocessed_text(self):
         """Test empty PreprocessedText."""
-        result = PreprocessedText(
-            processed_text="",
-            original_text="",
-            index_mapping=[]
-        )
+        result = PreprocessedText(processed_text="", original_text="", index_mapping=[])
         assert result.processed_text == ""
         assert result.original_text == ""
         assert result.index_mapping == []
@@ -525,7 +522,7 @@ class TestNLPIntegration:
 
     def test_engine_with_nlp_config(self):
         """Test Engine initialization with NLP config."""
-        from datadetector import Engine, load_registry, NLPConfig
+        from datadetector import Engine, NLPConfig, load_registry
 
         registry = load_registry()
         config = NLPConfig(enable_tokenization=True)
@@ -544,7 +541,7 @@ class TestNLPIntegration:
 
     def test_engine_with_disabled_nlp_config(self):
         """Test Engine with NLP config but all features disabled."""
-        from datadetector import Engine, load_registry, NLPConfig
+        from datadetector import Engine, NLPConfig, load_registry
 
         registry = load_registry()
         config = NLPConfig()  # All disabled
@@ -555,7 +552,7 @@ class TestNLPIntegration:
 
     def test_find_mixed_script(self):
         """Test finding PII in mixed script text."""
-        from datadetector import Engine, load_registry, NLPConfig
+        from datadetector import Engine, NLPConfig, load_registry
 
         registry = load_registry()
         config = NLPConfig()
@@ -571,7 +568,7 @@ class TestNLPIntegration:
 
     def test_find_with_ascii_text(self):
         """Test finding PII in pure ASCII text."""
-        from datadetector import Engine, load_registry, NLPConfig
+        from datadetector import Engine, NLPConfig, load_registry
 
         registry = load_registry()
         config = NLPConfig()
@@ -583,7 +580,7 @@ class TestNLPIntegration:
 
     def test_redact_with_nlp(self):
         """Test redaction with NLP config."""
-        from datadetector import Engine, load_registry, NLPConfig
+        from datadetector import Engine, NLPConfig, load_registry
         from datadetector.models import RedactionStrategy
 
         registry = load_registry()
@@ -596,7 +593,7 @@ class TestNLPIntegration:
 
     def test_validate_with_nlp(self):
         """Test validation with NLP config."""
-        from datadetector import Engine, load_registry, NLPConfig
+        from datadetector import Engine, NLPConfig, load_registry
 
         registry = load_registry()
         config = NLPConfig()
@@ -632,30 +629,30 @@ class TestErrorHandling:
             with pytest.raises(ImportError, match="jieba"):
                 ChineseTokenizer()
 
-    @patch('datadetector.nlp.LANGDETECT_AVAILABLE', False)
+    @patch("datadetector.nlp.LANGDETECT_AVAILABLE", False)
     def test_config_validate_requires_langdetect(self):
         """Test config validation when langdetect required but not available."""
         config = NLPConfig(enable_language_detection=True)
         with pytest.raises(ImportError, match="langdetect"):
             config.validate()
 
-    @patch('datadetector.nlp.KONLPY_AVAILABLE', False)
-    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    @patch("datadetector.nlp.KONLPY_AVAILABLE", False)
+    @patch("datadetector.nlp.JIEBA_AVAILABLE", False)
     def test_config_validate_warns_korean(self):
         """Test config validation warns when konlpy not available."""
         config = NLPConfig(enable_korean_particles=True)
         # Should warn but not raise
         config.validate()
 
-    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    @patch("datadetector.nlp.JIEBA_AVAILABLE", False)
     def test_config_validate_warns_chinese(self):
         """Test config validation warns when jieba not available."""
         config = NLPConfig(enable_chinese_segmentation=True)
         # Should warn but not raise
         config.validate()
 
-    @patch('datadetector.nlp.KONLPY_AVAILABLE', False)
-    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    @patch("datadetector.nlp.KONLPY_AVAILABLE", False)
+    @patch("datadetector.nlp.JIEBA_AVAILABLE", False)
     def test_processor_warns_without_konlpy(self):
         """Test processor initialization warns without konlpy."""
         config = NLPConfig(enable_korean_particles=True)
@@ -663,7 +660,7 @@ class TestErrorHandling:
         # Should create processor even without konlpy
         assert processor is not None
 
-    @patch('datadetector.nlp.JIEBA_AVAILABLE', False)
+    @patch("datadetector.nlp.JIEBA_AVAILABLE", False)
     def test_processor_warns_without_jieba(self):
         """Test processor initialization warns without jieba."""
         config = NLPConfig(enable_chinese_segmentation=True)
@@ -671,13 +668,13 @@ class TestErrorHandling:
         # Should create processor even without jieba
         assert processor is not None
 
-    @patch('datadetector.nlp.LANGDETECT_AVAILABLE', False)
+    @patch("datadetector.nlp.LANGDETECT_AVAILABLE", False)
     def test_processor_without_langdetect(self):
         """Test processor initialization without langdetect."""
         config = NLPConfig(enable_language_detection=True)
         # Should raise ImportError because langdetect is required
         with pytest.raises(ImportError, match="langdetect"):
-            processor = NLPProcessor(config)
+            _ = NLPProcessor(config)
 
 
 class TestNLPProcessorAdvanced:
@@ -710,10 +707,7 @@ class TestNLPProcessorAdvanced:
 
     def test_processor_multiple_features(self):
         """Test processor with multiple features enabled."""
-        config = NLPConfig(
-            enable_tokenization=True,
-            enable_stopword_filtering=True
-        )
+        config = NLPConfig(enable_tokenization=True, enable_stopword_filtering=True)
         processor = NLPProcessor(config)
         text = "the quick brown fox"
         result = processor.preprocess(text)
@@ -724,11 +718,7 @@ class TestNLPProcessorAdvanced:
 
     def test_preprocessed_text_map_empty_mapping(self):
         """Test PreprocessedText map_to_original with no mapping."""
-        result = PreprocessedText(
-            processed_text="test",
-            original_text="test",
-            index_mapping=[]
-        )
+        result = PreprocessedText(processed_text="test", original_text="test", index_mapping=[])
         start, end = result.map_to_original(0, 4)
         # Should return input unchanged when no mapping
         assert (start, end) == (0, 4)
@@ -737,19 +727,24 @@ class TestNLPProcessorAdvanced:
 # Optional dependency tests - only run if dependencies are available
 
 if LANGDETECT_AVAILABLE:
+
     class TestLanguageDetector:
         """Test language detection."""
 
         def test_detect_english(self):
             """Test English language detection."""
             detector = LanguageDetector()
-            lang = detector.detect("Hello world, this is a test message with enough text for detection.")
+            lang = detector.detect(
+                "Hello world, this is a test message with enough text for detection."
+            )
             assert lang == "en"
 
         def test_detect_korean(self):
             """Test Korean language detection."""
             detector = LanguageDetector()
-            lang = detector.detect("안녕하세요 이것은 테스트 메시지입니다 언어 감지를 위한 충분한 텍스트")
+            lang = detector.detect(
+                "안녕하세요 이것은 테스트 메시지입니다 언어 감지를 위한 충분한 텍스트"
+            )
             assert lang == "ko"
 
         def test_detect_chinese(self):
@@ -787,7 +782,7 @@ if LANGDETECT_AVAILABLE:
             # Just check it returns something or None
             assert lang is None or isinstance(lang, str)
 
-        @patch('langdetect.detect')
+        @patch("langdetect.detect")
         def test_detect_exception_handling(self, mock_detect):
             """Test exception handling in language detection."""
             detector = LanguageDetector()
@@ -795,7 +790,6 @@ if LANGDETECT_AVAILABLE:
             # Should return None on exception
             lang = detector.detect("some text")
             assert lang is None
-
 
     class TestNLPProcessorWithLangdetect:
         """Test NLP processor with langdetect."""
@@ -818,6 +812,7 @@ if LANGDETECT_AVAILABLE:
 
 
 if KONLPY_AVAILABLE:
+
     class TestKoreanTokenizer:
         """Test Korean tokenization."""
 
@@ -860,7 +855,6 @@ if KONLPY_AVAILABLE:
             tokens = tokenizer.tokenize("")
             assert len(tokens) == 0
 
-
     class TestNLPProcessorWithKonlpy:
         """Test NLP processor with konlpy."""
 
@@ -876,13 +870,12 @@ if KONLPY_AVAILABLE:
             # Should have processed the text
             assert result.original_text == text
 
-
     class TestEngineWithKorean:
         """Test engine with Korean NLP."""
 
         def test_find_with_korean_particles(self):
             """Test finding PII with Korean particles attached."""
-            from datadetector import Engine, load_registry, NLPConfig
+            from datadetector import Engine, NLPConfig, load_registry
 
             registry = load_registry()
             config = NLPConfig(
@@ -900,6 +893,7 @@ if KONLPY_AVAILABLE:
 
 
 if JIEBA_AVAILABLE:
+
     class TestChineseTokenizer:
         """Test Chinese tokenization."""
 
@@ -957,13 +951,12 @@ if JIEBA_AVAILABLE:
             tokens = tokenizer.tokenize("")
             assert len(tokens) == 0
 
-
     class TestEngineWithChinese:
         """Test engine with Chinese NLP."""
 
         def test_find_with_chinese_segmentation(self):
             """Test finding PII with Chinese segmentation."""
-            from datadetector import Engine, load_registry, NLPConfig
+            from datadetector import Engine, NLPConfig, load_registry
 
             registry = load_registry()
             config = NLPConfig(
@@ -988,7 +981,6 @@ class TestKoreanTokenizerBackends:
         if not KONLPY_AVAILABLE:
             pytest.skip("konlpy not available")
 
-        import warnings
         with warnings.catch_warnings(record=True):
             tokenizer = KoreanTokenizer(backend="mecab")
             # Should still work with Okt fallback
@@ -1077,7 +1069,7 @@ class TestNLPProcessorEdgeCases:
         text = "我的电话号码是13812345678这是我的联系方式"
         result = processor.preprocess(text)
         # Language detection might return 'zh-cn' or similar
-        if result.detected_language and result.detected_language.startswith('zh'):
+        if result.detected_language and result.detected_language.startswith("zh"):
             assert result.tokens is not None
             assert len(result.tokens) > 0
 
@@ -1132,7 +1124,7 @@ class TestSmartTokenizerEdgeCases:
                     assert start >= 0
                     assert end >= 0
                     assert start <= end
-                except:
+                except Exception:
                     pass
 
     def test_map_with_all_virtual_spaces(self):
@@ -1151,4 +1143,3 @@ class TestSmartTokenizerEdgeCases:
                 assert isinstance(end, int)
                 assert start >= 0
                 assert end >= 0
-

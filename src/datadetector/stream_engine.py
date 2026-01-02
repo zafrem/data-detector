@@ -147,8 +147,9 @@ class StreamEngine:
 
         Args:
             documents: List of documents to process
-            chunk_size: Characters per chunk (reserved for future implementation)
-            chunk_overlap: Overlap between chunks to catch boundary PII (reserved for future implementation)
+            chunk_size: Characters per chunk (reserved for future)
+            chunk_overlap: Overlap between chunks to catch boundary PII
+                (reserved for future implementation)
             namespaces: Pattern namespaces to search
 
         Returns:

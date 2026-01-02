@@ -433,6 +433,7 @@ DOCUMENT_PRESETS = {
 # HELPER FUNCTIONS
 # ==============================================================================
 
+
 def get_preset(name: str) -> ContextHint:
     """Get a preset by name.
 

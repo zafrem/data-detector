@@ -29,7 +29,9 @@ class TestTimestampConfusion:
             result = engine.find(timestamp)
             # Check if mistakenly detected as zipcode
             zipcode_matches = [m for m in result.matches if m.category.value == "address"]
-            assert len(zipcode_matches) == 0, f"Timestamp {timestamp} incorrectly detected as zipcode"
+            assert (
+                len(zipcode_matches) == 0
+            ), f"Timestamp {timestamp} incorrectly detected as zipcode"
 
     def test_unix_timestamp_ms_not_bank_account(self, engine):
         """Unix timestamps in milliseconds should not be detected as bank accounts."""
@@ -43,7 +45,9 @@ class TestTimestampConfusion:
             result = engine.find(timestamp)
             # Check if mistakenly detected as bank account
             bank_matches = [m for m in result.matches if m.category.value == "bank"]
-            assert len(bank_matches) == 0, f"Timestamp {timestamp} incorrectly detected as bank account"
+            assert (
+                len(bank_matches) == 0
+            ), f"Timestamp {timestamp} incorrectly detected as bank account"
 
     def test_iso_date_not_confused(self, engine):
         """ISO 8601 dates should not be detected as PII."""
@@ -72,7 +76,9 @@ class TestTimestampConfusion:
             # These are 8 digits, could be confused with various patterns
             # Let's see what they match
             if result.matches:
-                print(f"Date {date} matched: {[(m.ns_id, m.category.value) for m in result.matches]}")
+                print(
+                    f"Date {date} matched: {[(m.ns_id, m.category.value) for m in result.matches]}"
+                )
 
     def test_time_format_not_confused(self, engine):
         """Time formats should not be detected as phone numbers."""
@@ -98,10 +104,7 @@ class TestTimestampConfusion:
         for dt in datetimes:
             result = engine.find(dt)
             # Should not match critical PII patterns
-            critical_matches = [
-                m for m in result.matches
-                if m.severity.value == "critical"
-            ]
+            critical_matches = [m for m in result.matches if m.severity.value == "critical"]
             assert len(critical_matches) == 0, f"Datetime {dt} incorrectly detected as critical PII"
 
     def test_korean_zipcode_in_timestamp_context(self, engine):
@@ -115,8 +118,9 @@ class TestTimestampConfusion:
         for text, number in test_cases:
             result = engine.find(text)
             zipcode_matches = [
-                m for m in result.matches
-                if m.category.value == "address" and number in text[m.start:m.end]
+                m
+                for m in result.matches
+                if m.category.value == "address" and number in text[m.start : m.end]
             ]
             # This might fail - demonstrating the issue
             if zipcode_matches:
@@ -149,7 +153,8 @@ class TestTimestampConfusion:
         for seq in sequences:
             result = engine.find(seq)
             if result.matches:
-                print(f"Sequential number {seq} matched: {[(m.ns_id, m.category.value) for m in result.matches]}")
+                matches = [(m.ns_id, m.category.value) for m in result.matches]
+                print(f"Sequential number {seq} matched: {matches}")
 
 
 class TestPatternBoundaries:
@@ -159,7 +164,7 @@ class TestPatternBoundaries:
         """Zip code patterns should not match when embedded in larger numbers."""
         test_cases = [
             "1734512345",  # 10-digit timestamp containing "12345"
-            "20231201",    # Date containing "20231"
+            "20231201",  # Date containing "20231"
             "ID:1234567890",  # ID containing "12345"
         ]
 
@@ -181,7 +186,8 @@ class TestPatternBoundaries:
             result = engine.find(text)
             phone_matches = [m for m in result.matches if m.category.value == "phone"]
             if phone_matches:
-                print(f"Phone detected in timestamp context '{text}': {[m.matched_text for m in phone_matches]}")
+                matched = [m.matched_text for m in phone_matches]
+                print(f"Phone detected in timestamp context '{text}': {matched}")
 
     def test_ssn_pattern_boundary(self, engine):
         """SSN patterns should have strict boundaries."""
@@ -195,7 +201,8 @@ class TestPatternBoundaries:
             result = engine.find(text)
             ssn_matches = [m for m in result.matches if m.category.value == "ssn"]
             if ssn_matches:
-                print(f"SSN detected in non-SSN context '{text}': {[m.matched_text for m in ssn_matches]}")
+                matched = [m.matched_text for m in ssn_matches]
+                print(f"SSN detected in non-SSN context '{text}': {matched}")
 
 
 class TestRealWorldScenarios:
@@ -213,8 +220,7 @@ class TestRealWorldScenarios:
             result = engine.find(log)
             # Log timestamps shouldn't be detected as critical PII
             critical_matches = [
-                m for m in result.matches
-                if m.severity.value in ["critical", "high"]
+                m for m in result.matches if m.severity.value in ["critical", "high"]
             ]
             if critical_matches:
                 print(f"WARNING: Critical PII detected in log: '{log}'")
@@ -232,7 +238,8 @@ class TestRealWorldScenarios:
         for filename in filenames:
             result = engine.find(filename)
             if result.matches:
-                print(f"File '{filename}' matched: {[(m.ns_id, m.category.value, m.matched_text) for m in result.matches]}")
+                matches = [(m.ns_id, m.category.value, m.matched_text) for m in result.matches]
+                print(f"File '{filename}' matched: {matches}")
 
     def test_api_responses(self, engine):
         """API responses with timestamps and IDs should not trigger false positives."""
@@ -245,4 +252,5 @@ class TestRealWorldScenarios:
         for response in responses:
             result = engine.find(response)
             if result.matches:
-                print(f"API response matched: {[(m.ns_id, m.category.value, m.matched_text) for m in result.matches]}")
+                matches = [(m.ns_id, m.category.value, m.matched_text) for m in result.matches]
+                print(f"API response matched: {matches}")

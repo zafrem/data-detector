@@ -7,6 +7,7 @@ pattern-based matching organized by country and information type.
 
 __version__ = "0.0.2"
 
+from datadetector import context_presets
 from datadetector.async_engine import AsyncEngine
 from datadetector.bulk_generator import BulkDataGenerator
 from datadetector.context import (
@@ -15,7 +16,6 @@ from datadetector.context import (
     KeywordRegistry,
     create_context_from_field_name,
 )
-from datadetector import context_presets
 from datadetector.engine import Engine
 from datadetector.fake_file_generators import (
     ImageGenerator,
@@ -26,14 +26,14 @@ from datadetector.fake_file_generators import (
 from datadetector.fake_generator import FakeDataGenerator
 from datadetector.models import FindResult, RedactionResult, ValidationResult
 from datadetector.nlp import (
+    ChineseTokenizer,
+    KoreanTokenizer,
+    LanguageDetector,
     NLPConfig,
     NLPProcessor,
-    LanguageDetector,
-    StopwordFilter,
-    KoreanTokenizer,
-    ChineseTokenizer,
-    SmartTokenizer,
     PreprocessedText,
+    SmartTokenizer,
+    StopwordFilter,
 )
 from datadetector.rag_config import RAGPolicyConfig, load_rag_policy
 from datadetector.rag_middleware import RAGSecurityMiddleware

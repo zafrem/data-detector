@@ -5,11 +5,12 @@ hints such as column names, field labels, or descriptions. This significantly
 improves performance by only checking relevant patterns instead of all 61 patterns.
 """
 
-from typing import List, Set, Optional, Dict
-from dataclasses import dataclass, field
-import yaml
 import re
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Dict, List, Optional, Set
+
+import yaml
 
 
 @dataclass
@@ -32,7 +33,7 @@ class ContextHint:
     categories: List[str] = field(default_factory=list)
     pattern_ids: List[str] = field(default_factory=list)
     exclude_patterns: List[str] = field(default_factory=list)
-    strategy: str = 'loose'
+    strategy: str = "loose"
 
     def __post_init__(self):
         """Normalize keywords to lowercase for matching."""
@@ -68,12 +69,12 @@ class KeywordRegistry:
             # If keywords file doesn't exist, initialize empty maps
             return
 
-        with open(self.keywords_file, 'r', encoding='utf-8') as f:
+        with open(self.keywords_file, encoding="utf-8") as f:
             data = yaml.safe_load(f)
 
         if data:
-            self.keyword_map = data.get('keywords', {})
-            self.category_map = data.get('categories', {})
+            self.keyword_map = data.get("keywords", {})
+            self.category_map = data.get("categories", {})
 
     def get_patterns_for_keyword(self, keyword: str) -> Set[str]:
         """Get pattern IDs for a given keyword.
@@ -88,20 +89,22 @@ class KeywordRegistry:
         Returns:
             Set of pattern IDs (may include wildcards like 'kr/bank_account_*')
         """
-        keyword_normalized = keyword.lower().replace('_', ' ').replace('-', ' ')
+        keyword_normalized = keyword.lower().replace("_", " ").replace("-", " ")
 
         matched_patterns = set()
 
         # Check all registered keywords
         for registered_kw, config in self.keyword_map.items():
-            registered_normalized = registered_kw.replace('_', ' ').replace('-', ' ')
+            registered_normalized = registered_kw.replace("_", " ").replace("-", " ")
 
             # Exact match or partial match (keyword contains registered keyword)
-            if (registered_normalized == keyword_normalized or
-                registered_normalized in keyword_normalized or
-                keyword_normalized in registered_normalized):
+            if (
+                registered_normalized == keyword_normalized
+                or registered_normalized in keyword_normalized
+                or keyword_normalized in registered_normalized
+            ):
 
-                patterns = config.get('patterns', [])
+                patterns = config.get("patterns", [])
                 matched_patterns.update(patterns)
 
         return matched_patterns
@@ -117,7 +120,7 @@ class KeywordRegistry:
         """
         category_lower = category.lower()
         if category_lower in self.category_map:
-            return set(self.category_map[category_lower].get('patterns', []))
+            return set(self.category_map[category_lower].get("patterns", []))
         return set()
 
     def expand_wildcards(self, patterns: Set[str], all_patterns: List[str]) -> Set[str]:
@@ -133,9 +136,9 @@ class KeywordRegistry:
         expanded = set()
 
         for pattern in patterns:
-            if '*' in pattern:
+            if "*" in pattern:
                 # Convert wildcard to regex
-                pattern_re = re.compile(pattern.replace('*', '.*'))
+                pattern_re = re.compile(pattern.replace("*", ".*"))
                 # Match against all available patterns
                 matched = [p for p in all_patterns if pattern_re.match(p)]
                 expanded.update(matched)
@@ -162,11 +165,7 @@ class ContextFilter:
         """
         self.registry = registry or KeywordRegistry()
 
-    def filter_patterns(
-        self,
-        hint: ContextHint,
-        all_patterns: List[str]
-    ) -> List[str]:
+    def filter_patterns(self, hint: ContextHint, all_patterns: List[str]) -> List[str]:
         """Filter pattern list based on context hint.
 
         Args:
@@ -177,7 +176,7 @@ class ContextFilter:
             Filtered list of pattern IDs to check (maintains original order)
         """
         # Strategy: none - skip filtering entirely
-        if hint.strategy == 'none':
+        if hint.strategy == "none":
             return all_patterns
 
         # Collect patterns from various sources
@@ -200,7 +199,7 @@ class ContextFilter:
         expanded_patterns = self.registry.expand_wildcards(selected_patterns, all_patterns)
 
         # Strategy: loose - if no patterns found, use all patterns as fallback
-        if hint.strategy == 'loose' and not expanded_patterns:
+        if hint.strategy == "loose" and not expanded_patterns:
             return all_patterns
 
         # Apply exclusions
@@ -212,7 +211,7 @@ class ContextFilter:
         return filtered
 
 
-def create_context_from_field_name(field_name: str, strategy: str = 'loose') -> ContextHint:
+def create_context_from_field_name(field_name: str, strategy: str = "loose") -> ContextHint:
     """Convenience function to create ContextHint from a field name.
 
     Automatically extracts keywords from field names like:
@@ -228,11 +227,8 @@ def create_context_from_field_name(field_name: str, strategy: str = 'loose') -> 
         ContextHint with extracted keywords
     """
     # Split by common delimiters
-    keywords = re.split(r'[_\-\s\.]+', field_name.lower())
+    keywords = re.split(r"[_\-\s\.]+", field_name.lower())
     # Filter out empty strings and single characters
     keywords = [kw for kw in keywords if len(kw) > 1]
 
-    return ContextHint(
-        keywords=keywords,
-        strategy=strategy
-    )
+    return ContextHint(keywords=keywords, strategy=strategy)

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 if TYPE_CHECKING:
     from datadetector.fake_generator import FakeDataGenerator
 
+from datadetector.context import ContextFilter, ContextHint, KeywordRegistry
 from datadetector.models import (
     FindResult,
     Match,
@@ -14,9 +15,8 @@ from datadetector.models import (
     RedactionStrategy,
     ValidationResult,
 )
-from datadetector.registry import PatternRegistry
-from datadetector.context import ContextHint, ContextFilter, KeywordRegistry
 from datadetector.nlp import NLPConfig, NLPProcessor
+from datadetector.registry import PatternRegistry
 
 logger = logging.getLogger(__name__)
 

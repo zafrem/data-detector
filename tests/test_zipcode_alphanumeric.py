@@ -27,7 +27,7 @@ class TestZipcodeAlphanumericRejection:
 
         for code in product_codes:
             result = engine.find(code)
-            zipcode_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
+            zipcode_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
             assert len(zipcode_matches) == 0, f"Product code '{code}' should NOT match as zipcode"
 
     def test_zipcode_not_in_serial_numbers(self, engine):
@@ -40,8 +40,10 @@ class TestZipcodeAlphanumericRejection:
 
         for serial in serial_numbers:
             result = engine.find(serial)
-            zipcode_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
-            assert len(zipcode_matches) == 0, f"Serial number '{serial}' should NOT match as zipcode"
+            zipcode_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
+            assert (
+                len(zipcode_matches) == 0
+            ), f"Serial number '{serial}' should NOT match as zipcode"
 
     def test_zipcode_not_with_letter_prefix(self, engine):
         """Zip codes should not match when preceded by letters without separator."""
@@ -53,8 +55,10 @@ class TestZipcodeAlphanumericRejection:
 
         for text in test_cases:
             result = engine.find(text)
-            zipcode_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
-            assert len(zipcode_matches) == 0, f"'{text}' should NOT match as zipcode (letter prefix)"
+            zipcode_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
+            assert (
+                len(zipcode_matches) == 0
+            ), f"'{text}' should NOT match as zipcode (letter prefix)"
 
     def test_zipcode_not_with_letter_suffix(self, engine):
         """Zip codes should not match when followed by letters without separator."""
@@ -66,8 +70,10 @@ class TestZipcodeAlphanumericRejection:
 
         for text in test_cases:
             result = engine.find(text)
-            zipcode_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
-            assert len(zipcode_matches) == 0, f"'{text}' should NOT match as zipcode (letter suffix)"
+            zipcode_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
+            assert (
+                len(zipcode_matches) == 0
+            ), f"'{text}' should NOT match as zipcode (letter suffix)"
 
     def test_zipcode_valid_with_separators(self, engine):
         """Zip codes should match when separated by non-alphanumeric characters."""
@@ -82,7 +88,7 @@ class TestZipcodeAlphanumericRejection:
 
         for text, expected_zip in valid_cases:
             result = engine.find(text)
-            zipcode_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
+            zipcode_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
             assert len(zipcode_matches) > 0, f"'{text}' should match zipcode '{expected_zip}'"
 
     def test_zipcode_standalone(self, engine):
@@ -96,7 +102,7 @@ class TestZipcodeAlphanumericRejection:
 
         for zipcode in valid_zipcodes:
             result = engine.find(zipcode)
-            zipcode_matches = [m for m in result.matches if 'zipcode' in m.ns_id.lower()]
+            zipcode_matches = [m for m in result.matches if "zipcode" in m.ns_id.lower()]
             assert len(zipcode_matches) > 0, f"Standalone zipcode '{zipcode}' should match"
 
     def test_regex_pattern_correctness(self, engine):
@@ -106,13 +112,21 @@ class TestZipcodeAlphanumericRejection:
         registry = load_registry()
 
         # Check Korean zipcode pattern
-        kr_zipcode = registry.get_pattern('kr/zipcode_01')
+        kr_zipcode = registry.get_pattern("kr/zipcode_01")
         assert kr_zipcode is not None
-        assert '(?<![A-Za-z0-9])' in kr_zipcode.pattern, "Korean zipcode should reject alphanumeric prefix"
-        assert '(?![A-Za-z0-9])' in kr_zipcode.pattern, "Korean zipcode should reject alphanumeric suffix"
+        assert (
+            "(?<![A-Za-z0-9])" in kr_zipcode.pattern
+        ), "Korean zipcode should reject alphanumeric prefix"
+        assert (
+            "(?![A-Za-z0-9])" in kr_zipcode.pattern
+        ), "Korean zipcode should reject alphanumeric suffix"
 
         # Check US zipcode pattern
-        us_zipcode = registry.get_pattern('us/zipcode_01')
+        us_zipcode = registry.get_pattern("us/zipcode_01")
         assert us_zipcode is not None
-        assert '(?<![A-Za-z0-9])' in us_zipcode.pattern, "US zipcode should reject alphanumeric prefix"
-        assert '(?![A-Za-z0-9])' in us_zipcode.pattern, "US zipcode should reject alphanumeric suffix"
+        assert (
+            "(?<![A-Za-z0-9])" in us_zipcode.pattern
+        ), "US zipcode should reject alphanumeric prefix"
+        assert (
+            "(?![A-Za-z0-9])" in us_zipcode.pattern
+        ), "US zipcode should reject alphanumeric suffix"

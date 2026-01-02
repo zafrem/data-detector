@@ -5,6 +5,7 @@ This module provides language detection, tokenization, and stopword filtering
 to improve PII detection accuracy, especially for languages like Korean where
 grammatical particles are attached to PII without spaces.
 """
+
 import logging
 import re
 from dataclasses import dataclass, field
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 # Optional imports with graceful degradation
 try:
     import langdetect
+
     LANGDETECT_AVAILABLE = True
 except ImportError:
     LANGDETECT_AVAILABLE = False
@@ -23,6 +25,7 @@ except ImportError:
 
 try:
     from konlpy.tag import Okt
+
     KONLPY_AVAILABLE = True
 except ImportError:
     KONLPY_AVAILABLE = False
@@ -31,6 +34,7 @@ except ImportError:
 try:
     import jieba
     import jieba.posseg as pseg
+
     JIEBA_AVAILABLE = True
 except ImportError:
     JIEBA_AVAILABLE = False
@@ -39,6 +43,7 @@ except ImportError:
 
 class NLPFeature(str, Enum):
     """NLP feature flags."""
+
     LANGUAGE_DETECTION = "language_detection"
     TOKENIZATION = "tokenization"
     STOPWORD_FILTERING = "stopword_filtering"
@@ -54,6 +59,7 @@ class NLPConfig:
     All features are disabled by default for backwards compatibility.
     Enable only the features you need for your use case.
     """
+
     # Enable language detection (requires langdetect)
     enable_language_detection: bool = False
 
@@ -80,11 +86,11 @@ class NLPConfig:
     def is_enabled(self) -> bool:
         """Check if any NLP feature is enabled."""
         return (
-            self.enable_language_detection or
-            self.enable_tokenization or
-            self.enable_stopword_filtering or
-            self.enable_korean_particles or
-            self.enable_chinese_segmentation
+            self.enable_language_detection
+            or self.enable_tokenization
+            or self.enable_stopword_filtering
+            or self.enable_korean_particles
+            or self.enable_chinese_segmentation
         )
 
     def validate(self) -> None:
@@ -95,8 +101,9 @@ class NLPConfig:
                 "Install with: pip install langdetect"
             )
 
-        if (self.enable_korean_particles or
-            (self.enable_tokenization and not JIEBA_AVAILABLE)) and not KONLPY_AVAILABLE:
+        if (
+            self.enable_korean_particles or (self.enable_tokenization and not JIEBA_AVAILABLE)
+        ) and not KONLPY_AVAILABLE:
             logger.warning(
                 "Korean processing requires 'konlpy' package. "
                 "Install with: pip install konlpy. "
@@ -114,37 +121,187 @@ class NLPConfig:
 # Default Korean stopwords (particles and common functional words)
 KOREAN_STOPWORDS = {
     # Particles (조사)
-    '은', '는', '이', '가', '을', '를', '의', '에', '에서', '로', '으로',
-    '와', '과', '도', '만', '부터', '까지', '마저', '조차', '에게', '한테',
-    '께', '더러', '보다', '처럼', '같이', '치고', '대로',
-
+    "은",
+    "는",
+    "이",
+    "가",
+    "을",
+    "를",
+    "의",
+    "에",
+    "에서",
+    "로",
+    "으로",
+    "와",
+    "과",
+    "도",
+    "만",
+    "부터",
+    "까지",
+    "마저",
+    "조차",
+    "에게",
+    "한테",
+    "께",
+    "더러",
+    "보다",
+    "처럼",
+    "같이",
+    "치고",
+    "대로",
     # Common functional words
-    '그', '저', '이', '것', '수', '등', '및', '또는', '또', '그리고',
+    "그",
+    "저",
+    "이",
+    "것",
+    "수",
+    "등",
+    "및",
+    "또는",
+    "또",
+    "그리고",
 }
 
 # Default English stopwords (basic set)
 ENGLISH_STOPWORDS = {
-    'a', 'an', 'the', 'is', 'are', 'was', 'were', 'be', 'been', 'being',
-    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should',
-    'can', 'could', 'may', 'might', 'must', 'shall',
-    'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them',
-    'my', 'your', 'his', 'its', 'our', 'their',
-    'this', 'that', 'these', 'those',
-    'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'from', 'as',
-    'and', 'or', 'but', 'if', 'then', 'else', 'when', 'where', 'why', 'how',
+    "a",
+    "an",
+    "the",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "will",
+    "would",
+    "should",
+    "can",
+    "could",
+    "may",
+    "might",
+    "must",
+    "shall",
+    "i",
+    "you",
+    "he",
+    "she",
+    "it",
+    "we",
+    "they",
+    "me",
+    "him",
+    "her",
+    "us",
+    "them",
+    "my",
+    "your",
+    "his",
+    "its",
+    "our",
+    "their",
+    "this",
+    "that",
+    "these",
+    "those",
+    "in",
+    "on",
+    "at",
+    "to",
+    "for",
+    "of",
+    "with",
+    "by",
+    "from",
+    "as",
+    "and",
+    "or",
+    "but",
+    "if",
+    "then",
+    "else",
+    "when",
+    "where",
+    "why",
+    "how",
 }
 
 # Default Chinese stopwords (common functional words)
 CHINESE_STOPWORDS = {
     # Common particles and functional words
-    '的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一',
-    '一个', '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有',
-    '看', '好', '自己', '这', '那', '里', '为', '与', '给', '从', '来', '对',
-    '于', '之', '中', '以', '及', '其', '或', '而', '且', '则', '即', '若',
+    "的",
+    "了",
+    "在",
+    "是",
+    "我",
+    "有",
+    "和",
+    "就",
+    "不",
+    "人",
+    "都",
+    "一",
+    "一个",
+    "上",
+    "也",
+    "很",
+    "到",
+    "说",
+    "要",
+    "去",
+    "你",
+    "会",
+    "着",
+    "没有",
+    "看",
+    "好",
+    "自己",
+    "这",
+    "那",
+    "里",
+    "为",
+    "与",
+    "给",
+    "从",
+    "来",
+    "对",
+    "于",
+    "之",
+    "中",
+    "以",
+    "及",
+    "其",
+    "或",
+    "而",
+    "且",
+    "则",
+    "即",
+    "若",
     # Question words
-    '什么', '怎么', '哪里', '哪个', '谁', '为什么', '怎样', '多少',
+    "什么",
+    "怎么",
+    "哪里",
+    "哪个",
+    "谁",
+    "为什么",
+    "怎样",
+    "多少",
     # Time/place
-    '这里', '那里', '现在', '时候', '可以', '但是', '因为', '所以',
+    "这里",
+    "那里",
+    "现在",
+    "时候",
+    "可以",
+    "但是",
+    "因为",
+    "所以",
 }
 
 
@@ -188,7 +345,11 @@ class StopwordFilter:
 
     def filter_tokens(self, tokens: List[str]) -> List[str]:
         """Remove stopwords from token list."""
-        return [token for token in tokens if token.lower() not in self.stopwords and token not in self.stopwords]
+        return [
+            token
+            for token in tokens
+            if token.lower() not in self.stopwords and token not in self.stopwords
+        ]
 
     def is_stopword(self, word: str) -> bool:
         """Check if a word is a stopword."""
@@ -249,10 +410,10 @@ class KoreanTokenizer:
         filtered = []
         for morph, pos in morphs:
             # Keep everything except particles (Josa)
-            if pos != 'Josa':
+            if pos != "Josa":
                 filtered.append(morph)
 
-        return ' '.join(filtered)
+        return " ".join(filtered)
 
 
 class ChineseTokenizer:
@@ -302,6 +463,7 @@ class ChineseTokenizer:
             List of keywords
         """
         import jieba.analyse
+
         return jieba.analyse.extract_tags(text, topK=topk)
 
     def add_word(self, word: str, freq: Optional[int] = None, tag: Optional[str] = None) -> None:
@@ -338,8 +500,8 @@ class SmartTokenizer:
     # Detect PII-like characters (Latin, Numbers, common separators like - . @)
     # vs "Other" characters (Hangul, Hanzi, Kana, etc.)
 
-    PII_CHARS = r'[a-zA-Z0-9\-\.\@\+\_\:\/]'
-    NON_PII_CHARS = r'[^a-zA-Z0-9\-\.\@\+\_\:\/\s]'
+    PII_CHARS = r"[a-zA-Z0-9\-\.\@\+\_\:\/]"
+    NON_PII_CHARS = r"[^a-zA-Z0-9\-\.\@\+\_\:\/\s]"
 
     def __init__(self):
         self._cache = {}
@@ -366,26 +528,25 @@ class SmartTokenizer:
         result_chars = []
         original_indices = []
 
-        prev_type = None # 0: PII-safe, 1: Other (CJK etc), 2: Space/Punct
+        prev_type = None  # 0: PII-safe, 1: Other (CJK etc), 2: Space/Punct
 
         for i, char in enumerate(text):
             # Determine character type
             curr_type = 2
             if char.isspace():
                 curr_type = 2
-            elif re.match(r'[a-zA-Z0-9\-\.\@\+\_\:\/]', char):
+            elif re.match(r"[a-zA-Z0-9\-\.\@\+\_\:\/]", char):
                 curr_type = 0
-            elif ord(char) > 127: # Rough check for CJK/Unicode
+            elif ord(char) > 127:  # Rough check for CJK/Unicode
                 curr_type = 1
             else:
-                curr_type = 2 # Other ascii punctuation
+                curr_type = 2  # Other ascii punctuation
 
             # Insert space if transition between 0 <-> 1
             if prev_type is not None:
-                if (prev_type == 0 and curr_type == 1) or \
-                   (prev_type == 1 and curr_type == 0):
-                    result_chars.append(' ')
-                    original_indices.append(-1) # -1 indicates inserted char
+                if (prev_type == 0 and curr_type == 1) or (prev_type == 1 and curr_type == 0):
+                    result_chars.append(" ")
+                    original_indices.append(-1)  # -1 indicates inserted char
 
             result_chars.append(char)
             original_indices.append(i)
@@ -393,7 +554,9 @@ class SmartTokenizer:
 
         return "".join(result_chars), original_indices
 
-    def map_match_to_original(self, match_start: int, match_end: int, mapping: List[int]) -> Tuple[int, int]:
+    def map_match_to_original(
+        self, match_start: int, match_end: int, mapping: List[int]
+    ) -> Tuple[int, int]:
         """
         Maps the start/end indices from the prepared text back to the original text.
         """
@@ -436,6 +599,7 @@ class PreprocessedText:
 
     Contains the processed text along with mappings to restore original positions.
     """
+
     # Processed text (with spaces inserted, stopwords removed, etc.)
     processed_text: str
 
@@ -517,11 +681,7 @@ class NLPProcessor:
             PreprocessedText with processed text and metadata
         """
         if not text:
-            return PreprocessedText(
-                processed_text="",
-                original_text="",
-                index_mapping=[]
-            )
+            return PreprocessedText(processed_text="", original_text="", index_mapping=[])
 
         # Detect language if enabled
         detected_lang = None
@@ -532,7 +692,7 @@ class NLPProcessor:
         # Process Korean particles if enabled
         processed_text = text
         if self.config.enable_korean_particles and self.korean_tokenizer:
-            if detected_lang == 'ko' or detected_lang is None:
+            if detected_lang == "ko" or detected_lang is None:
                 # Only process if Korean or language unknown
                 processed_text = self.korean_tokenizer.remove_particles(processed_text)
 
@@ -542,9 +702,9 @@ class NLPProcessor:
         # Tokenize if enabled
         tokens = None
         if self.config.enable_tokenization:
-            if detected_lang == 'ko' and self.korean_tokenizer:
+            if detected_lang == "ko" and self.korean_tokenizer:
                 tokens = self.korean_tokenizer.tokenize(prepared_text)
-            elif detected_lang == 'zh-cn' and self.chinese_tokenizer:
+            elif detected_lang == "zh-cn" and self.chinese_tokenizer:
                 # Chinese detected - use jieba for segmentation
                 tokens = self.chinese_tokenizer.tokenize(prepared_text)
             elif self.config.enable_chinese_segmentation and self.chinese_tokenizer:
@@ -563,5 +723,5 @@ class NLPProcessor:
             original_text=text,
             index_mapping=mapping,
             detected_language=detected_lang,
-            tokens=tokens
+            tokens=tokens,
         )
