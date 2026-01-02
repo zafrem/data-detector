@@ -141,7 +141,7 @@ class TestLocationFieldFiltering:
 
         kr_patterns = [p for p in registry.get_all_patterns() if p.location == "kr"]
 
-        assert len(kr_patterns) == 29, "Should have 29 Korean patterns"
+        assert len(kr_patterns) == 28, "Should have 28 Korean patterns"
         for pattern in kr_patterns:
             assert pattern.location == "kr"
             assert pattern.namespace == "kr"
@@ -163,7 +163,7 @@ class TestLocationFieldFiltering:
 
         comm_patterns = [p for p in registry.get_all_patterns() if p.location == "comm"]
 
-        assert len(comm_patterns) == 24, "Should have 24 common patterns (14 general + 10 tokens)"
+        assert len(comm_patterns) == 20, "Should have 20 common patterns"
         for pattern in comm_patterns:
             assert pattern.location == "comm"
             assert pattern.namespace == "comm"
@@ -177,7 +177,13 @@ class TestLocationFieldFiltering:
         assert "kr" in locations
         assert "us" in locations
         assert "comm" in locations
-        assert len(locations) == 3
+        assert "cn" in locations
+        assert "jp" in locations
+        assert "eu" in locations
+        assert "in" in locations
+        assert "tw" in locations
+        assert "co" in locations
+        assert len(locations) == 9
 
 
 class TestLocationFieldWithEngine:
@@ -250,7 +256,7 @@ class TestLocationFieldConsistency:
     def test_all_patterns_have_valid_location(self):
         """Test that all patterns have valid location values."""
         registry = load_registry()
-        valid_locations = {"kr", "us", "comm"}
+        valid_locations = {"kr", "us", "comm", "cn", "jp", "eu", "in", "tw", "co"}
 
         for pattern in registry.get_all_patterns():
             assert (
@@ -351,11 +357,11 @@ class TestLocationFieldDocumentation:
 
         pattern_count = len(registry.get_all_patterns())
         assert (
-            pattern_count == 61
-        ), f"Expected 61 patterns (51 original + 10 tokens), found {pattern_count}"
+            pattern_count == 158
+        ), f"Expected 158 patterns, found {pattern_count}"
 
         # All should have location
         patterns_with_location = [
             p for p in registry.get_all_patterns() if hasattr(p, "location") and p.location
         ]
-        assert len(patterns_with_location) == 61, "All patterns should have location field"
+        assert len(patterns_with_location) == 158, "All patterns should have location field"

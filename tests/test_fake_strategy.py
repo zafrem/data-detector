@@ -33,7 +33,7 @@ class TestFakeStrategy:
     def test_fake_phone_replacement(self, engine):
         """Test fake phone generation."""
         text = "Call me at 555-123-4567"
-        result = engine.redact(text, namespaces=["comm"], strategy=RedactionStrategy.FAKE)
+        result = engine.redact(text, namespaces=["us"], strategy=RedactionStrategy.FAKE)
 
         # Should not contain original phone
         assert "555-123-4567" not in result.redacted_text
