@@ -7,7 +7,7 @@ Run this file:
     python3 examples/context_presets_examples.py
 """
 
-from datadetector import Engine, load_registry, context_presets
+from datadetector import Engine, context_presets, load_registry
 
 
 def example_1_database_scanning():
@@ -34,16 +34,16 @@ def example_1_database_scanning():
         # Select preset based on column name
         if "ssn" in column_name:
             preset = context_presets.DATABASE_SSN
-            print(f"   Using: DATABASE_SSN")
+            print("   Using: DATABASE_SSN")
         elif "email" in column_name:
             preset = context_presets.DATABASE_EMAIL
-            print(f"   Using: DATABASE_EMAIL")
+            print("   Using: DATABASE_EMAIL")
         elif "phone" in column_name:
             preset = context_presets.DATABASE_PHONE
-            print(f"   Using: DATABASE_PHONE")
+            print("   Using: DATABASE_PHONE")
         elif "zip" in column_name:
             preset = context_presets.DATABASE_ADDRESS
-            print(f"   Using: DATABASE_ADDRESS")
+            print("   Using: DATABASE_ADDRESS")
         else:
             preset = None
 
@@ -124,7 +124,7 @@ def example_3_contact_form():
 
     print(f"\nFound {len(result.matches)} contact details using CONTACT_INFO preset:")
     for match in result.matches:
-        text = contact_form[match.start:match.end]
+        text = contact_form[match.start : match.end]
         print(f"  • {text} ({match.category.value}, severity: {match.severity.value})")
 
 
@@ -154,7 +154,7 @@ def example_4_financial_data():
 
     print(f"\nFound {len(result.matches)} financial data points using FINANCIAL_DATA preset:")
     for match in result.matches:
-        text = payment_record[match.start:match.end]
+        text = payment_record[match.start : match.end]
         print(f"  • {text} ({match.category.value}, severity: {match.severity.value})")
 
 
@@ -186,7 +186,7 @@ def example_5_critical_pii_scan():
     print(f"\nFound {len(result.matches)} CRITICAL PII items:")
     print("(Note: Email and phone are NOT critical, so they're ignored)")
     for match in result.matches:
-        text = document[match.start:match.end]
+        text = document[match.start : match.end]
         print(f"  🚨 {text} ({match.category.value}, severity: {match.severity.value})")
 
 
@@ -211,10 +211,11 @@ def example_6_api_response_scanning():
 
     print("\nAPI Response:")
     import json
+
     print(json.dumps(api_response, indent=2))
 
     # Scan each string field using API_USER_DATA preset
-    print(f"\nScanning with API_USER_DATA preset:")
+    print("\nScanning with API_USER_DATA preset:")
     for key, value in api_response.items():
         if isinstance(value, str):
             result = engine.find(value, context=context_presets.API_USER_DATA)
@@ -279,7 +280,6 @@ def example_8_preset_dictionaries():
 
     from datadetector.context_presets import (
         DATABASE_PRESETS,
-        KOREAN_PRESETS,
         get_preset,
         list_presets,
     )

@@ -5,7 +5,7 @@ checking relevant patterns based on contextual information like column names,
 field labels, or descriptions.
 """
 
-from datadetector import Engine, load_registry, ContextHint, create_context_from_field_name
+from datadetector import ContextHint, Engine, create_context_from_field_name, load_registry
 
 
 def example_1_database_column_scanning():
@@ -21,17 +21,17 @@ def example_1_database_column_scanning():
         {
             "column_name": "user_ssn",
             "data_type": "VARCHAR(11)",
-            "values": ["123-45-6789", "987-65-4321", "555-12-3456"]
+            "values": ["123-45-6789", "987-65-4321", "555-12-3456"],
         },
         {
             "column_name": "billing_zip",
             "data_type": "VARCHAR(10)",
-            "values": ["90210", "48201-1234", "12345"]
+            "values": ["90210", "48201-1234", "12345"],
         },
         {
             "column_name": "phone_number",
             "data_type": "VARCHAR(20)",
-            "values": ["(555) 123-4567", "+1-555-987-6543"]
+            "values": ["(555) 123-4567", "+1-555-987-6543"],
         },
     ]
 
@@ -40,11 +40,11 @@ def example_1_database_column_scanning():
         print(f"Data Type: {column['data_type']}")
 
         # Create context hint from column name
-        context = create_context_from_field_name(column['column_name'], strategy='strict')
+        context = create_context_from_field_name(column["column_name"], strategy="strict")
 
         print(f"Context keywords: {context.keywords}")
 
-        for value in column['values']:
+        for value in column["values"]:
             # Find with context filtering - only checks relevant patterns
             result = engine.find(value, context=context)
 
@@ -68,17 +68,17 @@ def example_2_form_processing():
         {
             "label": "Social Security Number",
             "description": "Enter your 9-digit SSN",
-            "value": "123-45-6789"
+            "value": "123-45-6789",
         },
         {
             "label": "Credit Card",
             "description": "16-digit card number",
-            "value": "4532-1234-5678-9010"
+            "value": "4532-1234-5678-9010",
         },
         {
             "label": "Email Address",
             "description": "Your contact email",
-            "value": "user@example.com"
+            "value": "user@example.com",
         },
     ]
 
@@ -87,12 +87,9 @@ def example_2_form_processing():
         print(f"Description: {field['description']}")
 
         # Create context from label
-        context = ContextHint(
-            keywords=[field['label'].lower()],
-            strategy='loose'
-        )
+        context = ContextHint(keywords=[field["label"].lower()], strategy="loose")
 
-        result = engine.find(field['value'], context=context)
+        result = engine.find(field["value"], context=context)
 
         if result.has_matches:
             match = result.matches[0]
@@ -114,18 +111,18 @@ def example_3_category_based_filtering():
     document_sections = [
         {
             "header": "Contact Information",
-            "categories": ['email', 'phone'],
-            "content": "Email: user@example.com, Phone: (555) 123-4567"
+            "categories": ["email", "phone"],
+            "content": "Email: user@example.com, Phone: (555) 123-4567",
         },
         {
             "header": "Payment Details",
-            "categories": ['credit_card', 'bank'],
-            "content": "Card: 4532-1234-5678-9010"
+            "categories": ["credit_card", "bank"],
+            "content": "Card: 4532-1234-5678-9010",
         },
         {
             "header": "Personal Information",
-            "categories": ['ssn', 'passport'],
-            "content": "SSN: 123-45-6789, Passport: 123456789"
+            "categories": ["ssn", "passport"],
+            "content": "SSN: 123-45-6789, Passport: 123456789",
         },
     ]
 
@@ -133,18 +130,15 @@ def example_3_category_based_filtering():
         print(f"\nSection: {section['header']}")
         print(f"Categories to check: {section['categories']}")
 
-        context = ContextHint(
-            categories=section['categories'],
-            strategy='strict'
-        )
+        context = ContextHint(categories=section["categories"], strategy="strict")
 
-        result = engine.find(section['content'], context=context)
+        result = engine.find(section["content"], context=context)
 
         print(f"Content: {section['content']}")
         print(f"Matches found: {len(result.matches)}")
 
         for match in result.matches:
-            matched_text = section['content'][match.start:match.end]
+            matched_text = section["content"][match.start : match.end]
             print(f"  - {matched_text} -> {match.ns_id} ({match.category.value})")
 
 
@@ -157,16 +151,13 @@ def example_4_explicit_pattern_ids():
     engine = Engine(registry=load_registry())
 
     # Only check specific patterns
-    context = ContextHint(
-        pattern_ids=['us/ssn_01', 'us/zipcode_01'],
-        strategy='strict'
-    )
+    context = ContextHint(pattern_ids=["us/ssn_01", "us/zipcode_01"], strategy="strict")
 
     test_data = [
         "SSN: 123-45-6789",
         "ZIP: 90210",
         "Email: user@example.com",  # Won't match - email pattern not included
-        "Phone: (555) 123-4567",     # Won't match - phone pattern not included
+        "Phone: (555) 123-4567",  # Won't match - phone pattern not included
     ]
 
     print("Only checking patterns: us/ssn_01, us/zipcode_01")
@@ -196,14 +187,14 @@ def example_5_performance_comparison():
     # Without context filtering (checks all 61 patterns)
     start = time.time()
     for _ in range(100):
-        result = engine.find(text)
+        engine.find(text)
     elapsed_no_context = time.time() - start
 
     # With context filtering (checks only ~5 relevant patterns)
-    context = ContextHint(keywords=['ssn', 'zip'], strategy='strict')
+    context = ContextHint(keywords=["ssn", "zip"], strategy="strict")
     start = time.time()
     for _ in range(100):
-        result = engine.find(text, context=context)
+        engine.find(text, context=context)
     elapsed_with_context = time.time() - start
 
     print(f"Text: '{text}'")
@@ -237,7 +228,7 @@ def example_6_redaction_with_context():
 
     for field, value in data.items():
         # Create context from field name
-        context = create_context_from_field_name(field, strategy='loose')
+        context = create_context_from_field_name(field, strategy="loose")
 
         # Redact with context filtering
         redaction_result = engine.redact(str(value), context=context)
@@ -259,29 +250,22 @@ def example_7_korean_patterns():
         {
             "field": "주민등록번호",  # RRN
             "value": "990101-1234567",
-            "keywords": ["주민번호", "rrn"]
+            "keywords": ["주민번호", "rrn"],
         },
         {
             "field": "계좌번호",  # Bank account
             "value": "123-456789-01234",
-            "keywords": ["계좌", "bank_account"]
+            "keywords": ["계좌", "bank_account"],
         },
-        {
-            "field": "우편번호",  # Zipcode
-            "value": "06234",
-            "keywords": ["우편번호", "postal"]
-        },
+        {"field": "우편번호", "value": "06234", "keywords": ["우편번호", "postal"]},  # Zipcode
     ]
 
     for item in korean_data:
         print(f"\nField: {item['field']}")
 
-        context = ContextHint(
-            keywords=item['keywords'],
-            strategy='strict'
-        )
+        context = ContextHint(keywords=item["keywords"], strategy="strict")
 
-        result = engine.find(item['value'], context=context)
+        result = engine.find(item["value"], context=context)
 
         if result.has_matches:
             match = result.matches[0]
@@ -301,14 +285,13 @@ def example_8_wildcard_patterns():
 
     # Use wildcard to match all Korean bank account patterns
     context = ContextHint(
-        pattern_ids=['kr/bank_account_*'],  # Matches all bank_account patterns
-        strategy='strict'
+        pattern_ids=["kr/bank_account_*"], strategy="strict"  # Matches all bank_account patterns
     )
 
     bank_accounts = [
-        "123-456789-01234",   # 13-digit
-        "123-45-678901-2",    # 12-digit (Daegu)
-        "12-345678-90",       # 10-digit (Jeju)
+        "123-456789-01234",  # 13-digit
+        "123-45-678901-2",  # 12-digit (Daegu)
+        "12-345678-90",  # 10-digit (Jeju)
     ]
 
     print("Checking with wildcard: kr/bank_account_*")

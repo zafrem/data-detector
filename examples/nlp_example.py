@@ -12,7 +12,7 @@ Features demonstrated:
 - Stopword filtering
 """
 
-from datadetector import Engine, load_registry, NLPConfig
+from datadetector import Engine, NLPConfig, load_registry
 
 
 def basic_example():
@@ -89,7 +89,7 @@ def full_nlp_pipeline():
         print(f"\nText: {text}")
         print(f"Matches found: {len(result.matches)}")
         for match in result.matches:
-            matched_text = text[match.start:match.end]
+            matched_text = text[match.start : match.end]
             print(f"  - {match.category}: {matched_text}")
 
 
@@ -119,7 +119,7 @@ def mixed_language_example():
         print(f"\nText: {text}")
         print(f"Matches found: {len(result.matches)}")
         for match in result.matches:
-            matched_text = text[match.start:match.end]
+            matched_text = text[match.start : match.end]
             print(f"  - {match.category}: {matched_text}")
 
 
@@ -151,7 +151,7 @@ def chinese_example():
         print(f"\nText: {text}")
         print(f"Matches found: {len(result.matches)}")
         for match in result.matches:
-            matched_text = text[match.start:match.end]
+            matched_text = text[match.start : match.end]
             print(f"  - {match.category}: {matched_text}")
 
 
@@ -189,14 +189,14 @@ def standalone_nlp_components():
     print("=" * 70)
 
     from datadetector.nlp import (
-        LanguageDetector,
-        KoreanTokenizer,
-        ChineseTokenizer,
-        StopwordFilter,
-        SmartTokenizer,
-        LANGDETECT_AVAILABLE,
-        KONLPY_AVAILABLE,
         JIEBA_AVAILABLE,
+        KONLPY_AVAILABLE,
+        LANGDETECT_AVAILABLE,
+        ChineseTokenizer,
+        KoreanTokenizer,
+        LanguageDetector,
+        SmartTokenizer,
+        StopwordFilter,
     )
 
     # 1. Language Detection
@@ -266,20 +266,19 @@ def configuration_examples():
     print("=" * 70)
 
     # Minimal config - just script boundary detection (always enabled)
-    config1 = NLPConfig()
     print("\n1. Default (No NLP):")
-    print(f"   - Language detection: {config1.enable_language_detection}")
-    print(f"   - Tokenization: {config1.enable_tokenization}")
-    print(f"   - Stopword filtering: {config1.enable_stopword_filtering}")
-    print(f"   - Korean particles: {config1.enable_korean_particles}")
+    print(f"   - Language detection: {NLPConfig().enable_language_detection}")
+    print(f"   - Tokenization: {NLPConfig().enable_tokenization}")
+    print(f"   - Stopword filtering: {NLPConfig().enable_stopword_filtering}")
+    print(f"   - Korean particles: {NLPConfig().enable_korean_particles}")
 
     # Language detection only
-    config2 = NLPConfig(enable_language_detection=True)
+    NLPConfig(enable_language_detection=True)
     print("\n2. Language Detection Only:")
     print("   - Detects text language for better processing")
 
     # Korean-focused config
-    config3 = NLPConfig(
+    NLPConfig(
         enable_language_detection=True,
         enable_korean_particles=True,
     )
@@ -288,7 +287,7 @@ def configuration_examples():
     print("   - Korean particle removal enabled")
 
     # Chinese-focused config
-    config4 = NLPConfig(
+    NLPConfig(
         enable_language_detection=True,
         enable_chinese_segmentation=True,
         enable_stopword_filtering=True,
@@ -299,7 +298,7 @@ def configuration_examples():
     print("   - Stopword filtering enabled")
 
     # Full pipeline
-    config5 = NLPConfig(
+    NLPConfig(
         enable_language_detection=True,
         enable_tokenization=True,
         enable_stopword_filtering=True,
@@ -329,7 +328,7 @@ def main():
     configuration_examples()
 
     # Check dependencies
-    from datadetector.nlp import LANGDETECT_AVAILABLE, KONLPY_AVAILABLE, JIEBA_AVAILABLE
+    from datadetector.nlp import JIEBA_AVAILABLE, KONLPY_AVAILABLE, LANGDETECT_AVAILABLE
 
     print("\n\nDependency Status:")
     print(f"  langdetect: {'✓ Installed' if LANGDETECT_AVAILABLE else '✗ Not installed'}")

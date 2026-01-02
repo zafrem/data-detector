@@ -14,10 +14,10 @@ def demonstrate_yaml_utilities():
     print("\n" + "=" * 60)
     print("YAML Pattern Management - Clean Examples")
     print("=" * 60)
-    
+
     # Use the utility manager
     manager = YAMLPatternManager()
-    
+
     try:
         # Example 1: Create pattern file
         print("\n📝 Creating Pattern File")
@@ -25,59 +25,59 @@ def demonstrate_yaml_utilities():
         print(f"   ✅ Created file with {result['pattern_count']} patterns")
         print(f"   📁 Namespace: {result['namespace']}")
         print(f"   📄 Description: {result['description']}")
-        
+
         # Example 2: Add pattern
         print("\n➕ Adding New Pattern")
         result = manager.add_pattern()
         print(f"   ✅ Added '{result['added_pattern']}'")
         print(f"   📊 Total patterns: {result['total_patterns']}")
         print(f"   📋 Pattern IDs: {', '.join(result['pattern_ids'])}")
-        
+
         # Example 3: Update pattern
         print("\n✏️  Updating Pattern")
         result = manager.update_pattern()
-        if result['success']:
+        if result["success"]:
             print(f"   ✅ Updated '{result['pattern_id']}'")
             print(f"   🔄 Severity: {result['old_severity']} → {result['new_severity']}")
             print(f"   🔄 Action: redact → {result['new_action']}")
-        
+
         # Example 4: Query patterns
         print("\n🔍 Querying Patterns")
         patterns = manager.query_patterns()
         print(f"   📊 Found {len(patterns)} patterns:")
         for pattern in patterns:
             print(f"   • {pattern['id']} ({pattern['category']}) - {pattern['severity']}")
-        
+
         # Example 5: Test with engine
         print("\n🚀 Testing with Detection Engine")
         result = manager.test_with_engine()
         print(f"   ✅ Loaded {result['registry_size']} patterns")
         print(f"   🔍 Found {result['match_count']} matches in {result['text_length']} chars")
         print(f"   🔒 Made {result['redaction_count']} redactions")
-        
-        print(f"\n   Detected patterns:")
-        for match in result['matches']:
+
+        print("\n   Detected patterns:")
+        for match in result["matches"]:
             print(f"   • {match['pattern_id']} ({match['category']}) at {match['position']}")
-        
+
         # Example 6: Remove pattern
         print("\n🗑️  Removing Pattern")
         result = manager.remove_pattern()
-        if result['success']:
+        if result["success"]:
             print(f"   ✅ Removed '{result['removed_pattern']}'")
             print(f"   📋 Remaining: {', '.join(result['remaining_patterns'])}")
-        
+
         # Example 7: Backup and restore
         print("\n💾 Backup and Restore")
         result = manager.backup_and_restore()
-        print(f"   ✅ Created backup")
+        print("   ✅ Created backup")
         print(f"   ➕ Added temp pattern: {result['temp_pattern_added']}")
-        print(f"   🔄 Restored from backup")
+        print("   🔄 Restored from backup")
         print(f"   ✅ Temp pattern removed: {result['temp_pattern_removed']}")
-        
+
         print("\n" + "=" * 60)
         print("✅ All examples completed successfully!")
         print("=" * 60)
-        
+
     finally:
         # Clean up
         print("\n🧹 Cleaning up temporary files...")
@@ -91,11 +91,11 @@ def demonstrate_batch_processing():
     print("\n" + "=" * 60)
     print("Batch Processing Example")
     print("=" * 60)
-    
+
     print("🚀 Running all examples in batch mode...")
     results = run_all_examples()
-    
-    print(f"\n📊 Summary:")
+
+    print("\n📊 Summary:")
     print(f"   • Created file with {results['create_file']['pattern_count']} patterns")
     print(f"   • Added {results['add_pattern']['added_pattern']}")
     print(f"   • Updated {results['update_pattern']['pattern_id']}")
@@ -112,9 +112,9 @@ def main():
     print("1. Interactive demonstration")
     print("2. Batch processing")
     print("3. Both")
-    
+
     choice = input("\nEnter choice (1-3) or press Enter for option 1: ").strip()
-    
+
     if choice == "2":
         demonstrate_batch_processing()
     elif choice == "3":

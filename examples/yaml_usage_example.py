@@ -14,6 +14,7 @@ cluttering your current working directory.
 
 import os
 import tempfile
+
 from datadetector import (
     Engine,
     PatternFileHandler,
@@ -125,7 +126,7 @@ def example_3_update_pattern():
     if success:
         # Get updated pattern
         updated = PatternFileHandler.get_pattern_from_file(PATTERN_FILE, "api_key_01")
-        print(f"✅ Updated api_key_01")
+        print("✅ Updated api_key_01")
         print(f"   New severity: {updated['policy']['severity']}")
         print(f"   New action: {updated['policy']['action_on_match']}")
 
@@ -158,9 +159,7 @@ def example_5_use_with_engine():
     print("=" * 60)
 
     # Load custom patterns (skip example validation for demo)
-    registry = load_registry(
-        paths=[PATTERN_FILE], validate_schema=False, validate_examples=False
-    )
+    registry = load_registry(paths=[PATTERN_FILE], validate_schema=False, validate_examples=False)
 
     print(f"✅ Loaded {len(registry)} patterns from custom namespace")
 
@@ -178,12 +177,12 @@ def example_5_use_with_engine():
     # Find PII
     result = engine.find(test_text, namespaces=["custom"])
 
-    print(f"\n📊 Detection Results:")
+    print("\n📊 Detection Results:")
     print(f"   Text length: {len(test_text)} chars")
     print(f"   Matches found: {result.match_count}")
     print(f"   Namespaces searched: {result.namespaces_searched}")
 
-    print(f"\n🔍 Matches:")
+    print("\n🔍 Matches:")
     for match in result.matches:
         print(f"   - {match.pattern_id} ({match.category.value})")
         print(f"     Position: {match.start}-{match.end}")
@@ -192,7 +191,7 @@ def example_5_use_with_engine():
     # Redact PII
     redacted = engine.redact(test_text, namespaces=["custom"])
 
-    print(f"\n🔒 Redacted Text:")
+    print("\n🔒 Redacted Text:")
     print(redacted.redacted_text)
     print(f"\n   Redactions: {redacted.redaction_count}")
 
@@ -204,9 +203,7 @@ def example_6_remove_pattern():
     print("=" * 60)
 
     # Remove pattern
-    success = PatternFileHandler.remove_pattern_from_file(
-        PATTERN_FILE, "internal_id_01"
-    )
+    success = PatternFileHandler.remove_pattern_from_file(PATTERN_FILE, "internal_id_01")
 
     if success:
         print("✅ Removed internal_id_01")
@@ -263,7 +260,7 @@ def cleanup():
         if os.path.exists(file):
             os.remove(file)
             print(f"🧹 Cleaned up: {file}")
-    
+
     # Try to remove temp directory if empty
     try:
         os.rmdir(TEMP_DIR)

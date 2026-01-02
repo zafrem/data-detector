@@ -356,9 +356,7 @@ class TestLocationFieldDocumentation:
         registry = load_registry()
 
         pattern_count = len(registry.get_all_patterns())
-        assert (
-            pattern_count == 158
-        ), f"Expected 158 patterns, found {pattern_count}"
+        assert pattern_count == 158, f"Expected 158 patterns, found {pattern_count}"
 
         # All should have location
         patterns_with_location = [

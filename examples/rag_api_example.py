@@ -8,8 +8,6 @@ Then run this example:
     python examples/rag_api_example.py
 """
 
-import json
-
 import requests
 
 # Base URL for the data-detector server

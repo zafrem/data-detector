@@ -18,7 +18,6 @@ import asyncio
 
 from datadetector import Engine, load_registry
 from datadetector.models import RedactionStrategy
-from datadetector.rag_config import load_rag_policy
 from datadetector.rag_middleware import RAGSecurityMiddleware
 from datadetector.rag_models import SecurityLayer, SecurityPolicy
 
@@ -139,16 +138,19 @@ async def main():
 
     print("\nEdit config/rag_security_policy.yml:")
     print("-" * 70)
-    print("""
+    print(
+        """
 storage_layer:
   enabled: true
   action: sanitize
   redaction_strategy: fake  # Choose: mask | fake | tokenize | hash
-    """)
+    """
+    )
 
     print("\nThen load and use:")
     print("-" * 70)
-    print("""
+    print(
+        """
 from datadetector.rag_config import load_rag_policy
 
 # Load from YAML
@@ -166,7 +168,8 @@ middleware = RAGSecurityMiddleware(
     storage_policy=storage_policy,
     output_policy=output_policy
 )
-    """)
+    """
+    )
 
     # ============================================================
     # Performance Comparison
@@ -205,7 +208,8 @@ middleware = RAGSecurityMiddleware(
     print("RECOMMENDED USE CASES")
     print("=" * 70)
 
-    print("""
+    print(
+        """
 1. PUBLIC CHATBOT
    Input:   FAKE (preserve query structure)
    Storage: FAKE (better semantic search)
@@ -225,7 +229,8 @@ middleware = RAGSecurityMiddleware(
    Input:   MASK
    Storage: TOKENIZE (reversible but secure)
    Output:  MASK
-    """)
+    """
+    )
 
     print("\n" + "=" * 70)
     print("✓ Example Complete")

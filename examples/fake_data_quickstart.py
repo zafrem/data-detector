@@ -10,7 +10,15 @@ cluttering your current working directory.
 
 import os
 import tempfile
-from datadetector import BulkDataGenerator, FakeDataGenerator, ImageGenerator, OfficeFileGenerator, PDFGenerator, XMLGenerator
+
+from datadetector import (
+    BulkDataGenerator,
+    FakeDataGenerator,
+    ImageGenerator,
+    OfficeFileGenerator,
+    PDFGenerator,
+    XMLGenerator,
+)
 
 # Create temporary directory for examples
 TEMP_DIR = tempfile.mkdtemp()
@@ -55,7 +63,7 @@ def main():
     print("\n6. Generate Office files:")
     try:
         office_gen = OfficeFileGenerator(generator)
-        
+
         docx_path = os.path.join(TEMP_DIR, "output.docx")
         office_gen.create_word_file(docx_path, paragraphs=10)
         generated_files.append(docx_path)
@@ -86,7 +94,7 @@ def main():
     print("\n8. Generate PDF files:")
     try:
         pdf_gen = PDFGenerator(generator)
-        
+
         pdf_path = os.path.join(TEMP_DIR, "output.pdf")
         pdf_gen.create_pdf_file(pdf_path, pages=5)
         generated_files.append(pdf_path)
@@ -117,11 +125,11 @@ def main():
     print("\n✓ All files generated successfully!")
     print(f"\n📁 Files created in: {TEMP_DIR}")
     print(f"📊 Total files: {len(generated_files)}")
-    
+
     # Calculate total size
     total_size = sum(os.path.getsize(f) for f in generated_files if os.path.exists(f))
     print(f"💾 Total size: {total_size / 1024 / 1024:.2f} MB")
-    
+
     print("\n🧹 To clean up, delete the temporary directory:")
     print(f"   rm -rf {TEMP_DIR}")
     print("\nSee fake_data_demo.py and bulk_training_data_demo.py for more examples.")
