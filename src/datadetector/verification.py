@@ -10,7 +10,6 @@ pattern-engine/verification/python/verification.py
 import logging
 import sys
 from pathlib import Path
-from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -25,23 +24,17 @@ try:
         contains_letter,
         dms_coordinate,
         generic_number_not_timestamp,
+        get_verification_function,
         high_entropy_token,
         iban_mod97,
         korean_bank_account_valid,
         korean_zipcode_valid,
         luhn,
         not_timestamp,
+        register_verification_function,
+        unregister_verification_function,
         us_ssn_valid,
         us_zipcode_valid,
-    )
-    from verification.python.verification import (
-        get_verification_function as _get_verification_function,
-    )
-    from verification.python.verification import (
-        register_verification_function as _register_verification_function,
-    )
-    from verification.python.verification import (
-        unregister_verification_function as _unregister_verification_function,
     )
 except ImportError as e:
     logger.error(f"Failed to import verification functions from centralized location: {e}")
@@ -51,94 +44,20 @@ except ImportError as e:
     raise
 
 
-# Re-export the imported functions
-def iban_mod97(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import iban_mod97 as _impl
-
-    return _impl(value)
-
-
-def luhn(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import luhn as _impl
-
-    return _impl(value)
-
-
-def dms_coordinate(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import dms_coordinate as _impl
-
-    return _impl(value)
-
-
-def high_entropy_token(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import high_entropy_token as _impl
-
-    return _impl(value)
-
-
-def not_timestamp(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import not_timestamp as _impl
-
-    return _impl(value)
-
-
-def korean_zipcode_valid(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import korean_zipcode_valid as _impl
-
-    return _impl(value)
-
-
-def us_zipcode_valid(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import us_zipcode_valid as _impl
-
-    return _impl(value)
-
-
-def korean_bank_account_valid(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import korean_bank_account_valid as _impl
-
-    return _impl(value)
-
-
-def generic_number_not_timestamp(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import generic_number_not_timestamp as _impl
-
-    return _impl(value)
-
-
-def contains_letter(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import contains_letter as _impl
-
-    return _impl(value)
-
-
-def us_ssn_valid(value: str) -> bool:
-    """Re-exported from centralized verification library."""
-    from verification.python.verification import us_ssn_valid as _impl
-
-    return _impl(value)
-
-
-def get_verification_function(name: str) -> Optional[Callable[[str], bool]]:
-    """Get verification function by name from centralized registry."""
-    return _get_verification_function(name)
-
-
-def register_verification_function(name: str, func: Callable[[str], bool]) -> None:
-    """Register a custom verification function in centralized registry."""
-    _register_verification_function(name, func)
-
-
-def unregister_verification_function(name: str) -> bool:
-    """Unregister a verification function from centralized registry."""
-    return _unregister_verification_function(name)
+# Re-export all the imported functions for convenience
+__all__ = [
+    "iban_mod97",
+    "luhn",
+    "dms_coordinate",
+    "high_entropy_token",
+    "not_timestamp",
+    "korean_zipcode_valid",
+    "us_zipcode_valid",
+    "korean_bank_account_valid",
+    "generic_number_not_timestamp",
+    "contains_letter",
+    "us_ssn_valid",
+    "get_verification_function",
+    "register_verification_function",
+    "unregister_verification_function",
+]

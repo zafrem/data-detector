@@ -8,7 +8,7 @@ improves performance by only checking relevant patterns instead of all 61 patter
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 import yaml
 
@@ -35,7 +35,7 @@ class ContextHint:
     exclude_patterns: List[str] = field(default_factory=list)
     strategy: str = "loose"
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Normalize keywords to lowercase for matching."""
         self.keywords = [kw.lower() for kw in self.keywords]
         self.categories = [cat.lower() for cat in self.categories]
@@ -59,11 +59,11 @@ class KeywordRegistry:
             keywords_file = Path(__file__).parent.parent.parent / "config" / "keywords.yml"
 
         self.keywords_file = keywords_file
-        self.keyword_map: Dict[str, Dict] = {}
-        self.category_map: Dict[str, Dict] = {}
+        self.keyword_map: Dict[str, Dict[str, Any]] = {}
+        self.category_map: Dict[str, Dict[str, Any]] = {}
         self._load_keywords()
 
-    def _load_keywords(self):
+    def _load_keywords(self) -> None:
         """Load keyword mappings from YAML file."""
         if not self.keywords_file.exists():
             # If keywords file doesn't exist, initialize empty maps

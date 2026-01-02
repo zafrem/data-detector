@@ -19,6 +19,8 @@ Available Presets:
     - General: PII_ALL, PII_CRITICAL_ONLY
 """
 
+from typing import Dict, List
+
 from datadetector.context import ContextHint
 
 # ==============================================================================
@@ -379,7 +381,7 @@ Example:
 # PRESET COLLECTIONS
 # ==============================================================================
 
-DATABASE_PRESETS = {
+DATABASE_PRESETS: Dict[str, ContextHint] = {
     "ssn": DATABASE_SSN,
     "email": DATABASE_EMAIL,
     "phone": DATABASE_PHONE,
@@ -494,7 +496,7 @@ def get_preset(name: str) -> ContextHint:
     return all_presets[name]
 
 
-def list_presets() -> dict:
+def list_presets() -> Dict[str, List[str]]:
     """List all available presets grouped by category.
 
     Returns:

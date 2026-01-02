@@ -10,7 +10,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List, Optional, Set, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -308,7 +308,7 @@ CHINESE_STOPWORDS = {
 class LanguageDetector:
     """Detects the language of input text."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         if not LANGDETECT_AVAILABLE:
             raise ImportError("langdetect package required for language detection")
 
@@ -404,10 +404,10 @@ class KoreanTokenizer:
         Example: "010-1234-5678은" -> "010-1234-5678"
         """
         # Get morphemes with POS tags
-        morphs = self.tokenizer.pos(text)
+        morphs: List[Tuple[str, str]] = self.tokenizer.pos(text)
 
         # Filter out particles (Josa in Korean POS tagging)
-        filtered = []
+        filtered: List[str] = []
         for morph, pos in morphs:
             # Keep everything except particles (Josa)
             if pos != "Josa":
@@ -419,7 +419,7 @@ class KoreanTokenizer:
 class ChineseTokenizer:
     """Chinese word segmentation using jieba."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Chinese tokenizer."""
         if not JIEBA_AVAILABLE:
             raise ImportError("jieba package required for Chinese tokenization")
@@ -440,7 +440,7 @@ class ChineseTokenizer:
         """
         if include_pos:
             # Returns list of (word, pos) tuples
-            return [(w.word, w.flag) for w in pseg.cut(text)]
+            return [(w.word, w.flag) for w in pseg.cut(text)]  # type: ignore[misc]
         return list(jieba.cut(text))
 
     def tokenize_search(self, text: str) -> List[str]:
@@ -503,8 +503,8 @@ class SmartTokenizer:
     PII_CHARS = r"[a-zA-Z0-9\-\.\@\+\_\:\/]"
     NON_PII_CHARS = r"[^a-zA-Z0-9\-\.\@\+\_\:\/\s]"
 
-    def __init__(self):
-        self._cache = {}
+    def __init__(self) -> None:
+        self._cache: Dict[str, Tuple[str, List[int]]] = {}
 
     def prepare_text_for_search(self, text: str) -> Tuple[str, List[int]]:
         """
@@ -632,7 +632,7 @@ class NLPProcessor:
     and stopword filtering.
     """
 
-    def __init__(self, config: Optional[NLPConfig] = None):
+    def __init__(self, config: Optional[NLPConfig] = None) -> None:
         """
         Initialize NLP processor.
 
@@ -643,7 +643,7 @@ class NLPProcessor:
         self.config.validate()
 
         # Initialize components based on config
-        self.language_detector = None
+        self.language_detector: Optional[LanguageDetector] = None
         if self.config.enable_language_detection:
             try:
                 self.language_detector = LanguageDetector()

@@ -77,6 +77,8 @@ class Engine:
 
         # Context filtering support
         self.enable_context_filtering = enable_context_filtering
+        self.keyword_registry: Optional[KeywordRegistry]
+        self.context_filter: Optional[ContextFilter]
         if enable_context_filtering:
             self.keyword_registry = keyword_registry or KeywordRegistry()
             self.context_filter = ContextFilter(self.keyword_registry)
