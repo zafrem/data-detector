@@ -40,7 +40,23 @@
         },
         "category": {
           "type": "string",
-          "enum": ["phone", "ssn", "rrn", "email", "bank", "passport", "address", "credit_card", "ip", "name", "iban", "location", "token", "other"],
+                    "enum": [
+                      "phone",
+                      "ssn",
+                      "rrn",
+                      "email",
+                      "bank",
+                      "passport",
+                      "address",
+                      "credit_card",
+                      "ip",
+                      "name",
+                      "iban",
+                      "location",
+                      "token",
+                      "date_of_birth",
+                      "other"
+                    ],
           "description": "Category of personal information"
         },
         "description": {

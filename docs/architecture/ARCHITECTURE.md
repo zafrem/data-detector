@@ -134,7 +134,7 @@ The Interface Layer is the entry point for all user interactions. It supports th
 
 ### 2. Core Engine Layer
 
-The Core Engine is the heart of Data Detector. It contains the business logic for finding, validating, and redacting data. It is designed to be stateless and efficient, relying on the `PatternRegistry` for all pattern-related information.
+The Core Engine is the heart of Data Detector. It contains the business logic for finding, validating, and redacting data. It uses a 3-step pipeline: Regex Matching -> Verification -> Context Analysis.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -144,10 +144,11 @@ The Core Engine is the heart of Data Detector. It contains the business logic fo
 │  find(text, namespaces, include_matched_text)            │
 │  ┌────────────────────────────────────────────┐          │
 │  │ 1. Get patterns from registry              │          │
-│  │ 2. Apply each pattern to text              │          │
-│  │ 3. Run verification functions if present   │          │
-│  │ 4. Collect matches with metadata           │          │
-│  │ 5. Return FindResult                       │          │
+│  │ 2. Apply each pattern to text (Regex)      │          │
+│  │ 3. Run verification functions (Logic)      │          │
+│  │ 4. Apply Context Analysis (Scoring)        │◄── NEW!  │
+│  │ 5. Collect matches with metadata           │          │
+│  │ 6. Return FindResult                       │          │
 │  └────────────────────────────────────────────┘          │
 │                                                          │
 │  validate(text, pattern_id)                              │
@@ -168,10 +169,17 @@ The Core Engine is the heart of Data Detector. It contains the business logic fo
 │  │ 3. Build redacted text                     │          │
 │  │ 4. Return RedactionResult                  │          │
 │  └────────────────────────────────────────────┘          │
-└──────────────────────────────────────────────────────────┘
+└────────┬───────────────────────────────┬─────────────────┘
+         │                               │
+┌────────▼─────────────────────┐  ┌──────▼──────────────────────┐
+│      PatternRegistry         │  │     ContextAnalyzer         │
+│ - Pattern compilation/cache  │  │ - Proximity Scoring         │
+│ - Namespace organization     │  │ - Keyword/Anchor detection  │
+│ - Verification func registry │  │ - Window-based analysis     │
+└──────────────────────────────┘  └─────────────────────────────┘
 ```
 
-The `PatternRegistry` is a critical component for performance. It is responsible for loading, compiling, and caching all patterns at startup. This ensures that the engine can perform its tasks with minimal overhead.
+The `PatternRegistry` handles pattern loading, while the `ContextAnalyzer` provides the intelligence to score matches based on their surrounding context.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -247,6 +255,14 @@ User Request (CLI/API/Server)
 │ - Luhn check      │
 │ - IBAN Mod-97     │
 │ - Custom funcs    │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│ Context Analysis  │
+│ - Load keywords   │
+│ - Check proximity │
+│ - Calculate Score │
 └────────┬──────────┘
          │
          ▼

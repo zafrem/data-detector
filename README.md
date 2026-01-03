@@ -95,6 +95,18 @@ For detailed guides and references, please see the following:
 - **Features**: [NLP Processing](docs/nlp-features.md) | [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
 - **API**: [API Reference](docs/api-reference.md)
 
+## CI/CD Integration
+
+Data Detector can be integrated into your CI/CD pipeline to automatically block PII leaks.
+
+- **Guide**: [CI/CD Integration Guide](docs/guides/cicd-integration.md)
+- **Example Script**: [examples/cicd_scan.sh](examples/cicd_scan.sh)
+
+```bash
+# Example: Fail build if PII is found in changed files
+data-detector find --file "changed_file.py" --on-match exit
+```
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.

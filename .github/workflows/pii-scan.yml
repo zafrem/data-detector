@@ -1,0 +1,40 @@
+name: PII Scan
+
+on:
+  pull_request:
+    branches: [ "main", "develop" ]
+  push:
+    branches: [ "main" ]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+        
+    - name: Install Data Detector
+      run: pip install .  # Installs from current source
+      
+    - name: Scan for PII
+      run: |
+        # Example: Scan specifically for High/Critical PII in source code
+        # We use a simple loop here. In production, consider scanning only changed files.
+        echo "Scanning source code for PII..."
+        
+        find src -name "*.py" | while read file; do
+          # Run with --on-match exit to fail if PII is found
+          # We check for critical/high severity patterns only implies checking specific namespaces/patterns ideally
+          # For this demo, we scan everything but fail on match
+          data-detector find --file "$file" --on-match exit --first-only
+          
+          # Capture exit code
+          if [ $? -ne 0 ]; then
+            echo "::error file=$file::PII detected in $file"
+            exit 1
+          fi
+        done

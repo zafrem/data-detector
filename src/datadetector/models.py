@@ -21,6 +21,7 @@ class Category(str, Enum):
     IBAN = "iban"
     LOCATION = "location"
     TOKEN = "token"
+    DATE_OF_BIRTH = "date_of_birth"
     OTHER = "other"
 
 

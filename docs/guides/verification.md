@@ -45,6 +45,19 @@ Validates a number using the Luhn algorithm. This is widely used for credit card
   verification: luhn
 ```
 
+## Data-Driven Verification
+
+Some verification functions go beyond algorithms and check against actual reference data stored in `pattern-engine/datas/`.
+
+### Zip Code Validation
+The `us_zipcode_valid` and `korean_zipcode_valid` functions provide high-accuracy validation by checking against real-world data sets:
+
+*   **US Zip Codes**: Checks against a database of **37,000+** valid US zip codes (sourced from USPS).
+*   **Korean Zip Codes**: Checks against a database of **6,800+** valid 5-digit Korean postal codes.
+
+**Fallback Mechanism:**
+The system is designed to be robust. If the data files (`.csv`) are missing or inaccessible, these functions automatically fall back to **heuristic validation** (checking for correct length, numeric range, and absence of sequential/repetitive patterns) to ensure detection continues to work.
+
 ## Creating Custom Verification Functions
 
 You can easily create and register your own verification functions to handle any custom validation logic your organization needs.

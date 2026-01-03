@@ -78,6 +78,12 @@ def main(ctx: click.Context, verbose: bool) -> None:
     is_flag=True,
     help="Stop after finding first match (faster, useful for detection checks)",
 )
+@click.option(
+    "--on-match",
+    type=click.Choice(["exit", "skip"]),
+    default="skip",
+    help="Action when matches found: 'exit' (fail/non-zero code) or 'skip' (pass/zero code)",
+)
 @click.pass_context
 def find(
     ctx: click.Context,
@@ -88,6 +94,7 @@ def find(
     output: str,
     include_text: bool,
     first_only: bool,
+    on_match: str,
 ) -> None:
     """Find PII in text or file."""
     # Load text
@@ -122,6 +129,7 @@ def find(
                 "end": m.end,
                 "matched_text": m.matched_text,
                 "severity": m.severity.value,
+                "score": m.score,
             }
             for m in result.matches
         ]
@@ -141,8 +149,12 @@ def find(
             text_preview = f" [{match.matched_text}]" if match.matched_text else ""
             click.echo(
                 f"  {match.ns_id} ({match.category.value}) at {match.start}-{match.end}"
-                f" [severity: {match.severity.value}]{text_preview}"
+                f" [severity: {match.severity.value}] [score: {match.score:.2f}]{text_preview}"
             )
+
+    # Handle exit mode
+    if result.match_count > 0 and on_match == "exit":
+        sys.exit(1)
 
 
 @main.command()
