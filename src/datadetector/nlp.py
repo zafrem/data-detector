@@ -10,7 +10,10 @@ import logging
 import re
 from dataclasses import dataclass, field
 from enum import Enum
+from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -138,253 +141,54 @@ class NLPConfig:
             )
 
 
-# Default Korean stopwords (particles and common functional words)
-KOREAN_STOPWORDS = {
-    # Particles (조사)
-    "은",
-    "는",
-    "이",
-    "가",
-    "을",
-    "를",
-    "의",
-    "에",
-    "에서",
-    "로",
-    "으로",
-    "와",
-    "과",
-    "도",
-    "만",
-    "부터",
-    "까지",
-    "마저",
-    "조차",
-    "에게",
-    "한테",
-    "께",
-    "더러",
-    "보다",
-    "처럼",
-    "같이",
-    "치고",
-    "대로",
-    # Common functional words
-    "그",
-    "저",
-    "이",
-    "것",
-    "수",
-    "등",
-    "및",
-    "또는",
-    "또",
-    "그리고",
-}
+def _load_default_stopwords() -> Dict[str, Set[str]]:
+    """Load default stopwords from pattern-engine YAML file."""
+    try:
+        # Determine path to stopwords.yml
+        # src/datadetector/nlp.py -> ... -> pattern-engine/keyword/stopwords.yml
+        root = Path(__file__).parent.parent.parent
+        
+        # Check potential locations
+        possible_paths = [
+            root / "pattern-engine" / "keyword" / "stopwords.yml",
+            root / "pattern-engine" / "keyword" / "stopwords.yaml",
+            # Fallback for installed package if patterns are packaged differently
+            Path(__file__).parent / "patterns" / "keyword" / "stopwords.yml", 
+        ]
+        
+        yaml_path = None
+        for path in possible_paths:
+            if path.exists():
+                yaml_path = path
+                break
+        
+        if not yaml_path:
+            logger.warning("stopwords.yml not found, using empty defaults")
+            return {}
 
-# Default English stopwords (basic set)
-ENGLISH_STOPWORDS = {
-    "a",
-    "an",
-    "the",
-    "is",
-    "are",
-    "was",
-    "were",
-    "be",
-    "been",
-    "being",
-    "have",
-    "has",
-    "had",
-    "do",
-    "does",
-    "did",
-    "will",
-    "would",
-    "should",
-    "can",
-    "could",
-    "may",
-    "might",
-    "must",
-    "shall",
-    "i",
-    "you",
-    "he",
-    "she",
-    "it",
-    "we",
-    "they",
-    "me",
-    "him",
-    "her",
-    "us",
-    "them",
-    "my",
-    "your",
-    "his",
-    "its",
-    "our",
-    "their",
-    "this",
-    "that",
-    "these",
-    "those",
-    "in",
-    "on",
-    "at",
-    "to",
-    "for",
-    "of",
-    "with",
-    "by",
-    "from",
-    "as",
-    "and",
-    "or",
-    "but",
-    "if",
-    "then",
-    "else",
-    "when",
-    "where",
-    "why",
-    "how",
-}
+        with open(yaml_path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+            
+        stopwords = {}
+        if data and "stopwords" in data:
+            for lang, content in data["stopwords"].items():
+                if "words" in content:
+                    stopwords[lang] = set(content["words"])
+        
+        return stopwords
 
-# Default Chinese stopwords (common functional words)
-CHINESE_STOPWORDS = {
-    # Common particles and functional words
-    "的",
-    "了",
-    "在",
-    "是",
-    "我",
-    "有",
-    "和",
-    "就",
-    "不",
-    "人",
-    "都",
-    "一",
-    "一个",
-    "上",
-    "也",
-    "很",
-    "到",
-    "说",
-    "要",
-    "去",
-    "你",
-    "会",
-    "着",
-    "没有",
-    "看",
-    "好",
-    "自己",
-    "这",
-    "那",
-    "里",
-    "为",
-    "与",
-    "给",
-    "从",
-    "来",
-    "对",
-    "于",
-    "之",
-    "中",
-    "以",
-    "及",
-    "其",
-    "或",
-    "而",
-    "且",
-    "则",
-    "即",
-    "若",
-    # Question words
-    "什么",
-    "怎么",
-    "哪里",
-    "哪个",
-    "谁",
-    "为什么",
-    "怎样",
-    "多少",
-    # Time/place
-    "这里",
-    "那里",
-    "现在",
-    "时候",
-    "可以",
-    "但是",
-    "因为",
-    "所以",
-}
+    except Exception as e:
+        logger.error(f"Failed to load stopwords: {e}")
+        return {}
 
-# Default Japanese stopwords (particles and common functional words)
-JAPANESE_STOPWORDS = {
-    # Particles (助詞)
-    "は",
-    "が",
-    "を",
-    "に",
-    "へ",
-    "と",
-    "から",
-    "より",
-    "で",
-    "まで",
-    "の",
-    "や",
-    "も",
-    "なり",
-    "だの",
-    "でも",
-    "しか",
-    "さえ",
-    "だに",
-    "ばかり",
-    "など",
-    "まで",
-    "くらい",
-    "ぐらい",
-    "ほど",
-    "こそ",
-    "でも",
-    "とか",
-    "し",
-    "て",
-    "ながら",
-    "つつ",
-    "たり",
-    "だり",
-    # Common functional words
-    "です",
-    "ます",
-    "した",
-    "ある",
-    "いる",
-    "これ",
-    "それ",
-    "あれ",
-    "この",
-    "その",
-    "あの",
-    "どの",
-    "私",
-    "僕",
-    "彼",
-    "彼女",
-    "自分",
-    "こと",
-    "もの",
-    "ため",
-    "よう",
-    "そう",
-}
+
+# Load default stopwords
+_STOPWORDS_DATA = _load_default_stopwords()
+KOREAN_STOPWORDS = _STOPWORDS_DATA.get("ko", set())
+ENGLISH_STOPWORDS = _STOPWORDS_DATA.get("en", set())
+CHINESE_STOPWORDS = _STOPWORDS_DATA.get("zh", set())
+JAPANESE_STOPWORDS = _STOPWORDS_DATA.get("ja", set())
+
 
 
 class LanguageDetector:
