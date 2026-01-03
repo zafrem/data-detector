@@ -17,6 +17,7 @@ from datadetector.models import Match
 
 logger = logging.getLogger(__name__)
 
+
 class ContextAnalyzer:
     """
     Analyzer for validating PII matches using context.
@@ -144,10 +145,10 @@ class ContextAnalyzer:
                 categories_to_check.add("address_us")
                 categories_to_check.add("address_kr")
                 categories_to_check.add("address_jp")
-            elif match.category.value == "zipcode": # If we add zipcode category
-                 categories_to_check.add("address_us")
-                 categories_to_check.add("address_kr")
-                 categories_to_check.add("address_jp")
+            elif match.category.value == "zipcode":  # If we add zipcode category
+                categories_to_check.add("address_us")
+                categories_to_check.add("address_kr")
+                categories_to_check.add("address_jp")
 
             # Collect all valid context phrases
             valid_contexts = set()
@@ -163,8 +164,8 @@ class ContextAnalyzer:
             end_idx = min(len(text), match.end + window_size)
 
             # Extract window texts
-            pre_window = text_lower[start_idx:match.start]
-            post_window = text_lower[match.end:end_idx]
+            pre_window = text_lower[start_idx : match.start]
+            post_window = text_lower[match.end : end_idx]
 
             found_evidence = []
             max_boost = 0.0
@@ -180,7 +181,7 @@ class ContextAnalyzer:
                     # Proximity scoring logic
                     # < 10 chars: High confidence (e.g., "Zip: 90210")
                     if distance < 10:
-                        max_boost = max(max_boost, 0.45) # Boost to ~0.95
+                        max_boost = max(max_boost, 0.45)  # Boost to ~0.95
                     elif distance < 30:
                         max_boost = max(max_boost, 0.3)  # Boost to ~0.8
                     else:
