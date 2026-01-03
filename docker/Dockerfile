@@ -12,7 +12,8 @@ RUN apt-get update && \
 # Copy project files
 COPY pyproject.toml .
 COPY src/ src/
-COPY patterns/ patterns/
+COPY pattern-engine/ pattern-engine/
+COPY config/ config/
 COPY schemas/ schemas/
 COPY README.md .
 COPY LICENSE .
@@ -36,7 +37,8 @@ COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin/data-detector /usr/local/bin/data-detector
 
 # Copy patterns and config
-COPY --chown=datadetector:datadetector patterns/ /app/patterns/
+COPY --chown=datadetector:datadetector pattern-engine/ /app/pattern-engine/
+COPY --chown=datadetector:datadetector config/ /app/config/
 COPY --chown=datadetector:datadetector schemas/ /app/schemas/
 COPY --chown=datadetector:datadetector config.yml /app/config.yml
 

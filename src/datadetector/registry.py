@@ -75,6 +75,27 @@ class PatternRegistry:
         )
 
 
+def _get_project_root() -> Path:
+    """Determine project root directory."""
+    # 1. Default: relative to source file (dev/editable)
+    # src/datadetector/registry.py -> src/datadetector -> src -> root
+    root = Path(__file__).parent.parent.parent
+
+    if (root / "pattern-engine").exists():
+        return root
+
+    # 2. Docker /app
+    if Path("/app/pattern-engine").exists():
+        return Path("/app")
+
+    # 3. CWD
+    if (Path.cwd() / "pattern-engine").exists():
+        return Path.cwd()
+
+    # Fallback to default even if not found
+    return root
+
+
 def load_registry(
     paths: Optional[List[str]] = None,
     validate_schema: bool = True,
@@ -101,8 +122,9 @@ def load_registry(
 
     if paths is None:
         # Load default patterns from package
-        config_dir = Path(__file__).parent.parent.parent / "config"
-        pii_patterns_dir = Path(__file__).parent.parent.parent / "pattern-engine" / "regex" / "pii"
+        root = _get_project_root()
+        config_dir = root / "config"
+        pii_patterns_dir = root / "pattern-engine" / "regex" / "pii"
         paths = [
             str(config_dir / "tokens.yml"),  # Load tokens first for faster detection
             str(pii_patterns_dir / "common"),  # Load all common patterns
@@ -161,7 +183,7 @@ def _load_yaml_file(path: Path) -> Dict[str, Any]:
 
 def _validate_schema(data: Dict[str, Any]) -> None:
     """Validate pattern data against JSON schema."""
-    schema_path = Path(__file__).parent.parent.parent / "schemas" / "pattern-schema.json"
+    schema_path = _get_project_root() / "schemas" / "pattern-schema.json"
 
     if not schema_path.exists():
         logger.warning("Pattern schema not found, skipping validation")

@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from datadetector.fake_generator import FakeDataGenerator
 
 from datadetector.context import ContextFilter, ContextHint, KeywordRegistry
+from datadetector.analysis import ContextAnalyzer
 from datadetector.models import (
     FindResult,
     Match,
@@ -91,6 +92,9 @@ class Engine:
         self.nlp_processor = None
         if nlp_config and nlp_config.is_enabled():
             self.nlp_processor = NLPProcessor(nlp_config)
+
+        # Context Analysis (Pipeline Step 3)
+        self.analyzer = ContextAnalyzer()
 
     def find(
         self,
@@ -216,6 +220,11 @@ class Engine:
             # Break outer loop if stopping on first match and we found one
             if stop_on_first_match and matches:
                 break
+
+        # Step 3: Context Analysis
+        # Analyze surrounding text to boost confidence using keywords (and future ML/LLM)
+        if self.analyzer:
+            matches = self.analyzer.analyze(text, matches)
 
         # Sort matches by position
         matches.sort(key=lambda m: (m.start, m.end))

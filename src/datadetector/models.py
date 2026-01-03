@@ -107,6 +107,8 @@ class Match:
     matched_text: Optional[str] = None  # Only populated if policy allows
     mask: Optional[str] = None
     severity: Severity = Severity.MEDIUM
+    score: float = 0.5  # Confidence score (0.0-1.0)
+    context_evidence: List[str] = field(default_factory=list)  # Found context keywords
 
     @property
     def span(self) -> Tuple[int, int]:

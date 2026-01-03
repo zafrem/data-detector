@@ -1,5 +1,6 @@
 # Include pattern and schema files
-include patterns/*.yml
+recursive-include pattern-engine *.yml *.yaml *.md
+recursive-include config *.yml *.yaml
 include schemas/*.json
 
 # Include utility scripts
