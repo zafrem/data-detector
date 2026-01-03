@@ -40,6 +40,14 @@ except ImportError:
     JIEBA_AVAILABLE = False
     logger.debug("jieba not available - Chinese tokenization disabled")
 
+try:
+    from sudachipy import dictionary, tokenizer
+
+    SUDACHI_AVAILABLE = True
+except ImportError:
+    SUDACHI_AVAILABLE = False
+    logger.debug("sudachipy not available - Japanese tokenization disabled")
+
 
 class NLPFeature(str, Enum):
     """NLP feature flags."""
@@ -49,6 +57,7 @@ class NLPFeature(str, Enum):
     STOPWORD_FILTERING = "stopword_filtering"
     KOREAN_PARTICLE_PROCESSING = "korean_particle_processing"
     CHINESE_SEGMENTATION = "chinese_segmentation"
+    JAPANESE_SEGMENTATION = "japanese_segmentation"
 
 
 @dataclass
@@ -76,6 +85,10 @@ class NLPConfig:
     # Enable Chinese word segmentation (requires jieba)
     # Chinese doesn't use spaces, so segmentation is essential
     enable_chinese_segmentation: bool = False
+
+    # Enable Japanese word segmentation (requires sudachipy)
+    # Japanese doesn't use spaces, so segmentation is essential
+    enable_japanese_segmentation: bool = False
 
     # Custom stopwords to add (in addition to defaults)
     custom_stopwords: Set[str] = field(default_factory=set)
@@ -114,6 +127,13 @@ class NLPConfig:
             logger.warning(
                 "Chinese segmentation requires 'jieba' package. "
                 "Install with: pip install jieba. "
+                "Falling back to basic tokenization."
+            )
+
+        if self.enable_japanese_segmentation and not SUDACHI_AVAILABLE:
+            logger.warning(
+                "Japanese segmentation requires 'sudachipy' and 'sudachidict_core' packages. "
+                "Install with: pip install sudachipy sudachidict_core. "
                 "Falling back to basic tokenization."
             )
 
@@ -304,6 +324,68 @@ CHINESE_STOPWORDS = {
     "所以",
 }
 
+# Default Japanese stopwords (particles and common functional words)
+JAPANESE_STOPWORDS = {
+    # Particles (助詞)
+    "は",
+    "が",
+    "を",
+    "に",
+    "へ",
+    "と",
+    "から",
+    "より",
+    "で",
+    "まで",
+    "の",
+    "や",
+    "も",
+    "なり",
+    "だの",
+    "でも",
+    "しか",
+    "さえ",
+    "だに",
+    "ばかり",
+    "など",
+    "まで",
+    "くらい",
+    "ぐらい",
+    "ほど",
+    "こそ",
+    "でも",
+    "とか",
+    "し",
+    "て",
+    "ながら",
+    "つつ",
+    "たり",
+    "だり",
+    # Common functional words
+    "です",
+    "ます",
+    "した",
+    "ある",
+    "いる",
+    "これ",
+    "それ",
+    "あれ",
+    "この",
+    "その",
+    "あの",
+    "どの",
+    "私",
+    "僕",
+    "彼",
+    "彼女",
+    "自分",
+    "こと",
+    "もの",
+    "ため",
+    "よう",
+    "そう",
+}
+
 
 class LanguageDetector:
     """Detects the language of input text."""
@@ -339,7 +421,7 @@ class StopwordFilter:
         Args:
             custom_stopwords: Additional stopwords to filter
         """
-        self.stopwords = KOREAN_STOPWORDS | ENGLISH_STOPWORDS | CHINESE_STOPWORDS
+        self.stopwords = KOREAN_STOPWORDS | ENGLISH_STOPWORDS | CHINESE_STOPWORDS | JAPANESE_STOPWORDS
         if custom_stopwords:
             self.stopwords |= custom_stopwords
 
@@ -478,6 +560,60 @@ class ChineseTokenizer:
             tag: Part-of-speech tag
         """
         jieba.add_word(word, freq, tag)
+
+
+class JapaneseTokenizer:
+    """Japanese word segmentation using sudachipy."""
+
+    def __init__(self, mode: str = "C") -> None:
+        """
+        Initialize Japanese tokenizer.
+
+        Args:
+            mode: Splitting mode:
+                - 'A': Shortest units (similar to UniDic)
+                - 'B': Middle units
+                - 'C': Longest units (compound words, default)
+        """
+        if not SUDACHI_AVAILABLE:
+            raise ImportError("sudachipy and sudachidict_core required for Japanese tokenization")
+
+        self.tokenizer_obj = dictionary.Dictionary().create()
+        self.mode = mode
+        if mode == "A":
+            self.split_mode = tokenizer.Tokenizer.SplitMode.A
+        elif mode == "B":
+            self.split_mode = tokenizer.Tokenizer.SplitMode.B
+        else:
+            self.split_mode = tokenizer.Tokenizer.SplitMode.C
+
+    def tokenize(self, text: str, include_pos: bool = False) -> List[str]:
+        """
+        Tokenize Japanese text.
+
+        Args:
+            text: Input text
+            include_pos: Include part-of-speech tags
+
+        Returns:
+            List of tokens (or token/pos tuples if include_pos=True)
+        """
+        if not text:
+            return []
+
+        tokens = self.tokenizer_obj.tokenize(text, self.split_mode)
+
+        if include_pos:
+            # pos_info() returns list like ['名詞', '固有名詞', '*', '*', '*', '*']
+            # We take the first two as a representative tag
+            return [(t.surface(), "/".join(t.part_of_speech()[:2])) for t in tokens]
+
+        return [t.surface() for t in tokens]
+
+    def extract_nouns(self, text: str) -> List[str]:
+        """Extract only nouns from text."""
+        tokens = self.tokenizer_obj.tokenize(text, self.split_mode)
+        return [t.surface() for t in tokens if t.part_of_speech()[0] == "名詞"]
 
 
 class SmartTokenizer:
@@ -664,6 +800,13 @@ class NLPProcessor:
             except ImportError:
                 logger.warning("Chinese tokenization disabled - jieba not available")
 
+        self.japanese_tokenizer = None
+        if self.config.enable_japanese_segmentation or self.config.enable_tokenization:
+            try:
+                self.japanese_tokenizer = JapaneseTokenizer()
+            except ImportError:
+                logger.warning("Japanese tokenization disabled - sudachipy not available")
+
         self.stopword_filter = None
         if self.config.enable_stopword_filtering:
             self.stopword_filter = StopwordFilter(self.config.custom_stopwords)
@@ -707,9 +850,15 @@ class NLPProcessor:
             elif detected_lang == "zh-cn" and self.chinese_tokenizer:
                 # Chinese detected - use jieba for segmentation
                 tokens = self.chinese_tokenizer.tokenize(prepared_text)
+            elif detected_lang == "ja" and self.japanese_tokenizer:
+                # Japanese detected - use sudachipy for segmentation
+                tokens = self.japanese_tokenizer.tokenize(prepared_text)
             elif self.config.enable_chinese_segmentation and self.chinese_tokenizer:
                 # Force Chinese segmentation even if language not detected
                 tokens = self.chinese_tokenizer.tokenize(prepared_text)
+            elif self.config.enable_japanese_segmentation and self.japanese_tokenizer:
+                # Force Japanese segmentation even if language not detected
+                tokens = self.japanese_tokenizer.tokenize(prepared_text)
             else:
                 # Basic whitespace tokenization for other languages
                 tokens = prepared_text.split()

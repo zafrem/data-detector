@@ -48,9 +48,11 @@ pip install data-detector[nlp]
 ```
 
 This installs:
+- `konlpy` - Korean word segmentation (requires Java)
+- `jieba` - Chinese word segmentation
+- `sudachipy` & `sudachidict_core` - Japanese word segmentation
 - `langdetect` - Language detection
-- `konlpy` - Korean language processing (requires Java runtime)
-- `jieba` - Chinese word segmentation (pure Python, no extra dependencies)
+
 
 ### Korean Tokenization Setup
 
@@ -139,7 +141,9 @@ Breaks text into tokens for analysis:
 
 - **Korean**: Uses konlpy (morphological analysis)
 - **Chinese**: Uses jieba (word segmentation)
-- **Other languages**: Basic whitespace tokenization
+- **Japanese**: Uses sudachipy (word segmentation)
+- **Other**: Basic whitespace tokenization
+
 
 ```python
 nlp_config = NLPConfig(enable_tokenization=True)
@@ -196,6 +200,12 @@ config = NLPConfig(
 
     # Enable Korean particle processing (requires konlpy)
     enable_korean_particles: bool = False,
+
+    # Enable Chinese word segmentation (requires jieba)
+    enable_chinese_segmentation=False,
+
+    # Enable Japanese word segmentation (requires sudachipy)
+    enable_japanese_segmentation=False,
 
     # Custom stopwords to add
     custom_stopwords: set = set(),

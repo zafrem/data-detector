@@ -973,6 +973,34 @@ if JIEBA_AVAILABLE:
             assert isinstance(result.matches, list)
 
 
+    class TestEngineWithJapanese:
+        """Test engine with Japanese NLP."""
+
+        def test_find_with_japanese_segmentation(self):
+            """Test finding PII with Japanese segmentation."""
+            from datadetector import Engine, NLPConfig, load_registry
+
+            # Skip if sudachi not available
+            try:
+                import sudachipy
+            except ImportError:
+                pytest.skip("sudachipy not available")
+
+            registry = load_registry()
+            config = NLPConfig(
+                enable_language_detection=True,
+                enable_japanese_segmentation=True,
+            )
+            engine = Engine(registry, nlp_config=config)
+
+            # Japanese text with email
+            text = "私のメールはtest@example.comです"
+            result = engine.find(text, namespaces=["common"])
+
+            # Should handle Japanese text with PII
+            assert isinstance(result.matches, list)
+
+
 class TestKoreanTokenizerBackends:
     """Test KoreanTokenizer with different backends."""
 

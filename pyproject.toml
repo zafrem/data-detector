@@ -79,6 +79,8 @@ nlp = [
     "langdetect>=1.0.9",
     "konlpy>=0.6.0",
     "jieba>=0.42.1",
+    "sudachipy>=0.6.7",
+    "sudachidict_core>=20230110",
 ]
 
 [project.scripts]
