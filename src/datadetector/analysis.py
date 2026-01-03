@@ -9,18 +9,18 @@ It validates and scores matches based on surrounding text, using:
 
 import logging
 from pathlib import Path
-from typing import Dict, List, Set, Any, Optional
-import yaml
-import re
+from typing import Dict, List, Optional, Set
 
-from datadetector.models import Match, Category
+import yaml
+
+from datadetector.models import Match
 
 logger = logging.getLogger(__name__)
 
 class ContextAnalyzer:
     """
     Analyzer for validating PII matches using context.
-    
+
     Implements a pipeline of analysis steps:
     1. Keyword Check: Looks for related terms near the match
     2. ML/LLM Check: (Placeholder) Advanced semantic analysis
@@ -43,7 +43,7 @@ class ContextAnalyzer:
         root = Path(__file__).parent.parent.parent
         if (root / "pattern-engine").exists():
             return root
-        
+
         # Check standard locations
         candidates = [
             Path("/app"),
@@ -52,7 +52,7 @@ class ContextAnalyzer:
         for candidate in candidates:
             if (candidate / "pattern-engine").exists():
                 return candidate
-        
+
         return root
 
     def _load_contexts(self, context_dir: Optional[Path]) -> None:
@@ -67,19 +67,19 @@ class ContextAnalyzer:
 
         # Load all YAML files in the directory
         yaml_files = sorted(context_dir.glob("*.yml")) + sorted(context_dir.glob("*.yaml"))
-        
+
         for file_path in yaml_files:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     data = yaml.safe_load(f)
                     if not data or "categories" not in data:
                         continue
-                        
+
                     # Parse categories and their contexts
                     for cat_name, cat_data in data["categories"].items():
                         if "contexts" in cat_data:
                             self._add_contexts(cat_name, cat_data["contexts"])
-                            
+
             except Exception as e:
                 logger.error(f"Failed to load context file {file_path}: {e}")
 
@@ -89,7 +89,7 @@ class ContextAnalyzer:
         """Add context phrases to a category."""
         if category not in self.context_map:
             self.context_map[category] = set()
-        
+
         # Normalize and add contexts
         # We store them lowercase for case-insensitive matching
         for ctx in contexts:
@@ -101,11 +101,11 @@ class ContextAnalyzer:
     def analyze(self, text: str, matches: List[Match]) -> List[Match]:
         """
         Run the full context analysis pipeline on a list of matches.
-        
+
         Args:
             text: The original text containing the matches
             matches: List of preliminary matches (from Regex+Verification)
-            
+
         Returns:
             List of matches with updated scores and evidence
         """
@@ -114,26 +114,28 @@ class ContextAnalyzer:
 
         # Step 1: Keyword-based Context Check
         matches = self._keyword_context_check(text, matches)
-        
+
         # Step 2: ML-based Context Check (Placeholder)
         matches = self._ml_context_check(text, matches)
-        
+
         # Step 3: LLM-based Context Check (Placeholder)
         matches = self._llm_context_check(text, matches)
-        
+
         return matches
 
-    def _keyword_context_check(self, text: str, matches: List[Match], window_size: int = 60) -> List[Match]:
+    def _keyword_context_check(
+        self, text: str, matches: List[Match], window_size: int = 60
+    ) -> List[Match]:
         """
         Check for context keywords surrounding the match with proximity scoring.
-        
+
         Args:
             text: Original text
             matches: List of matches
             window_size: Number of characters to check before and after the match
         """
         text_lower = text.lower()
-        
+
         for match in matches:
             # Determine relevant categories to check
             # For specific categories like 'address', we also check sub-categories like 'address_us'
@@ -146,7 +148,7 @@ class ContextAnalyzer:
                  categories_to_check.add("address_us")
                  categories_to_check.add("address_kr")
                  categories_to_check.add("address_jp")
-            
+
             # Collect all valid context phrases
             valid_contexts = set()
             for cat in categories_to_check:
@@ -159,14 +161,14 @@ class ContextAnalyzer:
             # Define window
             start_idx = max(0, match.start - window_size)
             end_idx = min(len(text), match.end + window_size)
-            
+
             # Extract window texts
             pre_window = text_lower[start_idx:match.start]
             post_window = text_lower[match.end:end_idx]
-            
+
             found_evidence = []
             max_boost = 0.0
-            
+
             for ctx in valid_contexts:
                 # Check pre-window (before match)
                 # Find the LAST occurrence to get the one closest to the match
@@ -174,7 +176,7 @@ class ContextAnalyzer:
                 if pre_pos != -1:
                     distance = len(pre_window) - (pre_pos + len(ctx))
                     found_evidence.append(f"{ctx} (dist: -{distance})")
-                    
+
                     # Proximity scoring logic
                     # < 10 chars: High confidence (e.g., "Zip: 90210")
                     if distance < 10:
@@ -183,14 +185,14 @@ class ContextAnalyzer:
                         max_boost = max(max_boost, 0.3)  # Boost to ~0.8
                     else:
                         max_boost = max(max_boost, 0.1)  # Weak boost
-                
+
                 # Check post-window (after match)
                 # Find the FIRST occurrence
                 post_pos = post_window.find(ctx)
                 if post_pos != -1:
                     distance = post_pos
                     found_evidence.append(f"{ctx} (dist: +{distance})")
-                    
+
                     if distance < 10:
                         max_boost = max(max_boost, 0.4)
                     elif distance < 30:
@@ -202,13 +204,13 @@ class ContextAnalyzer:
             if found_evidence:
                 match.context_evidence.extend(found_evidence)
                 match.score = min(0.99, match.score + max_boost)
-                
+
         return matches
 
     def _ml_context_check(self, text: str, matches: List[Match]) -> List[Match]:
         """
         Placeholder for Machine Learning based context analysis.
-        
+
         This slot is reserved for a lightweight ML model (e.g., BERT-tiny, Random Forest)
         that can classify the context window as "related to category X" or "random noise".
         """
@@ -218,8 +220,8 @@ class ContextAnalyzer:
     def _llm_context_check(self, text: str, matches: List[Match]) -> List[Match]:
         """
         Placeholder for LLM based context analysis.
-        
-        This slot is reserved for calling an LLM (e.g., GPT-4, Gemini) for 
+
+        This slot is reserved for calling an LLM (e.g., GPT-4, Gemini) for
         ambiguous cases where high precision is required and latency is acceptable.
         """
         # TODO: Implement LLM API call for complex disambiguation

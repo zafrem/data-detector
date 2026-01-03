@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 if TYPE_CHECKING:
     from datadetector.fake_generator import FakeDataGenerator
 
-from datadetector.context import ContextFilter, ContextHint, KeywordRegistry
 from datadetector.analysis import ContextAnalyzer
+from datadetector.context import ContextFilter, ContextHint, KeywordRegistry
 from datadetector.models import (
     FindResult,
     Match,
