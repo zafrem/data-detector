@@ -100,21 +100,23 @@ class FakeDataGenerator:
             # Tokens - using secrets for cryptographically secure generation
             "comm/aws_access_key_01": lambda: (
                 "AKIA"
-                + "".join(
-                    secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(16)
-                )
+                + "".join(secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") for _ in range(16))
             ),
             "comm/github_token_01": lambda: (
                 "ghp_"
                 + "".join(
-                    secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_")
+                    secrets.choice(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_"
+                    )
                     for _ in range(36)
                 )
             ),
             "comm/google_api_key_01": lambda: (
                 "AIza"
                 + "".join(
-                    secrets.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_")
+                    secrets.choice(
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+                    )
                     for _ in range(35)
                 )
             ),

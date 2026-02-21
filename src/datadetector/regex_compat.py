@@ -29,6 +29,7 @@ class RegexEngine(Enum):
     RE2 = "re2"  # Force RE2 (error if unavailable)
     STANDARD = "standard"  # Force standard re module
 
+
 # Try to import google-re2, fall back to standard re if unavailable
 try:
     import re2
@@ -91,6 +92,7 @@ def _should_use_re2() -> bool:
         return True  # Already validated in set_engine
     # AUTO mode
     return HAS_RE2
+
 
 # Flag constants (same values as standard re module for compatibility)
 IGNORECASE = 2  # re.IGNORECASE
