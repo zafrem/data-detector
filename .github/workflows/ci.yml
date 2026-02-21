@@ -251,10 +251,10 @@ jobs:
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           FILENAME="data-detector-${VERSION}-full.tar.gz"
+          # Create tarball in /tmp to avoid "file changed as we read it" error
+          tar -czf "/tmp/$FILENAME" --exclude='.git*' .
+          mv "/tmp/$FILENAME" .
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
-          # Create a tarball of the current directory (including submodules)
-          # Exclude .git directories and the output file itself to avoid "file changed as we read it" error
-          tar -czf "$FILENAME" --exclude='.git*' --exclude="$FILENAME" .
 
       - name: Generate changelog
         id: changelog
