@@ -253,8 +253,8 @@ jobs:
           FILENAME="data-detector-${VERSION}-full.tar.gz"
           echo "FILENAME=$FILENAME" >> $GITHUB_ENV
           # Create a tarball of the current directory (including submodules)
-          # Exclude .git directories to keep the size down
-          tar -czf "$FILENAME" --exclude='.git*' .
+          # Exclude .git directories and the output file itself to avoid "file changed as we read it" error
+          tar -czf "$FILENAME" --exclude='.git*' --exclude="$FILENAME" .
 
       - name: Generate changelog
         id: changelog
