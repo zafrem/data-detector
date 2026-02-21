@@ -247,6 +247,15 @@ jobs:
           name: python-package-distributions
           path: dist/
 
+      - name: Create complete source archive
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          FILENAME="data-detector-${VERSION}-full.tar.gz"
+          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
+          # Create a tarball of the current directory (including submodules)
+          # Exclude .git directories to keep the size down
+          tar -czf "$FILENAME" --exclude='.git*' .
+
       - name: Generate changelog
         id: changelog
         run: |
@@ -261,7 +270,9 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/*
+          files: |
+            dist/*
+            ${{ env.FILENAME }}
           body_path: CHANGELOG.md
           draft: false
           prerelease: false
