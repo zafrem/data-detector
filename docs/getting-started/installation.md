@@ -20,11 +20,15 @@ pip install data-detector
 If you want to get the latest, unreleased features or if you plan to contribute to the project, you can install it from the source code.
 
 ```bash
-git clone https://github.com/yourusername/data-detector.git
+git clone https://github.com/yourusername/data-detector.git --recursive
 cd data-detector
+# Or if you already cloned without submodules:
+git submodule update --init --recursive
 pip install -e .
 ```
 The `-e` flag installs the package in "editable" mode, which means that changes you make to the source code will be immediately available without needing to reinstall.
+
+> **Note:** Data Detector relies on the `pattern-engine` submodule for its PII detection logic. Ensure you have properly checked out submodules to avoid `ModuleNotFoundError` or `FileNotFoundError` during execution.
 
 ## Install with Development Dependencies
 

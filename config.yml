@@ -13,9 +13,10 @@ security:
 
 registry:
   paths:
-    - patterns/common.yml
-    - patterns/kr.yml
-    - patterns/us.yml
+    - config/tokens.yml
+    - pattern-engine/regex/pii/common
+    - pattern-engine/regex/pii/us
+    - pattern-engine/regex/pii/kr
   hot_reload: true
   reload_interval: 60  # seconds
 

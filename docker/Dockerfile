@@ -42,6 +42,10 @@ COPY --chown=datadetector:datadetector config/ /app/config/
 COPY --chown=datadetector:datadetector schemas/ /app/schemas/
 COPY --chown=datadetector:datadetector config.yml /app/config.yml
 
+# Recreate the src/verification structure for the code that expects it
+RUN mkdir -p /app/src && \
+    ln -s /app/pattern-engine/verification /app/src/verification
+
 # Switch to non-root user
 USER datadetector
 

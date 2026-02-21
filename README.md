@@ -18,6 +18,21 @@ pip install data-detector
 
 For more options, see the [Installation Guide](docs/installation.md).
 
+### Troubleshooting Submodules
+
+If you cloned the repository without submodules or downloaded the auto-generated GitHub source zip, you may encounter errors like:
+- `ModuleNotFoundError: No module named 'verification'`
+- `FileNotFoundError: Pattern directory not found: .../pattern-engine/...`
+
+**To fix this:**
+
+1.  **If using Git**: Run the following command in the project root:
+    ```bash
+    git submodule update --init --recursive
+    ```
+2.  **If using GitHub Releases**: Do **not** use the default "Source code (zip/tar.gz)" files. Instead, download the **`data-detector-<version>-full.tar.gz`** asset which includes all submodule content.
+3.  **If using Docker**: Ensure you have checked out submodules before building. The included `Dockerfile` is pre-configured to handle the necessary internal paths and symlinks.
+
 ## Quick Start
 
 ### Library Usage
