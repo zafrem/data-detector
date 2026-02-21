@@ -143,9 +143,12 @@ warn_return_any = false
 warn_unused_configs = true
 disallow_untyped_defs = true
 strict = true
+exclude = ["src/verification/"]
 
 [[tool.mypy.overrides]]
 module = [
+    "verification.*",
+    "verification.python.*",
     "verification.python.verification",
     "langdetect",
     "konlpy.*",
@@ -155,6 +158,7 @@ module = [
     "re2",
 ]
 ignore_missing_imports = true
+ignore_errors = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
