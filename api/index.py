@@ -21,6 +21,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 
@@ -240,8 +241,18 @@ class DetectResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
+@app.get("/", response_class=HTMLResponse)
+async def homepage():
+    """Serve the API guide page."""
+    html_path = Path(__file__).resolve().parent.parent / "public" / "index.html"
+    if html_path.exists():
+        return HTMLResponse(html_path.read_text(encoding="utf-8"))
+    # Fallback if file not found
+    return HTMLResponse("<h1>data-detector API</h1><p>Visit <a href='/api'>/api</a></p>")
+
+
 @app.get("/api")
-async def root():
+async def api_info():
     """Health / info endpoint (no auth required)."""
     return {
         "service": "data-detector",
