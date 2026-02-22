@@ -199,7 +199,7 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
     app = FastAPI(
         title="data-detector",
         description="PII detection and redaction service",
-        version="0.0.2",
+        version="0.0.5",
     )
 
     # Create server instance
@@ -313,7 +313,7 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
 
         return HealthResponse(
             status="healthy",
-            version="0.0.1",
+            version="0.0.5",
             patterns_loaded=len(server.registry),
             namespaces=list(server.registry.namespaces.keys()),
         )

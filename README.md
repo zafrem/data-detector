@@ -176,4 +176,4 @@ data-detector find --file "changed_file.py" --on-match exit
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+Apache License 2.0 - see [LICENSE](LICENSE) file for details.

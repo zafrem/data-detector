@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.0.5] - 2026-02-22
+
+### Changed
+- **License Update**: Formally transitioned project from MIT to **Apache License 2.0**.
+  - Updated `LICENSE`, `README.md`, `CONTRIBUTING.md`, and all documentation.
+  - Submodule `pattern-engine` also updated to Apache 2.0.
+- **API Authentication**: Enhanced Vercel serverless API with robust authentication.
+  - Implemented `ADMIN_TOKEN` requirement for API key issuance.
+  - Stateless HMAC-based API keys with embedded system identifiers.
+  - Mandatory `Authorization: Bearer dd_...` headers for all functional endpoints.
+  - Updated "Try It" interactive documentation to support API key authentication.
+- **Version Standardized**: Unified versioning across Python package, CLI, and API to `0.0.5`.
+
 ## [0.0.3] - 2025-11-29
 
 ### Added

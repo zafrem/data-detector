@@ -93,7 +93,7 @@ Contributions are welcome! Please read our contributing guidelines before submit
 
 ## 📄 License
 
-Data Detector is released under the MIT License. See the [LICENSE](../LICENSE) file for details.
+Data Detector is released under the Apache License 2.0. See the [LICENSE](../LICENSE) file for details.
 
 ---
 

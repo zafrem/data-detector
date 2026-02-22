@@ -37,7 +37,7 @@ logging.basicConfig(
 app = FastAPI(
     title="data-detector API",
     description="PII detection, validation, masking, and fake-replacement API",
-    version="0.0.3",
+    version="0.0.5",
 )
 
 # ---------------------------------------------------------------------------
@@ -193,7 +193,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 <body>
 <div class="wrap">
 <header>
-  <div class="tag">v0.0.3</div>
+  <div class="tag">v0.0.5</div>
   <h1>Data <em>Detector</em> API</h1>
   <p>PII detection, validation, masking, and fake-replacement. Detect personal information across Korean, Chinese, Japanese, and English text.</p>
   <div class="base-url" onclick="navigator.clipboard.writeText(location.origin+'/api');this.querySelector('.copy').textContent='copied!'">
@@ -408,7 +408,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 </div>
 <footer>
   <a href="https://github.com/zafrem/data-detector" target="_blank">GitHub</a>
-  &nbsp;&middot;&nbsp; MIT License
+  &nbsp;&middot;&nbsp; Apache License 2.0
 </footer>
 <script>
 document.getElementById('baseUrl').textContent = location.origin + '/api';
@@ -697,7 +697,7 @@ async def api_info():
     """Health / info endpoint (no auth required)."""
     return {
         "service": "data-detector",
-        "version": "0.0.3",
+        "version": "0.0.5",
         "endpoints": [
             "POST /api/auth/issue",
             "POST /api/detect",
