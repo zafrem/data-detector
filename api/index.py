@@ -708,6 +708,15 @@ async def api_info():
     }
 
 
+@app.get("/api/demo-key")
+async def demo_key():
+    """Return the demo API key from environment variable (if configured)."""
+    key = os.getenv("DEMO_API_KEY", "")
+    if not key:
+        raise HTTPException(status_code=404, detail="Demo key not configured")
+    return {"key": key}
+
+
 @app.post("/api/auth/issue", response_model=AuthIssueResponse)
 async def auth_issue(body: AuthIssueRequest):
     """Issue a new API key. Requires the designated admin token and a system name."""
