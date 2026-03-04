@@ -32,6 +32,7 @@ def _find_pattern_engine() -> Optional[Path]:
 
     return None
 
+
 _pattern_engine_dir = _find_pattern_engine()
 if _pattern_engine_dir and str(_pattern_engine_dir) not in sys.path:
     sys.path.insert(0, str(_pattern_engine_dir))
