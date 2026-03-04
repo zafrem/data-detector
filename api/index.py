@@ -412,16 +412,13 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 </footer>
 <script>
 document.getElementById('baseUrl').textContent = location.origin + '/api';
-let _demoKey = '';
-(async function loadDemoKey() {
+let _demoAvailable = false;
+(async function checkDemo() {
   try {
     const res = await fetch('/api/demo-key');
     if (res.ok) {
-      const data = await res.json();
-      _demoKey = data.key || '';
-      if (_demoKey) {
-        document.getElementById('tryKey').placeholder = 'Using demo key (or enter your own)';
-      }
+      _demoAvailable = true;
+      document.getElementById('tryKey').placeholder = 'Using demo key (or enter your own)';
     }
   } catch (e) { /* demo key not available */ }
 })();
@@ -429,19 +426,22 @@ async function runTry() {
   const text = document.getElementById('tryText').value;
   const endpoint = document.getElementById('tryEndpoint').value;
   const userKey = document.getElementById('tryKey').value.trim();
-  const key = userKey || _demoKey;
+  const useDemo = !userKey && _demoAvailable;
   const status = document.getElementById('tryStatus');
   const result = document.getElementById('tryResult');
   const btn = document.getElementById('tryRun');
-  if (!key) { status.textContent = 'API key required'; status.className = 'status err'; return; }
+  if (!userKey && !useDemo) { status.textContent = 'API key required'; status.className = 'status err'; return; }
   if (!text) { status.textContent = 'Enter some text'; status.className = 'status err'; return; }
   btn.disabled = true;
   status.textContent = 'sending...';
   status.className = 'status';
   try {
-    const res = await fetch('/api/' + endpoint, {
+    const url = useDemo ? '/api/demo/' + endpoint : '/api/' + endpoint;
+    const headers = { 'Content-Type': 'application/json' };
+    if (!useDemo) headers['Authorization'] = 'Bearer ' + userKey;
+    const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      headers: headers,
       body: JSON.stringify({ text })
     });
     const data = await res.json();
@@ -724,11 +724,66 @@ async def api_info():
 
 @app.get("/api/demo-key")
 async def demo_key():
-    """Return the demo API key from environment variable (if configured)."""
+    """Check whether a demo API key is configured (does not expose the key)."""
     key = os.getenv("DEMO_API_KEY", "")
     if not key:
         raise HTTPException(status_code=404, detail="Demo key not configured")
-    return {"key": key}
+    return {"available": True}
+
+
+@app.post("/api/demo/{endpoint}")
+async def demo_proxy(endpoint: str, request: Request):
+    """Proxy endpoint that uses the server-side DEMO_API_KEY so the key is never sent to the client."""
+    demo = os.getenv("DEMO_API_KEY", "")
+    if not demo:
+        raise HTTPException(status_code=404, detail="Demo key not configured")
+    if endpoint not in ("detect", "mask", "fake"):
+        raise HTTPException(status_code=400, detail="Invalid demo endpoint")
+
+    system = _verify_api_key(demo)
+    if system is None:
+        raise HTTPException(status_code=500, detail="Demo key is invalid")
+
+    body = await request.json()
+    text = body.get("text", "")
+    namespaces = body.get("namespaces")
+    engine = _get_engine()
+
+    if endpoint == "detect":
+        result = engine.find(text, namespaces=namespaces, include_matched_text=True)
+        matches = [
+            {
+                "ns_id": m.ns_id,
+                "category": m.category.value,
+                "start": m.start,
+                "end": m.end,
+                "matched_text": m.matched_text,
+                "severity": m.severity.value,
+            }
+            for m in result.matches
+        ]
+        _log_usage(system, "/api/detect", "demo", {"match_count": result.match_count, "text_length": len(text)})
+        return {"text": text, "pii_found": result.has_matches, "match_count": result.match_count, "matches": matches}
+
+    from datadetector.models import RedactionStrategy
+
+    if endpoint == "mask":
+        result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.MASK)
+        changes = [
+            {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
+            for m in result.matches
+        ]
+        _log_usage(system, "/api/mask", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
+        return {"original": text, "masked": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
+
+    if endpoint == "fake":
+        result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.FAKE)
+        changes = [
+            {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
+            for m in result.matches
+        ]
+        _log_usage(system, "/api/fake", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
+        return {"original": text, "replaced": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
 
 
 @app.post("/api/auth/issue", response_model=AuthIssueResponse)

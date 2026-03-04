@@ -415,16 +415,13 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 <script>
 document.getElementById('baseUrl').textContent = location.origin + '/api';
 
-let _demoKey = '';
-(async function loadDemoKey() {
+let _demoAvailable = false;
+(async function checkDemo() {
   try {
     const res = await fetch('/api/demo-key');
     if (res.ok) {
-      const data = await res.json();
-      _demoKey = data.key || '';
-      if (_demoKey) {
-        document.getElementById('tryKey').placeholder = 'Using demo key (or enter your own)';
-      }
+      _demoAvailable = true;
+      document.getElementById('tryKey').placeholder = 'Using demo key (or enter your own)';
     }
   } catch (e) { /* demo key not available */ }
 })();
@@ -433,13 +430,12 @@ async function runTry() {
   const text = document.getElementById('tryText').value;
   const endpoint = document.getElementById('tryEndpoint').value;
   const userKey = document.getElementById('tryKey').value.trim();
-  const key = userKey || _demoKey;
-  const usingDemo = !userKey && !!_demoKey;
+  const useDemo = !userKey && _demoAvailable;
   const status = document.getElementById('tryStatus');
   const result = document.getElementById('tryResult');
   const btn = document.getElementById('tryRun');
 
-  if (!key) { status.textContent = 'API key required'; status.className = 'status err'; return; }
+  if (!userKey && !useDemo) { status.textContent = 'API key required'; status.className = 'status err'; return; }
   if (!text) { status.textContent = 'Enter some text'; status.className = 'status err'; return; }
 
   btn.disabled = true;
@@ -447,17 +443,17 @@ async function runTry() {
   status.className = 'status';
 
   try {
-    const res = await fetch('/api/' + endpoint, {
+    const url = useDemo ? '/api/demo/' + endpoint : '/api/' + endpoint;
+    const headers = { 'Content-Type': 'application/json' };
+    if (!useDemo) headers['Authorization'] = 'Bearer ' + userKey;
+    const res = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + key
-      },
+      headers: headers,
       body: JSON.stringify({ text })
     });
     const data = await res.json();
     result.innerHTML = '<code>' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</code>';
-    const demoLabel = usingDemo ? ' (demo key)' : '';
+    const demoLabel = useDemo ? ' (demo)' : '';
     status.textContent = res.status + ' \u00b7 ' + res.statusText + demoLabel;
     status.className = res.ok ? 'status' : 'status err';
   } catch (e) {
