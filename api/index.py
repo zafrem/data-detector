@@ -389,7 +389,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
           <option value="mask" selected>Mask</option>
           <option value="fake">Fake</option>
         </select>
-        <input type="text" id="tryKey" placeholder="API key (dd_...)" style="
+        <input type="password" id="tryKey" placeholder="API key (dd_...)" style="
           font-family:var(--mono);font-size:.75rem;padding:.5rem .8rem;
           background:var(--surface);border:1px solid var(--border);border-radius:4px;
           color:var(--text);outline:none;flex:1;min-width:140px;
@@ -412,10 +412,24 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 </footer>
 <script>
 document.getElementById('baseUrl').textContent = location.origin + '/api';
+let _demoKey = '';
+(async function loadDemoKey() {
+  try {
+    const res = await fetch('/api/demo-key');
+    if (res.ok) {
+      const data = await res.json();
+      _demoKey = data.key || '';
+      if (_demoKey) {
+        document.getElementById('tryKey').placeholder = 'Using demo key (or enter your own)';
+      }
+    }
+  } catch (e) { /* demo key not available */ }
+})();
 async function runTry() {
   const text = document.getElementById('tryText').value;
   const endpoint = document.getElementById('tryEndpoint').value;
-  const key = document.getElementById('tryKey').value.trim();
+  const userKey = document.getElementById('tryKey').value.trim();
+  const key = userKey || _demoKey;
   const status = document.getElementById('tryStatus');
   const result = document.getElementById('tryResult');
   const btn = document.getElementById('tryRun');
