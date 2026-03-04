@@ -472,8 +472,23 @@ function syntaxHighlight(json) {
 # ---------------------------------------------------------------------------
 # ADMIN_TOKEN  – the "designated token" used to issue API keys
 # API_SECRET   – secret used to sign API keys (auto-generated if absent)
-ADMIN_TOKEN: str = os.environ.get("ADMIN_TOKEN", "")
-API_SECRET: str = os.environ.get("API_SECRET", os.urandom(32).hex())
+def _get_admin_token() -> str:
+    return os.environ.get("ADMIN_TOKEN", "")
+
+
+def _get_api_secret() -> str:
+    # Use a cached secret if one was auto-generated to maintain consistency
+    # but allow environment override at any time.
+    env_secret = os.environ.get("API_SECRET")
+    if env_secret:
+        return env_secret
+    
+    global _AUTO_API_SECRET
+    if "_AUTO_API_SECRET" not in globals():
+        globals()["_AUTO_API_SECRET"] = os.urandom(32).hex()
+    return globals()["_AUTO_API_SECRET"]
+
+
 LOG_FILE: str = os.environ.get("API_LOG_FILE", "")  # optional JSON log file path
 
 security = HTTPBearer()
@@ -527,7 +542,8 @@ def _log_usage(
 # ---------------------------------------------------------------------------
 def _sign(payload: str) -> str:
     """Create HMAC-SHA256 signature for *payload*."""
-    return hmac.new(API_SECRET.encode(), payload.encode(), hashlib.sha256).hexdigest()
+    secret = _get_api_secret()
+    return hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
 
 def _encode_system(system: str) -> str:
@@ -742,59 +758,65 @@ async def demo_proxy(endpoint: str, request: Request):
 
     system = _verify_api_key(demo)
     if system is None:
-        raise HTTPException(status_code=500, detail="Demo key is invalid")
+        raise HTTPException(status_code=401, detail="Demo key is invalid for current API_SECRET")
 
-    body = await request.json()
-    text = body.get("text", "")
-    namespaces = body.get("namespaces")
-    engine = _get_engine()
+    try:
+        body = await request.json()
+        text = body.get("text", "")
+        namespaces = body.get("namespaces")
+        engine = _get_engine()
 
-    if endpoint == "detect":
-        result = engine.find(text, namespaces=namespaces, include_matched_text=True)
-        matches = [
-            {
-                "ns_id": m.ns_id,
-                "category": m.category.value,
-                "start": m.start,
-                "end": m.end,
-                "matched_text": m.matched_text,
-                "severity": m.severity.value,
-            }
-            for m in result.matches
-        ]
-        _log_usage(system, "/api/detect", "demo", {"match_count": result.match_count, "text_length": len(text)})
-        return {"text": text, "pii_found": result.has_matches, "match_count": result.match_count, "matches": matches}
+        if endpoint == "detect":
+            result = engine.find(text, namespaces=namespaces, include_matched_text=True)
+            matches = [
+                {
+                    "ns_id": m.ns_id,
+                    "category": m.category.value,
+                    "start": m.start,
+                    "end": m.end,
+                    "matched_text": m.matched_text,
+                    "severity": m.severity.value,
+                }
+                for m in result.matches
+            ]
+            _log_usage(system, "/api/detect", "demo", {"match_count": result.match_count, "text_length": len(text)})
+            return {"text": text, "pii_found": result.has_matches, "match_count": result.match_count, "matches": matches}
 
-    from datadetector.models import RedactionStrategy
+        from datadetector.models import RedactionStrategy
 
-    if endpoint == "mask":
-        result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.MASK)
-        changes = [
-            {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
-            for m in result.matches
-        ]
-        _log_usage(system, "/api/mask", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
-        return {"original": text, "masked": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
+        if endpoint == "mask":
+            result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.MASK)
+            changes = [
+                {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
+                for m in result.matches
+            ]
+            _log_usage(system, "/api/mask", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
+            return {"original": text, "masked": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
 
-    if endpoint == "fake":
-        result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.FAKE)
-        changes = [
-            {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
-            for m in result.matches
-        ]
-        _log_usage(system, "/api/fake", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
-        return {"original": text, "replaced": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
+        if endpoint == "fake":
+            result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.FAKE)
+            changes = [
+                {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
+                for m in result.matches
+            ]
+            _log_usage(system, "/api/fake", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
+            return {"original": text, "replaced": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
+
+    except Exception as exc:
+        logger.exception("Error in demo_proxy")
+        raise HTTPException(status_code=500, detail=f"Internal error: {str(exc)}")
 
 
 @app.post("/api/auth/issue", response_model=AuthIssueResponse)
 async def auth_issue(body: AuthIssueRequest):
     """Issue a new API key. Requires the designated admin token and a system name."""
-    if not ADMIN_TOKEN:
+    admin_token = _get_admin_token()
+    if not admin_token:
         raise HTTPException(
             status_code=500,
             detail="ADMIN_TOKEN is not configured on the server",
         )
-    if not hmac.compare_digest(body.token, ADMIN_TOKEN):
+    if not hmac.compare_digest(body.token, admin_token):
         raise HTTPException(status_code=403, detail="Invalid admin token")
 
     system = body.system.strip()
