@@ -11,6 +11,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
+
 # Add pattern-engine to path if running from source (not installed package)
 # This handles both Unix (with symlink) and Windows (without symlink support)
 def _find_pattern_engine() -> Optional[Path]:
@@ -18,17 +19,17 @@ def _find_pattern_engine() -> Optional[Path]:
     rel_path = Path(__file__).resolve().parent.parent.parent / "pattern-engine"
     if rel_path.exists():
         return rel_path
-    
+
     # 2. Try relative to project root (CWD)
     cwd_path = Path.cwd() / "pattern-engine"
     if cwd_path.exists():
         return cwd_path
-        
+
     # 3. Try common deployment paths (/var/task for Vercel)
     vercel_path = Path("/var/task/pattern-engine")
     if vercel_path.exists():
         return vercel_path
-        
+
     return None
 
 _pattern_engine_dir = _find_pattern_engine()
