@@ -1,3 +1,3 @@
 [submodule "pattern-engine"]
 	path = pattern-engine
-	url = https://github.com/zafrem/pattern-engine.git
+	url = ../pattern-engine.git
