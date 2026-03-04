@@ -77,22 +77,26 @@ class PatternRegistry:
 
 def _get_project_root() -> Path:
     """Determine project root directory."""
-    # 1. Default: relative to source file (dev/editable)
+    # 1. Try relative to this file
     # src/datadetector/registry.py -> src/datadetector -> src -> root
-    root = Path(__file__).parent.parent.parent
+    root = Path(__file__).resolve().parent.parent.parent
 
     if (root / "pattern-engine").exists():
         return root
 
-    # 2. Docker /app
+    # 2. Try Vercel environment
+    vercel_root = Path("/var/task")
+    if (vercel_root / "pattern-engine").exists():
+        return vercel_root
+
+    # 3. Docker /app
     if Path("/app/pattern-engine").exists():
         return Path("/app")
 
-    # 3. CWD
+    # 4. CWD
     if (Path.cwd() / "pattern-engine").exists():
         return Path.cwd()
 
-    # Fallback to default even if not found
     return root
 
 

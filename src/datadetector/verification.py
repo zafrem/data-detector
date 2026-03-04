@@ -9,11 +9,30 @@ pattern-engine/verification/python/verification.py
 
 import sys
 from pathlib import Path
+from typing import Optional
 
 # Add pattern-engine to path if running from source (not installed package)
 # This handles both Unix (with symlink) and Windows (without symlink support)
-_pattern_engine_dir = Path(__file__).parent.parent.parent / "pattern-engine"
-if _pattern_engine_dir.exists() and str(_pattern_engine_dir) not in sys.path:
+def _find_pattern_engine() -> Optional[Path]:
+    # 1. Try relative to this file
+    rel_path = Path(__file__).resolve().parent.parent.parent / "pattern-engine"
+    if rel_path.exists():
+        return rel_path
+    
+    # 2. Try relative to project root (CWD)
+    cwd_path = Path.cwd() / "pattern-engine"
+    if cwd_path.exists():
+        return cwd_path
+        
+    # 3. Try common deployment paths (/var/task for Vercel)
+    vercel_path = Path("/var/task/pattern-engine")
+    if vercel_path.exists():
+        return vercel_path
+        
+    return None
+
+_pattern_engine_dir = _find_pattern_engine()
+if _pattern_engine_dir and str(_pattern_engine_dir) not in sys.path:
     sys.path.insert(0, str(_pattern_engine_dir))
 
 # Import all verification functions from the centralized location
