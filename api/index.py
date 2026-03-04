@@ -601,7 +601,7 @@ def _get_engine():
         from datadetector.models import RedactionStrategy  # noqa: F401
         from datadetector.registry import load_registry
 
-        registry = load_registry()
+        registry = load_registry(validate_examples=False)
         _engine_instance = Engine(registry)
     return _engine_instance
 
