@@ -49,6 +49,7 @@ _GUIDE_HTML = """\
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="google-site-verification" content="google736311ca6ba1b7ad.html" />
 <title>Data Detector API</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
@@ -756,14 +757,15 @@ async def sitemap_xml():
 @app.get("/google736311ca6ba1b7ad.html", response_class=HTMLResponse)
 async def google_verification():
     """Serve Google search console verification file."""
+    # Hardcoded string as a fail-safe since this is a static verification token
+    verification_string = "google-site-verification: google736311ca6ba1b7ad.html"
+    
     content = _load_static_file("google736311ca6ba1b7ad.html")
     if content:
         return HTMLResponse(content)
-    # Check if it was in the root
-    root_path = _project_root / "google736311ca6ba1b7ad.html"
-    if root_path.exists():
-        return HTMLResponse(root_path.read_text(encoding="utf-8"))
-    raise HTTPException(status_code=404, detail="Verification file not found")
+        
+    # Fallback to hardcoded string
+    return HTMLResponse(verification_string)
 
 
 @app.get("/favicon.ico")
