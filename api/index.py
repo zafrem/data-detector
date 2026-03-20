@@ -746,12 +746,25 @@ async def robots_txt():
 
 
 @app.get("/sitemap.xml")
-async def sitemap_xml():
+async def sitemap_xml(request: Request):
     """Serve sitemap.xml."""
     content = _load_static_file("sitemap.xml")
     if content:
         return Response(content=content, media_type="application/xml")
-    raise HTTPException(status_code=404, detail="Sitemap not found")
+    
+    # Fallback hardcoded sitemap
+    host = request.base_url
+    fallback_sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>{host}</loc>
+    <lastmod>2026-03-20</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
+"""
+    return Response(content=fallback_sitemap, media_type="application/xml")
 
 
 @app.get("/google736311ca6ba1b7ad.html", response_class=HTMLResponse)

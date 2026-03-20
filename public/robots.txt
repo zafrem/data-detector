@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://data-detector.vercel.app/sitemap.xml
+Sitemap: https://data-detector-api.vercel.app/sitemap.xml
