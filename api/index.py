@@ -700,13 +700,17 @@ def _load_static_file(filename: str) -> Optional[str]:
         Path(__file__).resolve().parent / "public" / filename,
         Path(f"/var/task/public/{filename}"),
         Path(f"/var/task/api/../public/{filename}"),
+        _project_root / filename,  # Also check root as fallback
     ]
     for p in candidates:
         try:
             if p.exists():
+                logger.info(f"Successfully loaded {filename} from {p}")
                 return p.read_text(encoding="utf-8")
-        except OSError:
+        except OSError as e:
+            logger.warning(f"Error checking path {p}: {e}")
             continue
+    logger.error(f"Failed to find {filename} in any of the candidate paths.")
     return None
 
 
@@ -760,6 +764,12 @@ async def google_verification():
     if root_path.exists():
         return HTMLResponse(root_path.read_text(encoding="utf-8"))
     raise HTTPException(status_code=404, detail="Verification file not found")
+
+
+@app.get("/favicon.ico")
+async def favicon():
+    """Serve favicon.ico (optional)."""
+    return Response(status_code=204)
 
 
 @app.get("/api")
