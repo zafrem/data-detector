@@ -20,8 +20,8 @@ import time  # noqa: E402
 from datetime import datetime, timezone  # noqa: E402
 from typing import Any, Dict, List, Optional  # noqa: E402
 
-from fastapi import Depends, FastAPI, HTTPException, Request  # noqa: E402
-from fastapi.responses import HTMLResponse  # noqa: E402
+from fastapi import Depends, FastAPI, HTTPException, Request, Response  # noqa: E402
+from fastapi.responses import HTMLResponse, PlainTextResponse  # noqa: E402
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer  # noqa: E402
 from pydantic import BaseModel  # noqa: E402
 
@@ -692,26 +692,34 @@ class DetectResponse(BaseModel):
 _HOMEPAGE_HTML: Optional[str] = None
 
 
+def _load_static_file(filename: str) -> Optional[str]:
+    """Load a file from the public directory, trying multiple paths for Vercel compatibility."""
+    candidates = [
+        _project_root / "public" / filename,
+        Path(__file__).resolve().parent.parent / "public" / filename,
+        Path(__file__).resolve().parent / "public" / filename,
+        Path(f"/var/task/public/{filename}"),
+        Path(f"/var/task/api/../public/{filename}"),
+    ]
+    for p in candidates:
+        try:
+            if p.exists():
+                return p.read_text(encoding="utf-8")
+        except OSError:
+            continue
+    return None
+
+
 def _load_homepage() -> str:
     """Load homepage HTML, trying multiple paths for Vercel compatibility."""
     global _HOMEPAGE_HTML
     if _HOMEPAGE_HTML is not None:
         return _HOMEPAGE_HTML
 
-    candidates = [
-        Path(__file__).resolve().parent.parent / "public" / "index.html",
-        Path(__file__).resolve().parent / "public" / "index.html",
-        _project_root / "public" / "index.html",
-        Path("/var/task/public/index.html"),
-        Path("/var/task/api/../public/index.html"),
-    ]
-    for p in candidates:
-        try:
-            if p.exists():
-                _HOMEPAGE_HTML = p.read_text(encoding="utf-8")
-                return _HOMEPAGE_HTML
-        except OSError:
-            continue
+    content = _load_static_file("index.html")
+    if content:
+        _HOMEPAGE_HTML = content
+        return _HOMEPAGE_HTML
 
     return _GUIDE_HTML
 
@@ -720,6 +728,38 @@ def _load_homepage() -> str:
 async def homepage():
     """Serve the API guide page."""
     return HTMLResponse(_load_homepage())
+
+
+@app.get("/robots.txt", response_class=PlainTextResponse)
+async def robots_txt():
+    """Serve robots.txt."""
+    content = _load_static_file("robots.txt")
+    if content:
+        return PlainTextResponse(content)
+    # Fallback if file not found
+    return PlainTextResponse("User-agent: *\nAllow: /\n")
+
+
+@app.get("/sitemap.xml")
+async def sitemap_xml():
+    """Serve sitemap.xml."""
+    content = _load_static_file("sitemap.xml")
+    if content:
+        return Response(content=content, media_type="application/xml")
+    raise HTTPException(status_code=404, detail="Sitemap not found")
+
+
+@app.get("/google736311ca6ba1b7ad.html", response_class=HTMLResponse)
+async def google_verification():
+    """Serve Google search console verification file."""
+    content = _load_static_file("google736311ca6ba1b7ad.html")
+    if content:
+        return HTMLResponse(content)
+    # Check if it was in the root
+    root_path = _project_root / "google736311ca6ba1b7ad.html"
+    if root_path.exists():
+        return HTMLResponse(root_path.read_text(encoding="utf-8"))
+    raise HTTPException(status_code=404, detail="Verification file not found")
 
 
 @app.get("/api")
