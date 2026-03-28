@@ -1,13 +1,23 @@
 name: PII Scan
 
 on:
-  pull_request:
-    branches: [ "main", "develop" ]
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
   push:
     branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'pattern-engine/**'
+      - '.github/workflows/pii-scan.yml'
+  workflow_dispatch: # Allow manual trigger
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   scan:
+    name: Periodic PII Scan
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -16,32 +26,38 @@ jobs:
         token: ${{ secrets.GH_TOKEN || github.token }}
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: "3.9"
+        python-version: "3.11"
+        cache: 'pip'
         
     - name: Install Data Detector
-      run: pip install .  # Installs from current source
+      run: pip install -e .
       
     - name: Scan for PII
       run: |
-        # Scan source code for PII patterns (informational only)
-        # Note: This is a demo workflow. Source code legitimately contains PII
-        # examples for testing/documentation, so we don't fail on matches.
-        echo "Scanning source code for PII (informational)..."
-
-        # Create a summary of any findings
-        TOTAL_MATCHES=0
-
-        find src -name "*.py" | while read file; do
-          # Run scan and capture output
+        echo "Scanning source code for PII patterns..."
+        
+        # We use a temp file to store findings to avoid subshell issues with TOTAL_MATCHES
+        # and to provide a clean summary at the end.
+        FINDINGS_FILE=$(mktemp)
+        
+        # Find all python files in src and scan them
+        find src -name "*.py" -type f | while read -r file; do
           OUTPUT=$(data-detector find --file "$file" --ns us --ns kr 2>/dev/null || true)
-
-          # Check if matches were found
+          
           if echo "$OUTPUT" | grep -q "Found [1-9]"; then
-            echo "::notice file=$file::PII patterns found in $file"
-            echo "$OUTPUT" | grep -E "^  " | head -5
+            MATCH_COUNT=$(echo "$OUTPUT" | grep -oE "Found [0-9]+" | awk '{print $2}')
+            echo "::notice file=$file::Found $MATCH_COUNT PII patterns in $file"
+            echo "### $file ($MATCH_COUNT matches)" >> "$FINDINGS_FILE"
+            echo "$OUTPUT" | grep -E "^  " | head -n 10 >> "$FINDINGS_FILE"
+            echo "" >> "$FINDINGS_FILE"
           fi
         done
-
-        echo "PII scan complete (informational only)"
+        
+        if [ -s "$FINDINGS_FILE" ]; then
+          echo "## PII Scan Results" >> $GITHUB_STEP_SUMMARY
+          cat "$FINDINGS_FILE" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ No PII patterns found in source code." >> $GITHUB_STEP_SUMMARY
+        fi

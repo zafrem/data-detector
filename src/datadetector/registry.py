@@ -225,6 +225,8 @@ def _compile_pattern(namespace: str, data: Dict[str, Any]) -> Pattern:
     flag_names = data.get("flags", [])
     flags = regex_compat.convert_flags(flag_names)
 
+    match_type = data.get("match_type", "contains")
+
     try:
         compiled = regex_compat.compile(
             pattern_str,
@@ -264,6 +266,9 @@ def _compile_pattern(namespace: str, data: Dict[str, Any]) -> Pattern:
     # Parse priority (default: 100)
     priority = data.get("priority", 100)
 
+    # Parse match_type (default: "contains")
+    match_type = data.get("match_type", "contains")
+
     return Pattern(
         id=pattern_id,
         namespace=namespace,
@@ -280,6 +285,7 @@ def _compile_pattern(namespace: str, data: Dict[str, Any]) -> Pattern:
         verification=verification,
         verification_func=verification_func,
         priority=priority,
+        match_type=match_type,
     )
 
 

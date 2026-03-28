@@ -22,6 +22,9 @@ class Category(str, Enum):
     LOCATION = "location"
     TOKEN = "token"
     DATE_OF_BIRTH = "date_of_birth"
+    IDENTIFICATION = "identification"
+    FINANCIAL = "financial"
+    MEDICAL = "medical"
     OTHER = "other"
 
 
@@ -88,6 +91,7 @@ class Pattern:
     verification: Optional[str] = None  # Name of verification function
     verification_func: Optional[Callable[[str], bool]] = None  # Compiled verification function
     priority: int = 100  # Search priority (lower = higher priority, default = 100)
+    match_type: str = "contains"  # "contains" (default) or "exactly_matches"
 
     @property
     def full_id(self) -> str:

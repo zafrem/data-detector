@@ -227,17 +227,17 @@ keywords:
   # ========== Passport Keywords ==========
   passport:
     categories: [passport]
-    patterns: [us/passport_01, kr/passport_01, kr/passport_02]
+    patterns: [us/passport_01, kr/passport_01, kr/passport_02, comm/generic_passport]
     priority: high
 
   passport_number:
     categories: [passport]
-    patterns: [us/passport_01, kr/passport_01, kr/passport_02]
+    patterns: [us/passport_01, kr/passport_01, kr/passport_02, comm/generic_passport]
     priority: high
 
   passport_no:
     categories: [passport]
-    patterns: [us/passport_01, kr/passport_01, kr/passport_02]
+    patterns: [us/passport_01, kr/passport_01, kr/passport_02, comm/generic_passport]
     priority: high
 
   여권번호:
@@ -432,6 +432,111 @@ keywords:
     patterns: [comm/aws_secret_key_01, comm/generic_api_key_01]
     priority: medium
 
+  # ========== Crypto Keywords ==========
+  bitcoin:
+    categories: [financial]
+    patterns: [comm/crypto_btc_p2pkh]
+    priority: high
+
+  btc:
+    categories: [financial]
+    patterns: [comm/crypto_btc_p2pkh]
+    priority: high
+
+  ethereum:
+    categories: [financial]
+    patterns: [comm/crypto_eth_01]
+    priority: high
+
+  eth:
+    categories: [financial]
+    patterns: [comm/crypto_eth_01]
+    priority: high
+
+  crypto:
+    categories: [financial]
+    patterns: [comm/crypto_btc_p2pkh, comm/crypto_eth_01]
+    priority: high
+
+  wallet:
+    categories: [financial]
+    patterns: [comm/crypto_btc_p2pkh, comm/crypto_eth_01]
+    priority: medium
+
+  # ========== SWIFT/BIC Keywords ==========
+  swift:
+    categories: [financial]
+    patterns: [comm/swift_bic]
+    priority: high
+
+  bic:
+    categories: [financial]
+    patterns: [comm/swift_bic]
+    priority: high
+
+  swift_code:
+    categories: [financial]
+    patterns: [comm/swift_bic]
+    priority: high
+
+  # ========== UK NINO Keywords ==========
+  nino:
+    categories: [identification]
+    patterns: [eu/uk_nino_01]
+    priority: high
+
+  national_insurance:
+    categories: [identification]
+    patterns: [eu/uk_nino_01]
+    priority: high
+
+  ni_number:
+    categories: [identification]
+    patterns: [eu/uk_nino_01]
+    priority: high
+
+  # ========== Corporate Number Keywords ==========
+  corporate_number:
+    categories: [identification]
+    patterns: [jp/jp_corporate_number, tw/tw_ubn]
+    priority: high
+
+  法人番号:
+    categories: [identification]
+    patterns: [jp/jp_corporate_number]
+    priority: high
+
+  統一編號:
+    categories: [identification]
+    patterns: [tw/tw_ubn]
+    priority: high
+
+  # ========== Medical Keywords ==========
+  npi:
+    categories: [medical]
+    patterns: [us/npi_id]
+    priority: high
+
+  national_provider:
+    categories: [medical]
+    patterns: [us/npi_id]
+    priority: high
+
+  icd:
+    categories: [medical]
+    patterns: [us/icd10_code]
+    priority: high
+
+  icd10:
+    categories: [medical]
+    patterns: [us/icd10_code]
+    priority: high
+
+  diagnosis_code:
+    categories: [medical]
+    patterns: [us/icd10_code]
+    priority: high
+
 # Category-based groupings
 categories:
   ssn:
@@ -492,6 +597,7 @@ categories:
       - us/passport_01
       - kr/passport_01
       - kr/passport_02
+      - comm/generic_passport
 
   other:
     description: Other identification numbers
@@ -531,3 +637,24 @@ categories:
       - comm/bearer_token_01
       - comm/basic_auth_01
       - comm/private_key_01
+
+  financial:
+    description: Financial identifiers (SWIFT/BIC, crypto wallets)
+    patterns:
+      - comm/swift_bic
+      - comm/crypto_btc_p2pkh
+      - comm/crypto_eth_01
+
+  identification:
+    description: National and corporate identification numbers
+    patterns:
+      - eu/uk_nino_01
+      - jp/jp_corporate_number
+      - tw/tw_ubn
+      - comm/generic_passport
+
+  medical:
+    description: Medical and healthcare identifiers
+    patterns:
+      - us/npi_id
+      - us/icd10_code

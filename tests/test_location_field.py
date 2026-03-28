@@ -152,7 +152,7 @@ class TestLocationFieldFiltering:
 
         us_patterns = [p for p in registry.get_all_patterns() if p.location == "us"]
 
-        assert len(us_patterns) == 8, "Should have 8 US patterns"
+        assert len(us_patterns) == 10, "Should have 10 US patterns"
         for pattern in us_patterns:
             assert pattern.location == "us"
             assert pattern.namespace == "us"
@@ -163,7 +163,7 @@ class TestLocationFieldFiltering:
 
         comm_patterns = [p for p in registry.get_all_patterns() if p.location == "comm"]
 
-        assert len(comm_patterns) == 22, "Should have 22 common patterns"
+        assert len(comm_patterns) == 26, "Should have 26 common patterns"
         for pattern in comm_patterns:
             assert pattern.location == "comm"
             assert pattern.namespace == "comm"
@@ -356,7 +356,7 @@ class TestLocationFieldDocumentation:
         registry = load_registry()
 
         pattern_count = len(registry.get_all_patterns())
-        assert pattern_count == 160, f"Expected 160 patterns, found {pattern_count}"
+        assert pattern_count == 168, f"Expected 168 patterns, found {pattern_count}"
 
         # All should have location
         patterns_with_location = [

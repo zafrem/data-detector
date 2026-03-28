@@ -30,8 +30,8 @@
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[a-z_][a-z0-9_]*_\\d{2}$",
-          "description": "Unique identifier within namespace with 2-digit suffix (e.g., mobile_01, ssn_01)"
+          "pattern": "^[a-z_][a-z0-9_]+$",
+          "description": "Unique identifier within namespace (e.g., mobile_01, ssn_01, swift_bic)"
         },
         "location": {
           "type": "string",
@@ -55,6 +55,9 @@
                       "location",
                       "token",
                       "date_of_birth",
+                      "identification",
+                      "financial",
+                      "medical",
                       "other"
                     ],
           "description": "Category of personal information"
@@ -126,6 +129,18 @@
               "default": "medium",
               "description": "Severity level of the PII type"
             }
+          }
+        },
+        "match_type": {
+          "type": "string",
+          "enum": ["contains", "exactly_matches"],
+          "description": "How the pattern should match: 'contains' (default) or 'exactly_matches'"
+        },
+        "langs": {
+          "type": "object",
+          "description": "Language-specific regex patterns (python, go, java, javascript)",
+          "additionalProperties": {
+            "type": "string"
           }
         },
         "metadata": {

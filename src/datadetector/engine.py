@@ -176,6 +176,18 @@ class Engine:
                 start, end = regex_match.span()
                 matched_value = regex_match.group(0)
 
+                # For exactly_matches patterns, enforce token boundaries:
+                # the match must not be embedded in a larger alphanumeric token,
+                # and must not be a plain alphabetic word (to avoid false positives
+                # from broad patterns like generic passport matching "Contact")
+                if pattern.match_type == "exactly_matches":
+                    if start > 0 and search_text[start - 1].isalnum():
+                        continue
+                    if end < len(search_text) and search_text[end].isalnum():
+                        continue
+                    if matched_value.isascii() and matched_value.isalpha():
+                        continue
+
                 # Map back to original positions if NLP preprocessing was used
                 if preprocessed:
                     start, end = preprocessed.map_to_original(start, end)

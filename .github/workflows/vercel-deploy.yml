@@ -8,6 +8,17 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+    paths:
+      - 'api/**'
+      - 'public/**'
+      - 'vercel.json'
+      - 'package.json'
+      - 'requirements.txt'
+      - '.github/workflows/vercel-deploy.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
