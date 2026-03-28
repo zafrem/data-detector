@@ -16,6 +16,7 @@ from typing import Optional
 # This handles both Unix (with symlink) and Windows (without symlink support)
 def _find_pattern_engine() -> Optional[Path]:
     # 1. Try relative to this file
+    # src/datadetector/verification.py -> src/datadetector -> src -> root
     rel_path = Path(__file__).resolve().parent.parent.parent / "pattern-engine"
     if rel_path.exists():
         return rel_path
@@ -39,20 +40,67 @@ if _pattern_engine_dir and str(_pattern_engine_dir) not in sys.path:
 
 # Import all verification functions from the centralized location
 from verification.python.verification import (  # noqa: E402
+    # Base/Common
     contains_letter,
     dms_coordinate,
     generic_number_not_timestamp,
     get_verification_function,
     high_entropy_token,
     iban_mod97,
-    korean_bank_account_valid,
-    korean_zipcode_valid,
     luhn,
     not_timestamp,
     register_verification_function,
     unregister_verification_function,
+    # US
     us_ssn_valid,
     us_zipcode_valid,
+    us_npi_valid,
+    # KR
+    korean_bank_account_valid,
+    korean_zipcode_valid,
+    kr_rrn_valid,
+    kr_business_registration_valid,
+    kr_corporate_registration_valid,
+    kr_alien_registration_valid,
+    # JP
+    jp_zipcode_valid,
+    jp_my_number_valid,
+    jp_corporate_number_valid,
+    # CN
+    cn_national_id_valid,
+    cn_zipcode_valid,
+    # TW
+    tw_national_id_valid,
+    tw_zipcode_valid,
+    tw_ubn_valid,
+    # IN
+    india_aadhaar_valid,
+    india_pan_valid,
+    in_pincode_valid,
+    # EU
+    france_insee_valid,
+    spain_dni_valid,
+    spain_nie_valid,
+    netherlands_bsn_valid,
+    poland_pesel_valid,
+    sweden_personnummer_valid,
+    belgium_rrn_valid,
+    finland_hetu_valid,
+    uk_nino_valid,
+    # Names
+    chinese_name_valid,
+    korean_name_valid,
+    japanese_name_kanji_valid,
+    cjk_name_standalone,
+    # Others
+    ipv4_public,
+    not_repeating_pattern,
+    credit_card_bin_valid,
+    swift_bic_valid,
+    aws_access_key_valid,
+    google_api_key_valid,
+    crypto_btc_valid,
+    crypto_eth_valid,
 )
 
 # Re-export all the imported functions for convenience
@@ -64,10 +112,47 @@ __all__ = [
     "not_timestamp",
     "korean_zipcode_valid",
     "us_zipcode_valid",
+    "jp_zipcode_valid",
+    "cn_zipcode_valid",
+    "tw_zipcode_valid",
+    "in_pincode_valid",
     "korean_bank_account_valid",
     "generic_number_not_timestamp",
     "contains_letter",
     "us_ssn_valid",
+    "us_npi_valid",
+    "cn_national_id_valid",
+    "tw_national_id_valid",
+    "india_aadhaar_valid",
+    "india_pan_valid",
+    "kr_business_registration_valid",
+    "kr_rrn_valid",
+    "kr_corporate_registration_valid",
+    "kr_alien_registration_valid",
+    "jp_my_number_valid",
+    "jp_corporate_number_valid",
+    "tw_ubn_valid",
+    "france_insee_valid",
+    "spain_dni_valid",
+    "spain_nie_valid",
+    "netherlands_bsn_valid",
+    "poland_pesel_valid",
+    "sweden_personnummer_valid",
+    "belgium_rrn_valid",
+    "finland_hetu_valid",
+    "uk_nino_valid",
+    "chinese_name_valid",
+    "korean_name_valid",
+    "japanese_name_kanji_valid",
+    "cjk_name_standalone",
+    "ipv4_public",
+    "not_repeating_pattern",
+    "credit_card_bin_valid",
+    "swift_bic_valid",
+    "aws_access_key_valid",
+    "google_api_key_valid",
+    "crypto_btc_valid",
+    "crypto_eth_valid",
     "get_verification_function",
     "register_verification_function",
     "unregister_verification_function",
