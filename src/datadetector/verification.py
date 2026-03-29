@@ -40,67 +40,67 @@ if _pattern_engine_dir and str(_pattern_engine_dir) not in sys.path:
 
 # Import all verification functions from the centralized location
 from verification.python.verification import (  # noqa: E402
-    # Base/Common
-    contains_letter,
-    dms_coordinate,
-    generic_number_not_timestamp,
-    get_verification_function,
-    high_entropy_token,
-    iban_mod97,
-    luhn,
-    not_timestamp,
-    register_verification_function,
-    unregister_verification_function,
-    # US
-    us_ssn_valid,
-    us_zipcode_valid,
-    us_npi_valid,
-    # KR
-    korean_bank_account_valid,
-    korean_zipcode_valid,
-    kr_rrn_valid,
-    kr_business_registration_valid,
-    kr_corporate_registration_valid,
-    kr_alien_registration_valid,
-    # JP
-    jp_zipcode_valid,
-    jp_my_number_valid,
-    jp_corporate_number_valid,
+    aws_access_key_valid,
+    belgium_rrn_valid,
+    # Names
+    chinese_name_valid,
+    cjk_name_standalone,
     # CN
     cn_national_id_valid,
     cn_zipcode_valid,
-    # TW
-    tw_national_id_valid,
-    tw_zipcode_valid,
-    tw_ubn_valid,
+    # Base/Common
+    contains_letter,
+    credit_card_bin_valid,
+    crypto_btc_valid,
+    crypto_eth_valid,
+    dms_coordinate,
+    finland_hetu_valid,
+    # EU
+    france_insee_valid,
+    generic_number_not_timestamp,
+    get_verification_function,
+    google_api_key_valid,
+    high_entropy_token,
+    iban_mod97,
+    in_pincode_valid,
     # IN
     india_aadhaar_valid,
     india_pan_valid,
-    in_pincode_valid,
-    # EU
-    france_insee_valid,
-    spain_dni_valid,
-    spain_nie_valid,
-    netherlands_bsn_valid,
-    poland_pesel_valid,
-    sweden_personnummer_valid,
-    belgium_rrn_valid,
-    finland_hetu_valid,
-    uk_nino_valid,
-    # Names
-    chinese_name_valid,
-    korean_name_valid,
-    japanese_name_kanji_valid,
-    cjk_name_standalone,
     # Others
     ipv4_public,
+    japanese_name_kanji_valid,
+    jp_corporate_number_valid,
+    jp_my_number_valid,
+    # JP
+    jp_zipcode_valid,
+    # KR
+    korean_bank_account_valid,
+    korean_name_valid,
+    korean_zipcode_valid,
+    kr_alien_registration_valid,
+    kr_business_registration_valid,
+    kr_corporate_registration_valid,
+    kr_rrn_valid,
+    luhn,
+    netherlands_bsn_valid,
     not_repeating_pattern,
-    credit_card_bin_valid,
+    not_timestamp,
+    poland_pesel_valid,
+    register_verification_function,
+    spain_dni_valid,
+    spain_nie_valid,
+    sweden_personnummer_valid,
     swift_bic_valid,
-    aws_access_key_valid,
-    google_api_key_valid,
-    crypto_btc_valid,
-    crypto_eth_valid,
+    # TW
+    tw_national_id_valid,
+    tw_ubn_valid,
+    tw_zipcode_valid,
+    uk_nino_valid,
+    unregister_verification_function,
+    us_npi_valid,
+    # US
+    us_ssn_valid,
+    us_zipcode_valid,
 )
 
 # Re-export all the imported functions for convenience

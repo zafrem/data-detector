@@ -295,13 +295,32 @@ class KoreanTokenizer:
         morphs: List[Tuple[str, str]] = self.tokenizer.pos(text)
 
         # Filter out particles (Josa in Korean POS tagging)
-        filtered: List[str] = []
+        # Also include some others that might contain particles in Okt
+        filtered_parts: List[str] = []
         for morph, pos in morphs:
-            # Keep everything except particles (Josa)
-            if pos != "Josa":
-                filtered.append(morph)
+            # Keep everything except particles (Josa) and some ambiguous nouns/adjectives
+            # that often represent particles or auxiliary verbs when attached to PII
+            if pos in ("Josa", "Eomi"):
+                continue
 
-        return " ".join(filtered)
+            # Special case for common single-char particles that Okt might misclassify as Noun
+            if pos == "Noun" and len(morph) == 1 and morph in "은는이가을를의":
+                continue
+
+            # Special case for '입니다' which Okt classifies as Adjective
+            if pos == "Adjective" and morph == "입니다":
+                continue
+
+            filtered_parts.append(morph)
+
+        # We need to join them carefully. If two adjacent morphs were originally
+        # attached without space, we should keep them attached unless we removed
+        # something between them.
+
+        # Simple approach for now: join with empty string, but this might merge words.
+        # Better: Join with empty string, but rely on SmartTokenizer to add spaces
+        # between script boundaries (ASCII <-> CJK) later.
+        return "".join(filtered_parts)
 
 
 class ChineseTokenizer:

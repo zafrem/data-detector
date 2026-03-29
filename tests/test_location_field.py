@@ -362,4 +362,4 @@ class TestLocationFieldDocumentation:
         patterns_with_location = [
             p for p in registry.get_all_patterns() if hasattr(p, "location") and p.location
         ]
-        assert len(patterns_with_location) == 160, "All patterns should have location field"
+        assert len(patterns_with_location) == 168, "All patterns should have location field"

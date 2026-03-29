@@ -8,7 +8,7 @@ patterns:
     description: Generic high-entropy token (20+ chars, base64url/hex, high entropy)
     pattern: '\b[A-Za-z0-9_\-+/=.]{20,}\b'
     verification: high_entropy_token
-    priority: 50
+    priority: 100
     mask: "[REDACTED_TOKEN]"
     examples:
       match:

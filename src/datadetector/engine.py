@@ -205,6 +205,8 @@ class Engine:
                 # Check for overlaps if not allowed
                 if not allow_overlaps:
                     if any(self._spans_overlap((start, end), (m.start, m.end)) for m in matches):
+                        # Since patterns are sorted by priority, we already have
+                        # the best match for this span.
                         continue
 
                 # Get matched text if allowed by policy
@@ -232,6 +234,26 @@ class Engine:
             # Break outer loop if stopping on first match and we found one
             if stop_on_first_match and matches:
                 break
+
+        # Step 2.5: Resolve overlaps if multiple matches were collected
+        if not allow_overlaps and len(matches) > 1:
+            # Re-sort matches by position then length (longer first)
+            matches.sort(key=lambda m: (m.start, m.end - m.start), reverse=True)
+
+            # This is a bit complex if we want to honor priority AND position.
+            # But since we collected matches in priority order, we can keep the
+            # ones that came first.
+
+            resolved_matches: List[Match] = []
+            # We already have them in a mostly priority-first order from the loop.
+            # Let's re-verify and filter out overlapping ones that were added later.
+            for m in matches:
+                if not any(
+                    self._spans_overlap((m.start, m.end), (rm.start, rm.end))
+                    for rm in resolved_matches
+                ):
+                    resolved_matches.append(m)
+            matches = resolved_matches
 
         # Step 3: Context Analysis
         # Analyze surrounding text to boost confidence using keywords (and future ML/LLM)
