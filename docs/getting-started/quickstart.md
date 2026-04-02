@@ -80,6 +80,57 @@ curl -X POST http://localhost:8080/redact \
 curl http://localhost:8080/health
 ```
 
+## Resource Scanning
+
+Scan structured data resources (databases, Kafka, files, vector DBs, AI training data) for PII:
+
+```python
+from datadetector import Engine, load_registry, DataExplorer
+from datadetector import DataResource, ResourceType, ConnectionConfig
+
+registry = load_registry()
+engine = Engine(registry)
+explorer = DataExplorer(engine)
+
+# Example: Scan a SQLite database
+from datadetector.adapters.database import DatabaseAdapter
+
+resource = DataResource(
+    name="my-db",
+    resource_type=ResourceType.DATABASE,
+    connection=ConnectionConfig(uri="sqlite:///my_data.db"),
+)
+
+with DatabaseAdapter(resource) as adapter:
+    result = explorer.scan(adapter)
+    for cr in result.container_results:
+        for fr in cr.field_results:
+            if fr.pii_detected:
+                print(f"  PII found: {cr.container.name}.{fr.field_info.name} "
+                      f"({fr.categories}, confidence={fr.confidence})")
+```
+
+Generate an inventory report:
+```python
+from datadetector import DataInventoryGenerator, InventoryFormat
+
+gen = DataInventoryGenerator()
+gen.add_scan_result(result)
+inventory = gen.generate()
+
+# Export as HTML report
+with open("pii_report.html", "w") as f:
+    gen.export(inventory, InventoryFormat.HTML, output=f)
+```
+
+Install adapter dependencies:
+```bash
+pip install data-detector[database]       # For database scanning
+pip install data-detector[vector-db]      # For vector DB scanning (ChromaDB)
+pip install data-detector[training-data]  # For AI training data scanning
+pip install data-detector[resources]      # For all resource types
+```
+
 ## Next Steps
 
 Now that you have a basic understanding of Data Detector, you can explore more advanced topics:
@@ -88,3 +139,4 @@ Now that you have a basic understanding of Data Detector, you can explore more a
 - [Configuration](configuration.md) - Configure the server and pattern registry.
 - [Custom Patterns](custom-patterns.md) - Create your own patterns for custom data types.
 - [Verification Functions](verification.md) - Add custom logic to validate pattern matches.
+- [Resource Scanning](../guides/resource-scanning.md) - Scan databases, Kafka, APIs, and files for PII.

@@ -237,6 +237,39 @@ You can customize the behavior of each security layer by defining a `SecurityPol
 
 -   **Use Targeted Namespaces**: Don't scan for every possible PII type in every request. If you are building a chatbot for a US-based audience, you probably don't need to scan for Korean Resident Registration Numbers. Limiting the namespaces (`--ns` flag) significantly improves performance.
 
+## Scanning Existing Vector Stores for PII
+
+The `RAGSecurityMiddleware` protects data in real-time as it flows through the RAG pipeline. But what about data **already stored** in your vector database? Use the `VectorDBAdapter` to scan existing collections:
+
+```python
+from datadetector import Engine, load_registry, DataExplorer
+from datadetector import DataResource, ResourceType, ConnectionConfig
+from datadetector.adapters.vector_db import VectorDBAdapter
+
+registry = load_registry()
+engine = Engine(registry)
+explorer = DataExplorer(engine)
+
+# Scan an existing ChromaDB instance
+resource = DataResource(
+    name="rag-store",
+    resource_type=ResourceType.VECTOR_DB,
+    connection=ConnectionConfig(uri="/path/to/chroma_data"),
+)
+
+with VectorDBAdapter(resource) as adapter:
+    result = explorer.scan(adapter)
+    for cr in result.container_results:
+        for fr in cr.field_results:
+            if fr.pii_detected:
+                print(f"  PII in {cr.container.name}.{fr.field_info.name}: "
+                      f"{fr.categories} (confidence={fr.confidence})")
+```
+
+This complements the middleware: use `RAGSecurityMiddleware` for real-time protection, and `VectorDBAdapter` + `DataExplorer` for periodic audits of stored data.
+
+Similarly, use `TrainingDataAdapter` to scan AI training datasets (JSONL instruction-tuning, chat data, HuggingFace datasets) for PII before fine-tuning models. See the [Resource Scanning Guide](../guides/resource-scanning.md) for details.
+
 ## Performance Optimization
 
 -   **Use Streaming for Large Documents**: For indexing large document collections, the `StreamEngine` can process multiple documents concurrently, providing a significant speed-up.

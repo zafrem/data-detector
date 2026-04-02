@@ -505,6 +505,106 @@ This diagram shows a recommended architecture for deploying the Data Detector se
 └────────────────────────────────────────────────────────┘
 ```
 
+### 8. Resource Scanning Architecture
+
+Data Detector can scan structured data resources (databases, Kafka, REST APIs, file storage, vector databases, AI training data) for PII using a pluggable adapter pattern. The system has three progressive components:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│                  Resource Scanning System                        │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │                  Resource Adapters                         │  │
+│  │                                                            │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐  │  │
+│  │  │ Database │ │  Kafka   │ │   API    │ │File Storage  │  │  │
+│  │  │(SQLAlch.)│ │(Schema R)│ │(OpenAPI) │ │(CSV/JSON/..) │  │  │
+│  │  └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────┬───────┘  │  │
+│  │       │             │            │              │          │  │
+│  │  ┌──────────┐ ┌──────────────┐   │              │          │  │
+│  │  │Vector DB │ │Training Data │   │              │          │  │
+│  │  │(ChromaDB)│ │(JSONL/HF)    │   │              │          │  │
+│  │  └────┬─────┘ └──────┬───────┘   │              │          │  │
+│  │       │              │           │              │          │  │
+│  │       └──────────────┴───────────┴──────────────┘          │  │
+│  │                         │                                  │  │
+│  │              ┌──────────▼───────────┐                      │  │
+│  │              │  ResourceAdapter     │  (Abstract Base)     │  │
+│  │              │  - connect()         │                      │  │
+│  │              │  - list_containers() │                      │  │
+│  │              │  - list_fields()     │                      │  │
+│  │              │  - sample_values()   │                      │  │
+│  │              └──────────┬───────────┘                      │  │
+│  └──────────────────────────┼─────────────────────────────────┘  │
+│                             │                                    │
+│  ┌──────────────────────────▼─────────────────────────────────┐  │
+│  │                  Data Explorer                             │  │
+│  │                                                            │  │
+│  │  scan(adapter) → ResourceScanResult                        │  │
+│  │                                                            │  │
+│  │  Pipeline:                                                 │  │
+│  │  1. List containers (tables/topics/endpoints/files)        │  │
+│  │  2. For each field: analyze metadata (field name/type)     │  │
+│  │  3. Sample values → run Engine.find() per value            │  │
+│  │  4. Combine scores: metadata_weight * meta + sample * val  │  │
+│  │  5. Map to PIIConfidence (NONE→LOW→MEDIUM→HIGH→CONFIRMED) │  │
+│  └──────────────────────────┬─────────────────────────────────┘  │
+│                             │                                    │
+│  ┌──────────────────────────▼─────────────────────────────────┐  │
+│  │              Data Inventory Generator                      │  │
+│  │                                                            │  │
+│  │  generate() → DataInventory                                │  │
+│  │  export(format) → JSON / CSV / YAML / HTML                 │  │
+│  │  diff(old, new) → InventoryDiff (added/removed/changed)    │  │
+│  │  summary() → breakdown by category, severity, resource     │  │
+│  └──────────────────────────┬─────────────────────────────────┘  │
+│                             │                                    │
+│  ┌──────────────────────────▼─────────────────────────────────┐  │
+│  │                Data Lineage Tracer                         │  │
+│  │                                                            │  │
+│  │  build_graph() → LineageGraph (nodes + edges)              │  │
+│  │  trace(field, direction) → subgraph (BFS traversal)        │  │
+│  │  get_pii_flow_summary() → {category: [field_paths]}        │  │
+│  │  find_pii_sources() / find_pii_sinks()                     │  │
+│  │  to_mermaid() → Mermaid diagram                            │  │
+│  │  to_dict() → D3.js-compatible JSON                         │  │
+│  └────────────────────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+#### Resource Scanning Data Flow
+
+```
+Register DataResource (name, type, connection)
+        │
+        ▼
+┌───────────────────┐
+│  Adapter connects  │  (DB: SQLAlchemy inspect, Kafka: Schema Registry,
+│  to resource       │   API: parse OpenAPI spec, File: discover files,
+│                    │   VectorDB: ChromaDB collections, Training: JSONL/HF)
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│ List containers    │  (tables, topics, endpoints, files, collections, datasets)
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│ For each field:    │
+│ 1. Metadata score  │  ← create_context_from_field_name()
+│ 2. Sample values   │  ← adapter.sample_values()
+│ 3. Engine.find()   │  ← existing regex/verification pipeline
+│ 4. Combined score  │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│ ResourceScanResult │  → DataInventoryGenerator → Export
+│                    │  → DataLineageTracer → Graph / Mermaid
+└───────────────────┘
+```
+
 ## Key Design Principles
 
 The architecture is guided by several key principles that ensure the system is robust, performant, and easy to use.
@@ -585,31 +685,58 @@ data-detector/
 │   ├── engine.py            # Core Engine class
 │   ├── registry.py          # PatternRegistry & load_registry
 │   ├── models.py            # Data models (Pattern, Policy, Results)
+│   ├── nlp.py               # NLP processor (Korean/Chinese/Japanese)
+│   ├── context.py           # Context-aware filtering
 │   ├── utils/
 │   │   └── yaml_utils.py    # YAML utilities
 │   ├── verification.py      # Verification functions (Luhn, IBAN)
 │   ├── cli.py               # Click CLI implementation
-│   └── server.py            # HTTP/gRPC server
+│   ├── server.py            # HTTP/gRPC server
+│   │
+│   │  # Resource Scanning
+│   ├── resource_models.py   # Shared enums & dataclasses for resources
+│   ├── resource_adapter.py  # Abstract ResourceAdapter base class
+│   ├── data_explorer.py     # DataExplorer — scan any resource for PII
+│   ├── data_inventory.py    # DataInventoryGenerator — catalog/export/diff
+│   ├── data_lineage.py      # DataLineageTracer — PII flow graph
+│   └── adapters/
+│       ├── __init__.py      # Adapter registry & get_adapter_class()
+│       ├── database.py      # DatabaseAdapter (SQLAlchemy)
+│       ├── kafka.py         # KafkaAdapter (Schema Registry)
+│       ├── api.py           # APIAdapter (OpenAPI spec)
+│       ├── file_storage.py  # FileStorageAdapter (CSV/JSON/Parquet/Excel)
+│       ├── vector_db.py     # VectorDBAdapter (ChromaDB)
+│       └── training_data.py # TrainingDataAdapter (JSONL/HuggingFace)
 │
-├── patterns/                # Built-in pattern files
-│   ├── common.yml           # Cross-country patterns
-│   ├── kr.yml               # Korean patterns
-│   ├── us.yml               # US patterns
-│   └── ...                  # Other countries
+├── pattern-engine/          # Git submodule with pattern definitions
+│   └── regex/pii/           # PII patterns by country
+│       ├── common/          # Cross-country patterns
+│       ├── kr/              # Korean patterns
+│       ├── us/              # US patterns
+│       └── ...              # Other countries
 │
-├── tests/                   # Test suite (94% coverage)
+├── tests/
 │   ├── test_engine.py
 │   ├── test_registry.py
-│   ├── test_yaml_utils.py   # YAML utilities tests (NEW!)
+│   ├── test_resource_models.py
+│   ├── test_adapter_database.py
+│   ├── test_adapter_kafka.py
+│   ├── test_adapter_api.py
+│   ├── test_adapter_file_storage.py
+│   ├── test_adapter_vector_db.py
+│   ├── test_adapter_training_data.py
+│   ├── test_data_explorer.py
+│   ├── test_data_inventory.py
+│   ├── test_data_lineage.py
 │   └── ...
 │
 ├── docs/
-│   ├── ARCHITECTURE.md      # This file
-│   ├── yaml_utilities.md    # YAML utilities guide
+│   ├── architecture/ARCHITECTURE.md  # This file
+│   ├── guides/resource-scanning.md   # Resource scanning guide
 │   └── ...
 │
 └── examples/
-    └── yaml_usage_example.py  # YAML utilities examples
+    └── yaml_usage_example.py
 ```
 
 ## Performance Characteristics

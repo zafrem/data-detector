@@ -16,6 +16,11 @@ from datadetector.context import (
     KeywordRegistry,
     create_context_from_field_name,
 )
+
+# Resource scanning (adapters imported directly to avoid requiring optional deps)
+from datadetector.data_explorer import DataExplorer
+from datadetector.data_inventory import DataInventoryGenerator
+from datadetector.data_lineage import DataLineageTracer
 from datadetector.engine import Engine
 from datadetector.fake_file_generators import (
     ImageGenerator,
@@ -45,6 +50,33 @@ from datadetector.rag_models import (
 )
 from datadetector.regex_compat import RegexEngine, get_engine, set_engine
 from datadetector.registry import PatternRegistry, load_registry
+from datadetector.resource_adapter import ResourceAdapter
+from datadetector.resource_models import (
+    ConnectionConfig,
+    ContainerInfo,
+    ContainerScanResult,
+    ContainerType,
+    DataInventory,
+    DataResource,
+    FieldInfo,
+    FieldRelationship,
+    FieldScanResult,
+    InventoryDiff,
+    InventoryEntry,
+    InventoryFormat,
+    LineageEdge,
+    LineageGraph,
+    LineageNode,
+    MaskingPolicy,
+    MaskingStrategy,
+    PIIConfidence,
+    RelationshipType,
+    ResourceScanResult,
+    ResourceType,
+    ScanMetadata,
+    ScanStatus,
+    ScanStrategy,
+)
 from datadetector.stream_engine import StreamEngine
 from datadetector.tokenization import SecureTokenizer
 from datadetector.utils.yaml_utils import (
@@ -103,4 +135,33 @@ __all__ = [
     "RegexEngine",
     "set_engine",
     "get_engine",
+    # Resource scanning
+    "ResourceAdapter",
+    "DataExplorer",
+    "DataInventoryGenerator",
+    "DataLineageTracer",
+    "ResourceType",
+    "ScanStrategy",
+    "PIIConfidence",
+    "ContainerType",
+    "RelationshipType",
+    "InventoryFormat",
+    "ConnectionConfig",
+    "DataResource",
+    "ContainerInfo",
+    "FieldInfo",
+    "FieldScanResult",
+    "ContainerScanResult",
+    "ResourceScanResult",
+    "FieldRelationship",
+    "LineageNode",
+    "LineageEdge",
+    "LineageGraph",
+    "InventoryEntry",
+    "DataInventory",
+    "InventoryDiff",
+    "ScanStatus",
+    "ScanMetadata",
+    "MaskingStrategy",
+    "MaskingPolicy",
 ]

@@ -196,6 +196,130 @@ Unregister a verification function.
 
 **Returns:** `bool` - True if removed, False if not found
 
+### Resource Scanning
+
+#### Resource Models
+
+##### `DataResource(name, resource_type, connection, description=None, tags=None, owner=None)`
+
+Define a data resource to scan.
+
+**Parameters:**
+- `name` (str): Unique resource name
+- `resource_type` (ResourceType): One of `DATABASE`, `KAFKA`, `API`, `FILE_STORAGE`, `VECTOR_DB`, `TRAINING_DATA`
+- `connection` (ConnectionConfig): Connection details
+- `description` (str, optional): Resource description
+- `tags` (List[str], optional): Tags for categorization
+- `owner` (str, optional): Resource owner
+
+##### `ConnectionConfig(uri, params=None)`
+
+Connection configuration for a resource.
+
+**Parameters:**
+- `uri` (str): Connection URI (e.g., SQLAlchemy URL, bootstrap servers, file path)
+- `params` (Dict[str, Any], optional): Adapter-specific parameters
+
+#### DataExplorer
+
+##### `DataExplorer(engine, sample_limit=100, metadata_weight=0.3, sample_weight=0.7, confidence_threshold=0.3, namespaces=None, on_container_scanned=None)`
+
+Orchestrator for scanning any resource adapter for PII.
+
+**Parameters:**
+- `engine` (Engine): Core detection engine
+- `sample_limit` (int): Max sample values per field. Default: 100
+- `metadata_weight` (float): Weight for metadata scoring. Default: 0.3
+- `sample_weight` (float): Weight for sample value scoring. Default: 0.7
+- `confidence_threshold` (float): Minimum score to flag as PII. Default: 0.3
+- `namespaces` (List[str], optional): Limit to specific pattern namespaces
+- `on_container_scanned` (Callable, optional): Callback after each container
+
+##### `DataExplorer.scan(adapter, strategy=ScanStrategy.SAMPLE, containers=None)`
+
+Scan a resource adapter for PII.
+
+**Parameters:**
+- `adapter` (ResourceAdapter): Connected adapter instance
+- `strategy` (ScanStrategy): `SAMPLE` (default), `METADATA_ONLY`, or `FULL`
+- `containers` (List[str], optional): Specific container names to scan
+
+**Returns:** `ResourceScanResult`
+
+#### DataInventoryGenerator
+
+##### `DataInventoryGenerator()`
+
+Generates PII inventory catalogs from scan results.
+
+**Methods:**
+- `add_scan_result(result)` — Add a `ResourceScanResult`
+- `generate()` — Returns `DataInventory`
+- `export(inventory, format, output=None)` — Export as JSON, CSV, YAML, or HTML
+- `diff(previous, current)` — Returns `InventoryDiff` with added/removed/changed entries
+- `summary(inventory)` — Returns breakdown by category, severity, resource type
+- `load_json(path)` — Load inventory from JSON file
+
+**Example:**
+```python
+from datadetector import DataInventoryGenerator, InventoryFormat
+
+gen = DataInventoryGenerator()
+gen.add_scan_result(scan_result)
+inventory = gen.generate()
+
+# Export as HTML
+html = gen.export(inventory, InventoryFormat.HTML)
+
+# Compare two inventories
+diff = DataInventoryGenerator.diff(old_inventory, new_inventory)
+print(f"Added: {len(diff.added)}, Removed: {len(diff.removed)}")
+```
+
+#### DataLineageTracer
+
+##### `DataLineageTracer()`
+
+Traces PII data flow within and across resources.
+
+**Methods:**
+- `add_scan_result(result, adapter=None)` — Add scan result (optionally with adapter for FK discovery)
+- `add_relationship(relationship)` — Add a `FieldRelationship`
+- `add_cross_resource_link(src_resource, src_field, tgt_resource, tgt_field)` — Link fields across resources
+- `build_graph()` — Returns `LineageGraph`
+- `trace(field_full_path, direction="both", max_depth=10)` — BFS trace from a field
+- `get_pii_flow_summary()` — Returns `{category: [field_paths]}`
+- `find_pii_sources()` / `find_pii_sinks()` — Origin/terminal PII nodes
+- `to_dict()` — JSON-serializable (D3.js compatible)
+- `to_mermaid()` — Mermaid diagram text
+
+**Example:**
+```python
+from datadetector import DataLineageTracer
+
+tracer = DataLineageTracer()
+tracer.add_scan_result(db_result, db_adapter)
+tracer.add_scan_result(kafka_result)
+tracer.add_cross_resource_link("my-db", "users.email", "my-kafka", "user-events.email")
+
+graph = tracer.build_graph()
+print(tracer.to_mermaid())
+
+# Trace PII flow from a specific field
+subgraph = tracer.trace("my-db.users.email", direction="downstream")
+```
+
+#### Resource Adapters
+
+All adapters implement the `ResourceAdapter` interface:
+
+| Adapter | Import | Dependencies |
+|---------|--------|-------------|
+| `DatabaseAdapter` | `from datadetector.adapters.database import DatabaseAdapter` | `sqlalchemy` |
+| `KafkaAdapter` | `from datadetector.adapters.kafka import KafkaAdapter` | `confluent-kafka`, `requests`, `fastavro` |
+| `APIAdapter` | `from datadetector.adapters.api import APIAdapter` | None (uses stdlib) |
+| `FileStorageAdapter` | `from datadetector.adapters.file_storage import FileStorageAdapter` | `openpyxl` (Excel), `pyarrow` (Parquet) |
+
 ## REST API
 
 ### POST /find

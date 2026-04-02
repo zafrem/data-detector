@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Data Detector** is a high-performance PII (Personally Identifiable Information) detection and redaction engine. It supports multi-language detection (Korean, Chinese, Japanese, English) with NLP features for improved accuracy with CJK languages.
+**Data Detector** is a high-performance PII (Personally Identifiable Information) detection and redaction engine. It supports multi-language detection (Korean, Chinese, Japanese, English) with NLP features for improved accuracy with CJK languages. It also provides universal resource scanning for detecting PII in structured data sources (databases, Kafka, REST APIs, file storage) with inventory generation and data lineage tracing.
 
 ## Essential Commands
 
@@ -18,6 +18,14 @@ pip install -e ".[nlp]"
 
 # Install with RE2 support (for large text processing)
 pip install -e ".[re2]"
+
+# Install resource scanning adapters
+pip install -e ".[database]"       # SQLAlchemy for DB scanning
+pip install -e ".[kafka]"          # Kafka + Schema Registry
+pip install -e ".[file-storage]"   # Parquet + Excel
+pip install -e ".[vector-db]"      # ChromaDB for vector store scanning
+pip install -e ".[training-data]"  # HuggingFace datasets scanning
+pip install -e ".[resources]"      # All resource adapters
 ```
 
 ### Testing
@@ -131,6 +139,31 @@ make docker-run
    - Structured JSON usage logging per system
    - Logs endpoint with system/event filtering
    - See `docs/vercel-api.md` for full documentation
+
+8. **Resource Scanning** (`src/datadetector/data_explorer.py`, `data_inventory.py`, `data_lineage.py`)
+   
+   The resource scanning system follows a three-stage pipeline designed so that each stage can be used independently or linked together:
+   
+   **Stage 1: Search for Security Information** → **Stage 2: Create Security Inventory** → **Stage 3: Security Data Lineage**
+   
+   - **Stage 1 — Data Explorer** (`data_explorer.py`): Scans any `ResourceAdapter` for sensitive information (PII, etc.) using metadata analysis + sample value detection. Produces `ResourceScanResult`.
+   - **Stage 2 — Data Inventory Generator** (`data_inventory.py`): Aggregates scan results into a security inventory catalog. Exports to JSON/CSV/YAML/HTML, supports diff between inventories. Produces `DataInventory`.
+   - **Stage 3 — Data Lineage Tracer** (`data_lineage.py`): Traces how security-sensitive data flows within and across resources. BFS traversal, source/sink detection, Mermaid/D3.js visualization.
+   
+   Each stage is a standalone component. `ResourceScanResult` is the shared interface that links them:
+   - Use Stage 1 alone to just scan for sensitive data
+   - Use Stage 1 + 2 to scan and generate an inventory report
+   - Use Stage 1 + 3 to scan and trace data lineage
+   - Use Stage 1 + 2 + 3 for the full pipeline
+   - Use Stage 2 or 3 independently with manually constructed `ResourceScanResult`
+   
+   Pluggable adapter pattern (`src/datadetector/adapters/`):
+   - `DatabaseAdapter` (SQLAlchemy), `KafkaAdapter` (Schema Registry), `APIAdapter` (OpenAPI), `FileStorageAdapter` (CSV/JSON/Parquet/Excel)
+   - `VectorDBAdapter` (ChromaDB — scan document chunks and metadata in vector stores for PII)
+   - `TrainingDataAdapter` (JSONL/HuggingFace — scan AI training data, instruction-tuning, chat, prompt/completion formats)
+   
+   Reuses existing Engine.find() and context filtering for PII detection.
+   See `docs/guides/resource-scanning.md` for full documentation.
 
 ### Detection Pipeline
 

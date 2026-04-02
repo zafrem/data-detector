@@ -181,7 +181,30 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
-- None
+- **Universal Resource Scanning**: Complete system for detecting PII in structured data resources
+  - New `resource_models.py` — Shared enums and dataclasses (`ResourceType`, `ScanStrategy`, `PIIConfidence`, `ContainerType`, etc.)
+  - New `resource_adapter.py` — Abstract `ResourceAdapter` base class with pluggable adapter pattern
+  - New `data_explorer.py` — `DataExplorer` orchestrator that scans any adapter using metadata + sample value analysis
+  - New `data_inventory.py` — `DataInventoryGenerator` for PII catalog generation, export (JSON/CSV/YAML/HTML), diff, and summary
+  - New `data_lineage.py` — `DataLineageTracer` for PII flow tracing within and across resources, with Mermaid/D3.js export
+
+- **Resource Adapters** (6 adapters for different data sources):
+  - `adapters/database.py` — `DatabaseAdapter` using SQLAlchemy for RDBMS (PostgreSQL, MySQL, SQLite, etc.)
+  - `adapters/kafka.py` — `KafkaAdapter` for Kafka topics via Schema Registry (Avro/JSON Schema)
+  - `adapters/api.py` — `APIAdapter` for REST API scanning via OpenAPI/Swagger specs
+  - `adapters/file_storage.py` — `FileStorageAdapter` for CSV, JSON, JSONL, Parquet, and Excel files
+  - `adapters/vector_db.py` — `VectorDBAdapter` for scanning vector databases (ChromaDB) — document chunks and metadata
+  - `adapters/training_data.py` — `TrainingDataAdapter` for scanning AI training data (JSONL instruction-tuning, chat format, prompt/completion, HuggingFace datasets)
+
+- **New Optional Dependencies** in `pyproject.toml`:
+  - `database` — SQLAlchemy for database scanning
+  - `kafka` — confluent-kafka, requests, fastavro for Kafka scanning
+  - `file-storage` — openpyxl, pyarrow for Excel/Parquet support
+  - `vector-db` — chromadb for vector database scanning
+  - `training-data` — datasets (HuggingFace) for training data scanning
+  - `resources` — Meta-group installing all resource adapter dependencies
+
+- **Comprehensive Test Suite**: 180 new tests across 10 test files covering models, all adapters, explorer, inventory, and lineage
 
 ### Changed
 - None

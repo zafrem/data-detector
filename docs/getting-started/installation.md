@@ -30,6 +30,29 @@ The `-e` flag installs the package in "editable" mode, which means that changes 
 
 > **Note:** Data Detector relies on the `pattern-engine` submodule for its PII detection logic. Ensure you have properly checked out submodules to avoid `ModuleNotFoundError` or `FileNotFoundError` during execution.
 
+## Install with Optional Features
+
+Data Detector supports optional feature groups for specialized use cases:
+
+```bash
+# Development tools (testing, linting, formatting)
+pip install -e ".[dev]"
+
+# NLP support for CJK languages (Korean, Chinese, Japanese)
+pip install -e ".[nlp]"
+
+# RE2 regex engine (ReDoS-safe, fast for large texts)
+pip install -e ".[re2]"
+
+# Resource scanning adapters
+pip install -e ".[database]"       # Database scanning (SQLAlchemy)
+pip install -e ".[kafka]"          # Kafka topic scanning (Schema Registry)
+pip install -e ".[file-storage]"   # File scanning (Parquet, Excel)
+pip install -e ".[vector-db]"      # Vector DB scanning (ChromaDB)
+pip install -e ".[training-data]"  # AI training data scanning (HuggingFace)
+pip install -e ".[resources]"      # All resource adapters combined
+```
+
 ## Install with Development Dependencies
 
 If you are a developer, you will need to install the development dependencies, which include tools for testing, formatting, and linting.

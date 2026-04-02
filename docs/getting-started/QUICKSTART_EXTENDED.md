@@ -214,6 +214,62 @@ if __name__ == "__main__":
     app.run()
 ```
 
+### Use Case 5: Scan AI Training Data for PII Leakage
+
+```python
+from datadetector import Engine, load_registry, DataExplorer
+from datadetector import DataResource, ResourceType, ConnectionConfig
+from datadetector.adapters.training_data import TrainingDataAdapter
+
+registry = load_registry()
+engine = Engine(registry)
+explorer = DataExplorer(engine)
+
+# Scan JSONL instruction-tuning data
+resource = DataResource(
+    name="finetune-data",
+    resource_type=ResourceType.TRAINING_DATA,
+    connection=ConnectionConfig(
+        uri="/data/training/",
+        params={"backend": "jsonl"},
+    ),
+)
+
+with TrainingDataAdapter(resource) as adapter:
+    result = explorer.scan(adapter)
+    for cr in result.container_results:
+        for fr in cr.field_results:
+            if fr.pii_detected:
+                print(f"  PII in {cr.container.name}.{fr.field_info.name}: "
+                      f"{fr.categories} (confidence={fr.confidence})")
+```
+
+### Use Case 6: Scan Vector DB for PII in RAG Documents
+
+```python
+from datadetector import Engine, load_registry, DataExplorer
+from datadetector import DataResource, ResourceType, ConnectionConfig
+from datadetector.adapters.vector_db import VectorDBAdapter
+
+registry = load_registry()
+engine = Engine(registry)
+explorer = DataExplorer(engine)
+
+# Scan ChromaDB collections
+resource = DataResource(
+    name="rag-store",
+    resource_type=ResourceType.VECTOR_DB,
+    connection=ConnectionConfig(
+        uri="/path/to/chroma_data",
+        params={"backend": "chromadb"},
+    ),
+)
+
+with VectorDBAdapter(resource) as adapter:
+    result = explorer.scan(adapter)
+    print(f"Found PII in {result.pii_fields} fields across {result.pii_containers} collections")
+```
+
 ## Configuration
 
 Create a `config.yml` file:

@@ -25,6 +25,7 @@ Learn how to use Data Detector's features:
 - **[Context Filtering](guides/CONTEXT_FILTERING_GUIDE.md)** - Context-aware pattern filtering
 - **[Context Presets](guides/CONTEXT_PRESETS_GUIDE.md)** - Pre-configured context filters
 - **[Context Presets Cheatsheet](guides/CONTEXT_PRESETS_CHEATSHEET.md)** - Quick reference
+- **[Resource Scanning](guides/resource-scanning.md)** - Scan databases, Kafka, APIs, files, vector DBs, and AI training data for PII
 
 ### 🔧 API Reference
 

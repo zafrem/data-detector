@@ -96,6 +96,105 @@ pip install data-detector[nlp]
 
 See [NLP Features Documentation](docs/nlp-features.md) for more details.
 
+### Resource Scanning: Search > Inventory > Lineage
+
+Data Detector provides a three-stage pipeline for securing structured data resources. Each stage can be used independently or linked together:
+
+**Stage 1: Search for Security Information** → **Stage 2: Create Security Inventory** → **Stage 3: Security Data Lineage**
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Stage 1        │     │  Stage 2        │     │  Stage 3        │
+│  Data Explorer  │────▶│  Inventory      │────▶│  Lineage        │
+│                 │     │  Generator      │     │  Tracer         │
+│  Scan DB, Kafka,│     │                 │     │                 │
+│  API, Files,    │     │  Create PII     │     │  Trace how PII  │
+│  VectorDB, AI   │     │                 │     │                 │
+│  sensitive data │     │  catalog &      │     │  flows across   │
+│                 │     │  export reports │     │  resources      │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+   ResourceScanResult ──────▶ DataInventory ──────▶ LineageGraph
+   (shared interface)
+```
+
+Each stage produces its own output and can be used alone:
+- **Stage 1 only**: Just scan for sensitive data
+- **Stage 1 + 2**: Scan and generate an inventory report
+- **Stage 1 + 3**: Scan and trace data lineage
+- **Stage 1 + 2 + 3**: Full pipeline
+
+#### Stage 1: Search for Security Information
+
+```python
+from datadetector import Engine, load_registry, DataExplorer
+from datadetector import DataResource, ResourceType, ConnectionConfig
+from datadetector.adapters.database import DatabaseAdapter
+
+registry = load_registry()
+engine = Engine(registry)
+explorer = DataExplorer(engine)
+
+resource = DataResource(
+    name="my-db",
+    resource_type=ResourceType.DATABASE,
+    connection=ConnectionConfig(uri="postgresql://user:pass@localhost/mydb"),
+)
+
+with DatabaseAdapter(resource) as adapter:
+    result = explorer.scan(adapter)
+    print(f"Found {result.pii_fields} PII fields in {result.pii_containers} tables")
+```
+
+Supported resources: **Database** (SQLAlchemy), **Kafka** (Schema Registry), **REST API** (OpenAPI), **File Storage** (CSV/JSON/Parquet/Excel), **Vector DB** (ChromaDB), **Training Data** (JSONL/HuggingFace)
+
+#### Stage 2: Create Security Inventory
+
+```python
+from datadetector import DataInventoryGenerator, InventoryFormat
+
+gen = DataInventoryGenerator()
+gen.add_scan_result(result)        # From Stage 1
+inventory = gen.generate()
+
+# Export as HTML report, JSON, CSV, or YAML
+gen.export(inventory, InventoryFormat.HTML, output=open("report.html", "w"))
+
+# Compare inventories over time
+diff = DataInventoryGenerator.diff(old_inventory, inventory)
+print(f"New PII: {len(diff.added)}, Removed: {len(diff.removed)}")
+```
+
+#### Stage 3: Security Data Lineage
+
+```python
+from datadetector import DataLineageTracer
+
+tracer = DataLineageTracer()
+tracer.add_scan_result(db_result, db_adapter)     # DB with FK discovery
+tracer.add_scan_result(kafka_result)               # Kafka topics
+
+# Link fields across resources
+tracer.add_cross_resource_link(
+    "my-db", "users.email",
+    "my-kafka", "user-events.email",
+)
+
+graph = tracer.build_graph()
+print(tracer.to_mermaid())         # Visualize PII flow as diagram
+```
+
+Install resource adapter dependencies:
+```bash
+pip install data-detector[database]       # SQLAlchemy for DB scanning
+pip install data-detector[kafka]          # Kafka + Schema Registry
+pip install data-detector[file-storage]   # Parquet, Excel support
+pip install data-detector[vector-db]      # ChromaDB for vector store scanning
+pip install data-detector[training-data]  # HuggingFace datasets scanning
+pip install data-detector[resources]      # All resource adapters
+```
+
+See [Resource Scanning Guide](docs/guides/resource-scanning.md) for more details.
+
 ### CLI Usage
 
 ```bash
@@ -159,7 +258,7 @@ For detailed guides and references, please see the following:
 
 - **Guides**: [Quick Start](docs/quickstart.md) | [Architecture](docs/ARCHITECTURE.md) | [Configuration](docs/configuration.md)
 - **Patterns**: [Supported Patterns](docs/supported-patterns.md) | [Custom Patterns](docs/custom-patterns.md) | [Pattern Structure](docs/patterns.md)
-- **Features**: [NLP Processing](docs/nlp-features.md) | [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
+- **Features**: [NLP Processing](docs/nlp-features.md) | [Resource Scanning](docs/guides/resource-scanning.md) | [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
 - **API**: [API Reference](docs/api-reference.md)
 
 ## CI/CD Integration

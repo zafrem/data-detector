@@ -109,6 +109,23 @@ When adding new patterns, follow these guidelines:
    python -c "from datadetector import load_registry; load_registry(validate_examples=True)"
    ```
 
+## Adding Resource Adapters
+
+To add support for a new data resource type:
+
+1. Create a new adapter file in `src/datadetector/adapters/` (e.g., `mongodb.py`)
+   - See existing adapters for reference: `database.py`, `kafka.py`, `api.py`, `file_storage.py`, `vector_db.py`, `training_data.py`
+2. Implement the `ResourceAdapter` interface:
+   - `connect()` / `close()` — lifecycle management
+   - `list_containers(pattern=None)` — return `List[ContainerInfo]`
+   - `list_fields(container_name)` — return `List[FieldInfo]`
+   - `sample_values(container_name, field_name, limit=100)` — return `List[str]`
+   - `get_relationships()` (optional) — return `List[FieldRelationship]`
+3. Use lazy imports for optional dependencies (matching the pattern in existing adapters)
+4. Register in `src/datadetector/adapters/__init__.py`
+5. Add optional dependency group in `pyproject.toml`
+6. Write tests using mocks or in-memory fixtures (no external services required)
+
 ## Pull Request Process
 
 1. **Fork the repository** and create a new branch

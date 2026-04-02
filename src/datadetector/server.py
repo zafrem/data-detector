@@ -2,9 +2,11 @@
 
 import logging
 import time
+import uuid
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Histogram, generate_latest
 from pydantic import BaseModel
 from starlette.responses import Response
@@ -143,6 +145,80 @@ class RAGScanResponse(BaseModel):
     token_map: Optional[Dict[str, str]] = None
 
 
+# ── Resource Scanning Models ──
+
+
+class ResourceRequest(BaseModel):
+    """Request model for registering a data resource."""
+
+    name: str
+    resource_type: str  # database, kafka, api, file_storage
+    uri: str
+    params: Optional[Dict[str, Any]] = None
+    description: str = ""
+    owner: Optional[str] = None
+    tags: Optional[List[str]] = None
+
+
+class ScanRequest(BaseModel):
+    """Request model for scanning a resource."""
+
+    strategy: str = "sample"  # metadata_only, sample, full
+    containers: Optional[List[str]] = None
+    namespaces: Optional[List[str]] = None
+    sample_limit: int = 100
+
+
+class ScanResultResponse(BaseModel):
+    """Response model for a scan result."""
+
+    scan_id: str
+    resource_name: str
+    status: str
+    scan_started_at: Optional[str] = None
+    scan_finished_at: Optional[str] = None
+    scan_duration_ms: float = 0.0
+    total_fields: int = 0
+    pii_fields: int = 0
+    pii_containers: int = 0
+    errors: List[str] = []
+    container_results: List[Dict[str, Any]] = []
+
+
+class InventoryGenerateRequest(BaseModel):
+    """Request model for inventory generation."""
+
+    scan_ids: Optional[List[str]] = None  # None = all scans
+
+
+class InventoryExportRequest(BaseModel):
+    """Request model for inventory export."""
+
+    format: str = "json"  # json, csv, yaml, html
+
+
+class InventoryDiffRequest(BaseModel):
+    """Request model for inventory diff."""
+
+    old_inventory_json: str
+    new_scan_ids: Optional[List[str]] = None
+
+
+class LineageBuildRequest(BaseModel):
+    """Request model for building lineage."""
+
+    scan_ids: Optional[List[str]] = None
+    cross_resource_links: Optional[List[Dict[str, str]]] = None
+
+
+class LineageTraceRequest(BaseModel):
+    """Request model for tracing a field."""
+
+    field_path: str  # e.g., "my-db.users.email"
+    direction: str = "both"  # upstream, downstream, both
+    max_depth: int = 10
+
+
 class DataDetectorServer:
     """Server wrapper for managing state."""
 
@@ -152,6 +228,10 @@ class DataDetectorServer:
         self.registry: Optional[PatternRegistry] = None
         self.engine: Optional[Engine] = None
         self.rag_middleware: Optional[RAGSecurityMiddleware] = None
+        # Resource scanning state
+        self._resources: Dict[str, Any] = {}  # name -> DataResource
+        self._scan_results: Dict[str, Any] = {}  # scan_id -> ResourceScanResult
+        self._inventories: Dict[str, Any] = {}  # inventory_id -> DataInventory
         self._load_patterns()
 
     def _load_patterns(self) -> None:
@@ -204,6 +284,16 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
 
     # Create server instance
     server = DataDetectorServer(config)
+
+    # CORS middleware
+    cors_config = (config or {}).get("cors", {})
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_config.get("allow_origins", ["*"]),
+        allow_credentials=cors_config.get("allow_credentials", True),
+        allow_methods=cors_config.get("allow_methods", ["*"]),
+        allow_headers=cors_config.get("allow_headers", ["*"]),
+    )
 
     # Middleware for metrics and timing
     @app.middleware("http")
@@ -454,12 +544,366 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
             logger.error(f"RAG response scan error: {e}")
             raise HTTPException(status_code=500, detail=str(e))
 
+    # ── Resource Scanning Endpoints ──
+
+    @app.post("/resources", tags=["resource-scanning"])
+    async def register_resource(request: ResourceRequest) -> Dict[str, Any]:
+        """Register a data resource for scanning."""
+        from datadetector.resource_models import (
+            ConnectionConfig,
+            DataResource,
+            ResourceType,
+        )
+
+        try:
+            resource = DataResource(
+                name=request.name,
+                resource_type=ResourceType(request.resource_type),
+                connection=ConnectionConfig(uri=request.uri, params=request.params or {}),
+                description=request.description,
+                owner=request.owner,
+                tags=request.tags or [],
+            )
+            server._resources[request.name] = resource
+            return {
+                "status": "registered",
+                "name": request.name,
+                "resource_type": request.resource_type,
+            }
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+    @app.get("/resources", tags=["resource-scanning"])
+    async def list_resources() -> List[Dict[str, Any]]:
+        """List all registered resources."""
+        return [
+            {
+                "name": r.name,
+                "resource_type": r.resource_type.value,
+                "description": r.description,
+                "owner": r.owner,
+                "tags": r.tags,
+            }
+            for r in server._resources.values()
+        ]
+
+    @app.delete("/resources/{name}", tags=["resource-scanning"])
+    async def delete_resource(name: str) -> Dict[str, str]:
+        """Delete a registered resource."""
+        if name not in server._resources:
+            raise HTTPException(status_code=404, detail=f"Resource '{name}' not found")
+        del server._resources[name]
+        return {"status": "deleted", "name": name}
+
+    @app.post(
+        "/resources/{name}/scan",
+        response_model=ScanResultResponse,
+        tags=["resource-scanning"],
+    )
+    async def scan_resource(name: str, request: ScanRequest) -> ScanResultResponse:
+        """Stage 1: Scan a resource for PII."""
+        if server.engine is None:
+            raise HTTPException(status_code=500, detail="Engine not initialized")
+        if name not in server._resources:
+            raise HTTPException(status_code=404, detail=f"Resource '{name}' not found")
+
+        from datadetector.adapters import get_adapter_class
+        from datadetector.data_explorer import DataExplorer
+        from datadetector.resource_models import ScanStrategy
+
+        resource = server._resources[name]
+
+        try:
+            adapter_cls = get_adapter_class(resource.resource_type)
+        except (ImportError, ValueError) as e:
+            raise HTTPException(status_code=400, detail=str(e))
+
+        explorer = DataExplorer(
+            server.engine,
+            sample_limit=request.sample_limit,
+            namespaces=request.namespaces,
+        )
+
+        try:
+            adapter = adapter_cls(resource)
+            adapter.connect()
+            try:
+                result = explorer.scan(
+                    adapter,
+                    strategy=ScanStrategy(request.strategy),
+                    containers=request.containers,
+                )
+            finally:
+                adapter.close()
+        except Exception as e:
+            logger.error(f"Scan error for '{name}': {e}")
+            raise HTTPException(status_code=500, detail=f"Scan failed: {e}")
+
+        scan_id = str(uuid.uuid4())[:8]
+        server._scan_results[scan_id] = result
+
+        return ScanResultResponse(
+            scan_id=scan_id,
+            resource_name=name,
+            status=result.status.value,
+            scan_started_at=result.scan_started_at,
+            scan_finished_at=result.scan_finished_at,
+            scan_duration_ms=result.scan_duration_ms,
+            total_fields=result.total_fields,
+            pii_fields=result.pii_fields,
+            pii_containers=result.pii_containers,
+            errors=result.errors,
+            container_results=_scan_result_to_containers(result),
+        )
+
+    @app.get("/scans", tags=["resource-scanning"])
+    async def list_scans() -> List[Dict[str, Any]]:
+        """List all scan results."""
+        return [
+            {
+                "scan_id": sid,
+                "resource_name": r.resource.name,
+                "status": r.status.value,
+                "scan_started_at": r.scan_started_at,
+                "scan_finished_at": r.scan_finished_at,
+                "pii_fields": r.pii_fields,
+                "total_fields": r.total_fields,
+            }
+            for sid, r in server._scan_results.items()
+        ]
+
+    @app.get("/scans/{scan_id}", response_model=ScanResultResponse, tags=["resource-scanning"])
+    async def get_scan(scan_id: str) -> ScanResultResponse:
+        """Get a specific scan result."""
+        if scan_id not in server._scan_results:
+            raise HTTPException(status_code=404, detail=f"Scan '{scan_id}' not found")
+
+        result = server._scan_results[scan_id]
+        return ScanResultResponse(
+            scan_id=scan_id,
+            resource_name=result.resource.name,
+            status=result.status.value,
+            scan_started_at=result.scan_started_at,
+            scan_finished_at=result.scan_finished_at,
+            scan_duration_ms=result.scan_duration_ms,
+            total_fields=result.total_fields,
+            pii_fields=result.pii_fields,
+            pii_containers=result.pii_containers,
+            errors=result.errors,
+            container_results=_scan_result_to_containers(result),
+        )
+
+    @app.post("/inventory/generate", tags=["resource-scanning"])
+    async def generate_inventory(request: InventoryGenerateRequest) -> Dict[str, Any]:
+        """Stage 2: Generate PII inventory from scan results."""
+        from datadetector.data_inventory import DataInventoryGenerator
+
+        gen = DataInventoryGenerator()
+
+        scan_ids = request.scan_ids or list(server._scan_results.keys())
+        for sid in scan_ids:
+            if sid not in server._scan_results:
+                raise HTTPException(status_code=404, detail=f"Scan '{sid}' not found")
+            gen.add_scan_result(server._scan_results[sid])
+
+        inventory = gen.generate()
+        inventory_id = str(uuid.uuid4())[:8]
+        server._inventories[inventory_id] = inventory
+
+        summary = DataInventoryGenerator.summary(inventory)
+        summary["inventory_id"] = inventory_id
+        summary["scan_ids"] = scan_ids
+
+        return summary
+
+    @app.get("/inventory/{inventory_id}/export", tags=["resource-scanning"])
+    async def export_inventory(inventory_id: str, format: str = "json") -> Response:
+        """Export inventory in the specified format."""
+        if inventory_id not in server._inventories:
+            raise HTTPException(status_code=404, detail=f"Inventory '{inventory_id}' not found")
+
+        from datadetector.data_inventory import DataInventoryGenerator
+        from datadetector.resource_models import InventoryFormat
+
+        inventory = server._inventories[inventory_id]
+        gen = DataInventoryGenerator()
+
+        try:
+            fmt = InventoryFormat(format)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Invalid format: {format}")
+
+        result = gen.export(inventory, fmt)
+
+        media_types = {
+            "json": "application/json",
+            "csv": "text/csv",
+            "yaml": "text/yaml",
+            "html": "text/html",
+        }
+        return Response(content=result, media_type=media_types.get(format, "text/plain"))
+
+    @app.post("/inventory/diff", tags=["resource-scanning"])
+    async def diff_inventory(request: InventoryDiffRequest) -> Dict[str, Any]:
+        """Compare old inventory JSON with current scan results."""
+        from datadetector.data_inventory import DataInventoryGenerator
+
+        try:
+            old_inv = DataInventoryGenerator.load_json_str(request.old_inventory_json)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Invalid old inventory: {e}")
+
+        gen = DataInventoryGenerator()
+        scan_ids = request.new_scan_ids or list(server._scan_results.keys())
+        for sid in scan_ids:
+            if sid not in server._scan_results:
+                raise HTTPException(status_code=404, detail=f"Scan '{sid}' not found")
+            gen.add_scan_result(server._scan_results[sid])
+
+        new_inv = gen.generate()
+        diff = DataInventoryGenerator.diff(old_inv, new_inv)
+
+        return {
+            "added": len(diff.added),
+            "removed": len(diff.removed),
+            "changed": len(diff.changed),
+            "unchanged": diff.unchanged_count,
+            "timestamp": diff.timestamp,
+        }
+
+    @app.post("/lineage/build", tags=["resource-scanning"])
+    async def build_lineage(request: LineageBuildRequest) -> Dict[str, Any]:
+        """Stage 3: Build PII lineage graph from scan results."""
+        from datadetector.data_lineage import DataLineageTracer
+
+        tracer = DataLineageTracer()
+
+        scan_ids = request.scan_ids or list(server._scan_results.keys())
+        for sid in scan_ids:
+            if sid not in server._scan_results:
+                raise HTTPException(status_code=404, detail=f"Scan '{sid}' not found")
+            tracer.add_scan_result(server._scan_results[sid])
+
+        if request.cross_resource_links:
+            for link in request.cross_resource_links:
+                tracer.add_cross_resource_link(
+                    link["src_resource"],
+                    link["src_field"],
+                    link["tgt_resource"],
+                    link["tgt_field"],
+                )
+
+        tracer.build_graph()
+
+        data = tracer.to_dict()
+        data["pii_flow_summary"] = tracer.get_pii_flow_summary()
+        data["sources"] = [n.full_path for n in tracer.find_pii_sources()]
+        data["sinks"] = [n.full_path for n in tracer.find_pii_sinks()]
+
+        return data
+
+    @app.post("/lineage/trace", tags=["resource-scanning"])
+    async def trace_lineage(request: LineageTraceRequest) -> Dict[str, Any]:
+        """Trace PII flow from a specific field."""
+        from datadetector.data_lineage import DataLineageTracer
+
+        tracer = DataLineageTracer()
+        for result in server._scan_results.values():
+            tracer.add_scan_result(result)
+
+        tracer.build_graph()
+        subgraph = tracer.trace(
+            request.field_path,
+            direction=request.direction,
+            max_depth=request.max_depth,
+        )
+
+        return {
+            "field": request.field_path,
+            "direction": request.direction,
+            "nodes": [
+                {
+                    "id": n.full_path,
+                    "resource": n.resource_name,
+                    "field": n.field_qualified_name,
+                    "categories": [c.value for c in n.categories],
+                    "has_pii": bool(n.categories),
+                }
+                for n in subgraph.nodes
+            ],
+            "edges": [
+                {
+                    "source": e.source.full_path,
+                    "target": e.target.full_path,
+                    "type": e.relationship_type.value,
+                }
+                for e in subgraph.edges
+            ],
+        }
+
+    @app.get("/lineage/mermaid", tags=["resource-scanning"])
+    async def lineage_mermaid() -> Response:
+        """Get Mermaid diagram of PII lineage."""
+        from datadetector.data_lineage import DataLineageTracer
+
+        tracer = DataLineageTracer()
+        for result in server._scan_results.values():
+            tracer.add_scan_result(result)
+
+        tracer.build_graph()
+        mermaid = tracer.to_mermaid()
+        return Response(content=mermaid, media_type="text/plain")
+
     @app.get("/metrics")
     async def metrics() -> Response:
         """Prometheus metrics endpoint."""
         return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
     return app
+
+
+def _scan_result_to_containers(result: Any) -> List[Dict[str, Any]]:
+    """Convert ResourceScanResult container data to JSON-serializable dicts."""
+    containers = []
+    for cr in result.container_results:
+        fields = []
+        for fr in cr.field_results:
+            field_data: Dict[str, Any] = {
+                "field_name": fr.field_info.name,
+                "container_name": fr.field_info.container_name,
+                "data_type": fr.field_info.data_type,
+                "pii_detected": fr.pii_detected,
+                "confidence": fr.confidence.value,
+                "categories": [c.value for c in fr.categories],
+                "severities": [s.value for s in fr.severities],
+                "metadata_score": fr.metadata_score,
+                "sample_score": fr.sample_score,
+                "combined_score": fr.combined_score,
+                "sample_count": fr.sample_count,
+                "match_count": fr.match_count,
+                "match_ratio": fr.match_ratio,
+                "ns_ids": fr.ns_ids,
+            }
+            if fr.pii_detected and fr.max_severity:
+                field_data["max_severity"] = fr.max_severity.value
+            if hasattr(fr, "masking_policy") and fr.masking_policy:
+                field_data["masking_policy"] = {
+                    "strategy": fr.masking_policy.strategy.value,
+                    "mask_pattern": fr.masking_policy.mask_pattern,
+                }
+            fields.append(field_data)
+
+        containers.append(
+            {
+                "container_name": cr.container.name,
+                "container_type": cr.container.container_type.value,
+                "scan_duration_ms": cr.scan_duration_ms,
+                "total_fields": len(cr.field_results),
+                "pii_fields": cr.pii_field_count,
+                "fields": fields,
+            }
+        )
+    return containers
 
 
 # For running directly with uvicorn
