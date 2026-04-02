@@ -3,11 +3,14 @@
 import sys
 from pathlib import Path
 
-# Ensure the src/ directory is on sys.path for Vercel deployments
+# Ensure the src/ directory and pattern-engine are on sys.path for Vercel deployments
 _project_root = Path(__file__).resolve().parent.parent
 _src_dir = _project_root / "src"
 if str(_src_dir) not in sys.path:
     sys.path.insert(0, str(_src_dir))
+_pattern_engine_dir = _project_root / "pattern-engine"
+if _pattern_engine_dir.exists() and str(_pattern_engine_dir) not in sys.path:
+    sys.path.insert(0, str(_pattern_engine_dir))
 
 import base64  # noqa: E402
 import hashlib  # noqa: E402

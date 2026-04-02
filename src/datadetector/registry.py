@@ -162,6 +162,13 @@ def load_registry(
             logger.info(f"Loading patterns from {file_path}")
             data = _load_yaml_file(file_path)
 
+            # Coerce example values to strings (YAML may parse unquoted numbers as int)
+            for p in data.get("patterns", []):
+                examples = p.get("examples", {})
+                for key in ("match", "nomatch"):
+                    if key in examples:
+                        examples[key] = [str(v) for v in examples[key]]
+
             if validate_schema:
                 _validate_schema(data)
 
@@ -244,12 +251,12 @@ def _compile_pattern(namespace: str, data: Dict[str, Any]) -> Pattern:
         severity=Severity(policy_data.get("severity", "medium")),
     )
 
-    # Parse examples
+    # Parse examples (coerce values to str for YAML files with unquoted numbers)
     examples = None
     if "examples" in data:
         examples = Examples(
-            match=data["examples"].get("match", []),
-            nomatch=data["examples"].get("nomatch", []),
+            match=[str(x) for x in data["examples"].get("match", [])],
+            nomatch=[str(x) for x in data["examples"].get("nomatch", [])],
         )
 
     # Parse verification function

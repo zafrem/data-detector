@@ -15,21 +15,30 @@ from typing import Optional
 # Add pattern-engine to path if running from source (not installed package)
 # This handles both Unix (with symlink) and Windows (without symlink support)
 def _find_pattern_engine() -> Optional[Path]:
-    # 1. Try relative to this file
+    # 1. Try relative to this file (without resolving symlinks)
     # src/datadetector/verification.py -> src/datadetector -> src -> root
-    rel_path = Path(__file__).resolve().parent.parent.parent / "pattern-engine"
+    rel_path = Path(__file__).parent.parent.parent / "pattern-engine"
     if rel_path.exists():
-        return rel_path
+        return rel_path.resolve()
 
-    # 2. Try relative to project root (CWD)
+    # 2. Try with resolved symlinks
+    resolved_path = Path(__file__).resolve().parent.parent.parent / "pattern-engine"
+    if resolved_path.exists():
+        return resolved_path
+
+    # 3. Try relative to project root (CWD)
     cwd_path = Path.cwd() / "pattern-engine"
     if cwd_path.exists():
         return cwd_path
 
-    # 3. Try common deployment paths (/var/task for Vercel)
-    vercel_path = Path("/var/task/pattern-engine")
-    if vercel_path.exists():
-        return vercel_path
+    # 4. Try common deployment paths (Vercel serverless)
+    for deploy_path in [
+        Path("/var/task/pattern-engine"),
+        Path("/var/task/src/../pattern-engine"),
+        Path("/vercel/path0/pattern-engine"),
+    ]:
+        if deploy_path.exists():
+            return deploy_path.resolve()
 
     return None
 

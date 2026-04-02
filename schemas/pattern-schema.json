@@ -58,6 +58,9 @@
                       "identification",
                       "financial",
                       "medical",
+                      "device",
+                      "vehicle",
+                      "tokens",
                       "other"
                     ],
           "description": "Category of personal information"

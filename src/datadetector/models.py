@@ -25,6 +25,9 @@ class Category(str, Enum):
     IDENTIFICATION = "identification"
     FINANCIAL = "financial"
     MEDICAL = "medical"
+    DEVICE = "device"
+    VEHICLE = "vehicle"
+    TOKENS = "tokens"
     OTHER = "other"
 
 

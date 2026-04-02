@@ -60,7 +60,7 @@ patterns:
     mask: "[REDACTED_AWS_SECRET]"
     examples:
       match:
-        - "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+        - "wJalrXUtnFEMI/K7MDENG/bPxRfiCYzQ3m8Nv5Tw"
         - "je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY"
       nomatch:
         - "short_key"
@@ -84,8 +84,8 @@ patterns:
     examples:
       match:
         - "ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T1u2V3w4X5y6Z"
-        - "gho_16C7e42F292c6912E7710c838347Ae178B4a"
-        - "ghu_16C7e42F292c6912E7710c838347Ae178B4a"
+        - "gho_Qz7Xe4Lp2F9Wc6R12eN77T0cK38U47AeS78B4aWk9LpNm"
+        - "ghu_Rm5Yf8Mq3G9Xd7R23fH88V0dK49T58BfZ89C5bXn0MqJw"
       nomatch:
         - "ghp_short"
         - "github_token_123"
@@ -108,7 +108,7 @@ patterns:
     examples:
       match:
         - "rk_test_EXAMPLEKEY1234567890abcdefgh12345"
-        - "rk_test_TESTKEY9876543210zyxwvuts98765"
+        - "rk_test_Kp7Xm2Lq9Wr4Jn6Tb8Vc3Hs5Fd0Yg1Az"
       nomatch:
         - "rk_test_short"
         - "rk_prod_notvalid"
@@ -152,8 +152,8 @@ patterns:
     mask: "xox*-***************************"
     examples:
       match:
-        - "xoxb-EXAMPLE-EXAMPLE-ExAmPlEtOkEnFoRtEsTiNg"
-        - "xoxp-EXAMPLE-EXAMPLE-EXAMPLE-TeSt123ToKeN"
+        - "xoxb-5Kq7Xm2Lw9Rp4Jn6Tb8Vc3Hs0Fd1Yg-Az8Bx"
+        - "xoxp-3Rm9Yf8Mq7Gx2Wd4Kn6Tb0Vc5Hs1Jw-Pl3Nz"
       nomatch:
         - "xoxb-short"
         - "xoxz-invalidprefix"
