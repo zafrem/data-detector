@@ -101,8 +101,7 @@ class VectorDBAdapter(ResourceAdapter):
         if uri.startswith("https://") or uri.startswith("http://"):
             if uri.startswith("http://"):
                 logger.warning(
-                    "Insecure HTTP connection to ChromaDB at %s. "
-                    "Use https:// in production.",
+                    "Insecure HTTP connection to ChromaDB at %s. Use https:// in production.",
                     uri,
                 )
             # Client mode
