@@ -97,7 +97,7 @@ patterns:
   priority: 1
   mask: ghp_************************************
   examples:
-    match:
+    match:  # NOSONAR — synthetic test tokens, not real credentials
     - ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T1u2V3w4X5y6Z
     - gho_qZ_MNalpe5ffOoXBbgi6ohnEHJITLt5oiU2GoO2Y
     - ghu_1nvUGH61YFVYIS7n0c0_32qheTr0sPIS_jXatgcr
@@ -209,7 +209,7 @@ patterns:
   priority: 1
   mask: AIza***********************************
   examples:
-    match:
+    match:  # NOSONAR — synthetic test keys, not real credentials
     - AIzaSyD-9tN3R6X5Q8W7E4R2T1Y9U6I5O3P0A8S
     - AIzaSyABC123DEF456GHI789JKL012MNO345PQR
     nomatch:

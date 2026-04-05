@@ -636,8 +636,9 @@ def create_app(config: Optional[Dict[str, Any]] = None) -> FastAPI:
             finally:
                 adapter.close()
         except Exception as e:
-            logger.error(f"Scan error for '{name}': {e}")
-            raise HTTPException(status_code=500, detail=f"Scan failed: {e}")
+            sanitized = str(e).replace("\n", " ").replace("\r", " ")[:200]
+            logger.error("Scan error for resource: %s", sanitized)
+            raise HTTPException(status_code=500, detail="Scan failed")
 
         scan_id = str(uuid.uuid4())[:8]
         server._scan_results[scan_id] = result

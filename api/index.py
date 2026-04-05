@@ -19,6 +19,7 @@ elif _bundled_pattern_engine_dir.exists():
         sys.path.insert(0, str(_bundled_pattern_engine_dir))
 
 import base64  # noqa: E402
+import html as html_mod  # noqa: E402
 import hashlib  # noqa: E402
 import hmac  # noqa: E402
 import json  # noqa: E402
@@ -477,6 +478,7 @@ function syntaxHighlight(json) {
 </html>
 """
 
+
 # ---------------------------------------------------------------------------
 # Auth helpers  (stateless HMAC-based API keys)
 # ---------------------------------------------------------------------------
@@ -492,7 +494,7 @@ def _get_api_secret() -> str:
     env_secret = os.environ.get("API_SECRET")
     if env_secret:
         return env_secret
-    
+
     global _AUTO_API_SECRET
     if "_AUTO_API_SECRET" not in globals():
         globals()["_AUTO_API_SECRET"] = os.urandom(32).hex()
@@ -507,8 +509,17 @@ security = HTTPBearer()
 # ---------------------------------------------------------------------------
 # Structured logging helpers
 # ---------------------------------------------------------------------------
+def _sanitize_log_value(val: Any) -> Any:
+    """Sanitize a value for safe logging (prevent log injection)."""
+    if isinstance(val, str):
+        # Remove newlines and control characters that could forge log entries
+        return val.replace("\n", " ").replace("\r", " ").replace("\t", " ")[:500]
+    return val
+
+
 def _write_log(entry: Dict[str, Any]) -> None:
     """Write a structured log entry to logger and optionally to a JSON-lines file."""
+    entry = {k: _sanitize_log_value(v) for k, v in entry.items()}
     entry["timestamp"] = datetime.now(timezone.utc).isoformat()
     logger.info(json.dumps(entry, ensure_ascii=False))
 
@@ -522,11 +533,13 @@ def _write_log(entry: Dict[str, Any]) -> None:
 
 def _log_issuance(system: str, key_prefix: str) -> None:
     """Record a token issuance event."""
-    _write_log({
-        "event": "token_issued",
-        "system": system,
-        "key_prefix": key_prefix,
-    })
+    _write_log(
+        {
+            "event": "token_issued",
+            "system": system,
+            "key_prefix": key_prefix,
+        }
+    )
 
 
 def _log_usage(
@@ -747,7 +760,7 @@ def _load_homepage() -> str:
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
     """Serve the API guide page."""
-    return HTMLResponse(_load_homepage())
+    return HTMLResponse(_load_homepage(), headers={"X-Content-Type-Options": "nosniff"})
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
@@ -765,21 +778,30 @@ async def sitemap_xml(request: Request):
     """Serve sitemap.xml."""
     content = _load_static_file("sitemap.xml")
     if content:
-        return Response(content=content, media_type="application/xml")
-    
-    # Fallback hardcoded sitemap
-    host = request.base_url
-    fallback_sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>{host}</loc>
-    <lastmod>2026-03-20</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>1.0</priority>
-  </url>
-</urlset>
-"""
-    return Response(content=fallback_sitemap, media_type="application/xml")
+        return Response(
+            content=content,
+            media_type="application/xml",
+            headers={"X-Content-Type-Options": "nosniff"},
+        )
+
+    # Fallback hardcoded sitemap with sanitized host
+    safe_host = html_mod.escape(str(request.base_url))
+    fallback_sitemap = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        "  <url>\n"
+        f"    <loc>{safe_host}</loc>\n"
+        "    <lastmod>2026-03-20</lastmod>\n"
+        "    <changefreq>monthly</changefreq>\n"
+        "    <priority>1.0</priority>\n"
+        "  </url>\n"
+        "</urlset>\n"
+    )
+    return Response(
+        content=fallback_sitemap,
+        media_type="application/xml",
+        headers={"X-Content-Type-Options": "nosniff"},
+    )
 
 
 @app.get("/google736311ca6ba1b7ad.html", response_class=HTMLResponse)
@@ -787,11 +809,11 @@ async def google_verification():
     """Serve Google search console verification file."""
     # Hardcoded string as a fail-safe since this is a static verification token
     verification_string = "google-site-verification: google736311ca6ba1b7ad.html"
-    
+
     content = _load_static_file("google736311ca6ba1b7ad.html")
     if content:
-        return HTMLResponse(content)
-        
+        return HTMLResponse(content, headers={"X-Content-Type-Options": "nosniff"})
+
     # Fallback to hardcoded string
     return HTMLResponse(verification_string)
 
@@ -859,28 +881,72 @@ async def demo_proxy(endpoint: str, request: Request):
                 }
                 for m in result.matches
             ]
-            _log_usage(system, "/api/detect", "demo", {"match_count": result.match_count, "text_length": len(text)})
-            return {"text": text, "pii_found": result.has_matches, "match_count": result.match_count, "matches": matches}
+            _log_usage(
+                system,
+                "/api/detect",
+                "demo",
+                {"match_count": result.match_count, "text_length": len(text)},
+            )
+            return {
+                "text": text,
+                "pii_found": result.has_matches,
+                "match_count": result.match_count,
+                "matches": matches,
+            }
 
         from datadetector.models import RedactionStrategy
 
         if endpoint == "mask":
             result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.MASK)
             changes = [
-                {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
+                {
+                    "ns_id": m.ns_id,
+                    "category": m.category.value,
+                    "start": m.start,
+                    "end": m.end,
+                    "original_fragment": text[m.start : m.end],
+                    "severity": m.severity.value,
+                }
                 for m in result.matches
             ]
-            _log_usage(system, "/api/mask", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
-            return {"original": text, "masked": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
+            _log_usage(
+                system,
+                "/api/mask",
+                "demo",
+                {"change_count": result.redaction_count, "text_length": len(text)},
+            )
+            return {
+                "original": text,
+                "masked": result.redacted_text,
+                "change_count": result.redaction_count,
+                "changes": changes,
+            }
 
         if endpoint == "fake":
             result = engine.redact(text, namespaces=namespaces, strategy=RedactionStrategy.FAKE)
             changes = [
-                {"ns_id": m.ns_id, "category": m.category.value, "start": m.start, "end": m.end, "original_fragment": text[m.start:m.end], "severity": m.severity.value}
+                {
+                    "ns_id": m.ns_id,
+                    "category": m.category.value,
+                    "start": m.start,
+                    "end": m.end,
+                    "original_fragment": text[m.start : m.end],
+                    "severity": m.severity.value,
+                }
                 for m in result.matches
             ]
-            _log_usage(system, "/api/fake", "demo", {"change_count": result.redaction_count, "text_length": len(text)})
-            return {"original": text, "replaced": result.redacted_text, "change_count": result.redaction_count, "changes": changes}
+            _log_usage(
+                system,
+                "/api/fake",
+                "demo",
+                {"change_count": result.redaction_count, "text_length": len(text)},
+            )
+            return {
+                "original": text,
+                "replaced": result.redacted_text,
+                "change_count": result.redaction_count,
+                "changes": changes,
+            }
 
     except Exception as exc:
         logger.exception("Error in demo_proxy")
@@ -933,10 +999,15 @@ async def detect(request: Request, body: DetectRequest, _key: str = Depends(requ
         }
         for m in result.matches
     ]
-    _log_usage(request.state.system, "/api/detect", request.state.key_prefix, {
-        "match_count": result.match_count,
-        "text_length": len(body.text),
-    })
+    _log_usage(
+        request.state.system,
+        "/api/detect",
+        request.state.key_prefix,
+        {
+            "match_count": result.match_count,
+            "text_length": len(body.text),
+        },
+    )
     return DetectResponse(
         text=body.text,
         pii_found=result.has_matches,
@@ -953,10 +1024,15 @@ async def validate(request: Request, body: ValidateRequest, _key: str = Depends(
         result = engine.validate(body.text, body.ns_id)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
-    _log_usage(request.state.system, "/api/validate", request.state.key_prefix, {
-        "ns_id": body.ns_id,
-        "is_valid": result.is_valid,
-    })
+    _log_usage(
+        request.state.system,
+        "/api/validate",
+        request.state.key_prefix,
+        {
+            "ns_id": body.ns_id,
+            "is_valid": result.is_valid,
+        },
+    )
     return ValidateResponse(ok=result.is_valid, ns_id=body.ns_id)
 
 
@@ -982,10 +1058,15 @@ async def mask(request: Request, body: MaskRequest, _key: str = Depends(require_
         }
         for m in result.matches
     ]
-    _log_usage(request.state.system, "/api/mask", request.state.key_prefix, {
-        "change_count": result.redaction_count,
-        "text_length": len(body.text),
-    })
+    _log_usage(
+        request.state.system,
+        "/api/mask",
+        request.state.key_prefix,
+        {
+            "change_count": result.redaction_count,
+            "text_length": len(body.text),
+        },
+    )
     return MaskResponse(
         original=body.text,
         masked=result.redacted_text,
@@ -1016,10 +1097,15 @@ async def fake(request: Request, body: FakeRequest, _key: str = Depends(require_
         }
         for m in result.matches
     ]
-    _log_usage(request.state.system, "/api/fake", request.state.key_prefix, {
-        "change_count": result.redaction_count,
-        "text_length": len(body.text),
-    })
+    _log_usage(
+        request.state.system,
+        "/api/fake",
+        request.state.key_prefix,
+        {
+            "change_count": result.redaction_count,
+            "text_length": len(body.text),
+        },
+    )
     return FakeResponse(
         original=body.text,
         replaced=result.redacted_text,
@@ -1051,8 +1137,10 @@ async def get_logs(
             detail="Logging to file is not enabled. Set API_LOG_FILE env var.",
         )
     try:
-        with open(LOG_FILE, encoding="utf-8") as f:
-            lines = f.readlines()
+        import anyio
+
+        content = await anyio.Path(LOG_FILE).read_text(encoding="utf-8")
+        lines = content.splitlines()
     except FileNotFoundError:
         return {"logs": [], "total": 0}
 

@@ -117,7 +117,7 @@ class TestFieldScanResult:
 
     def test_match_ratio_zero_samples(self):
         result = FieldScanResult(field_info=FieldInfo(name="x", container_name="t"))
-        assert result.match_ratio == 0.0
+        assert result.match_ratio == pytest.approx(0.0)
 
     def test_match_ratio(self):
         result = FieldScanResult(
@@ -125,7 +125,7 @@ class TestFieldScanResult:
             sample_count=100,
             match_count=75,
         )
-        assert result.match_ratio == 0.75
+        assert result.match_ratio == pytest.approx(0.75)
 
 
 class TestContainerScanResult:

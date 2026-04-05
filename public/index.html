@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-JZC9YF4Y3Z"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JZC9YF4Y3Z" crossorigin="anonymous"></script>
 <script>
 window.dataLayer=window.dataLayer||[];
 function gtag(){dataLayer.push(arguments);}
@@ -14,7 +14,7 @@ gtag('config','G-JZC9YF4Y3Z');
 <title>Data Detector API</title>
 <meta name="google-site-verification" content="google736311ca6ba1b7ad.html" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" crossorigin="anonymous">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -196,7 +196,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
   <div class="tag">v0.0.5</div>
   <h1>Data <em>Detector</em> API</h1>
   <p>PII detection, validation, masking, and fake-replacement. Detect personal information across Korean, Chinese, Japanese, and English text.</p>
-  <div class="base-url" onclick="navigator.clipboard.writeText(location.origin+'/api');this.querySelector('.copy').textContent='copied!'">
+  <div class="base-url" role="button" tabindex="0" onclick="navigator.clipboard.writeText(location.origin+'/api');this.querySelector('.copy').textContent='copied!'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
     <div>
       <div class="label">Base URL</div>
       <code id="baseUrl"></code>
@@ -240,7 +240,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 
     <!-- auth/issue -->
     <div class="ep">
-      <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
         <span class="method post">POST</span>
         <span class="path">/api/auth/issue</span>
         <span class="desc">Issue API key</span>
@@ -263,7 +263,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 
     <!-- detect -->
     <div class="ep">
-      <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
         <span class="method post">POST</span>
         <span class="path">/api/detect</span>
         <span class="desc">Detect PII</span>
@@ -289,7 +289,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 
     <!-- validate -->
     <div class="ep">
-      <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
         <span class="method post">POST</span>
         <span class="path">/api/validate</span>
         <span class="desc">Validate against pattern</span>
@@ -311,7 +311,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 
     <!-- mask -->
     <div class="ep">
-      <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
         <span class="method post">POST</span>
         <span class="path">/api/mask</span>
         <span class="desc">Mask PII</span>
@@ -334,7 +334,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 
     <!-- fake -->
     <div class="ep">
-      <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
         <span class="method post">POST</span>
         <span class="path">/api/fake</span>
         <span class="desc">Replace with fake data</span>
@@ -358,7 +358,7 @@ section:nth-of-type(2) .section-label{animation-delay:.35s}
 
     <!-- logs -->
     <div class="ep">
-      <div class="ep-header" onclick="this.parentElement.classList.toggle('open')">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
         <span class="method get">GET</span>
         <span class="path">/api/logs</span>
         <span class="desc">Usage logs</span>

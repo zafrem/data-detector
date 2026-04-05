@@ -157,12 +157,12 @@ class TestTrainingDataAdapterConnect:
         assert len(adapter._files) == 1
         adapter.close()
 
-    def test_connect_unsupported_backend(self):
+    def test_connect_unsupported_backend(self, tmp_path):
         resource = DataResource(
             name="bad",
             resource_type=ResourceType.TRAINING_DATA,
             connection=ConnectionConfig(
-                uri="/tmp",
+                uri=str(tmp_path),
                 params={"backend": "parquet_dataset"},
             ),
         )
@@ -234,11 +234,11 @@ class TestTrainingDataAdapterListContainers:
         assert containers[0].name == "instruct.jsonl"
         adapter.close()
 
-    def test_not_connected_raises(self):
+    def test_not_connected_raises(self, tmp_path):
         resource = DataResource(
             name="test",
             resource_type=ResourceType.TRAINING_DATA,
-            connection=ConnectionConfig(uri="/tmp", params={"backend": "jsonl"}),
+            connection=ConnectionConfig(uri=str(tmp_path), params={"backend": "jsonl"}),
         )
         adapter = TrainingDataAdapter(resource)
         with pytest.raises(RuntimeError, match="not connected"):

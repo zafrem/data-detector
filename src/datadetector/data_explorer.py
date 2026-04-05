@@ -167,7 +167,7 @@ class DataExplorer:
 
         scan_finished_at = datetime.now(timezone.utc).isoformat()
         elapsed_ms = (time.time() - start_time) * 1000
-        status = ScanStatus.COMPLETED if not errors else ScanStatus.COMPLETED
+        status = ScanStatus.COMPLETED if not errors else ScanStatus.FAILED
 
         return ResourceScanResult(
             resource=adapter.resource,

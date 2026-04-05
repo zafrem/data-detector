@@ -88,8 +88,8 @@ class FileStorageAdapter(ResourceAdapter):
             self._files = [self._base_path]
         else:
             if glob_pattern:
-                if recursive:
-                    self._files = sorted(self._base_path.glob(glob_pattern))
+                if recursive and not glob_pattern.startswith("**/"):
+                    self._files = sorted(self._base_path.glob(f"**/{glob_pattern}"))
                 else:
                     self._files = sorted(self._base_path.glob(glob_pattern))
             else:

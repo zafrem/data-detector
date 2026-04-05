@@ -98,10 +98,11 @@ class VectorDBAdapter(ResourceAdapter):
         chromadb = _get_chromadb()
         uri = self.resource.connection.uri or ""
 
-        if uri.startswith("https://") or uri.startswith("http://"):
-            if uri.startswith("http://"):
+        is_remote = "://" in uri and uri.split("://")[0] in ("http", "https")
+        if is_remote:
+            if not uri.startswith("https://"):
                 logger.warning(
-                    "Insecure HTTP connection to ChromaDB at %s. Use https:// in production.",
+                    "Insecure connection to ChromaDB at %s. Use https:// in production.",
                     uri,
                 )
             # Client mode
