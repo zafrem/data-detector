@@ -65,13 +65,13 @@ jobs:
 
       - name: Check api/pattern-engine in sync with submodule
         run: |
-          diff -rq pattern-engine/regex api/pattern-engine/regex --exclude='.git*' || \
+          diff -rq pattern-engine/regex api/pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || \
             { echo "ERROR: api/pattern-engine is out of sync with the pattern-engine submodule."; \
-              echo "Run: cp -r pattern-engine/regex api/pattern-engine/ && cp -r pattern-engine/verification api/pattern-engine/"; \
+              echo "Run: ./scripts/sync-patterns.sh"; \
               exit 1; }
-          diff -rq pattern-engine/verification api/pattern-engine/verification --exclude='.git*' || \
+          diff -rq pattern-engine/verification api/pattern-engine/verification --exclude='.git*' --exclude='__pycache__' || \
             { echo "ERROR: api/pattern-engine/verification is out of sync."; \
-              echo "Run: cp -r pattern-engine/verification api/pattern-engine/"; \
+              echo "Run: ./scripts/sync-patterns.sh"; \
               exit 1; }
 
   test:
