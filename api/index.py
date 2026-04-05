@@ -743,13 +743,30 @@ def _load_static_file(filename: str) -> Optional[str]:
     return None
 
 
+# ---------------------------------------------------------------------------
+# Pre-load static files at import time so handlers serve cached content only.
+# This avoids a direct file-read → response data flow (CWE-79).
+# ---------------------------------------------------------------------------
+_STATIC_CACHE: Dict[str, Optional[str]] = {}
+
+
+def _get_static(filename: str) -> Optional[str]:
+    """Return cached static file content, loading once on first access."""
+    if filename not in _STATIC_CACHE:
+        _STATIC_CACHE[filename] = _load_static_file(filename)
+    return _STATIC_CACHE[filename]
+
+
+_NOSNIFF = {"X-Content-Type-Options": "nosniff"}
+
+
 def _load_homepage() -> str:
     """Load homepage HTML, trying multiple paths for Vercel compatibility."""
     global _HOMEPAGE_HTML
     if _HOMEPAGE_HTML is not None:
         return _HOMEPAGE_HTML
 
-    content = _load_static_file("index.html")
+    content = _get_static("index.html")
     if content:
         _HOMEPAGE_HTML = content
         return _HOMEPAGE_HTML
@@ -760,29 +777,24 @@ def _load_homepage() -> str:
 @app.get("/", response_class=HTMLResponse)
 async def homepage():
     """Serve the API guide page."""
-    return HTMLResponse(_load_homepage(), headers={"X-Content-Type-Options": "nosniff"})
+    return HTMLResponse(_load_homepage(), headers=_NOSNIFF)
 
 
 @app.get("/robots.txt", response_class=PlainTextResponse)
 async def robots_txt():
     """Serve robots.txt."""
-    content = _load_static_file("robots.txt")
-    if content:
-        return PlainTextResponse(content)
-    # Fallback if file not found
+    cached = _get_static("robots.txt")
+    if cached:
+        return PlainTextResponse(cached)
     return PlainTextResponse("User-agent: *\nAllow: /\n")
 
 
 @app.get("/sitemap.xml")
 async def sitemap_xml(request: Request):
     """Serve sitemap.xml."""
-    content = _load_static_file("sitemap.xml")
-    if content:
-        return Response(
-            content=content,
-            media_type="application/xml",
-            headers={"X-Content-Type-Options": "nosniff"},
-        )
+    cached = _get_static("sitemap.xml")
+    if cached:
+        return Response(content=cached, media_type="application/xml", headers=_NOSNIFF)
 
     # Fallback hardcoded sitemap with sanitized host
     safe_host = html_mod.escape(str(request.base_url))
@@ -797,25 +809,18 @@ async def sitemap_xml(request: Request):
         "  </url>\n"
         "</urlset>\n"
     )
-    return Response(
-        content=fallback_sitemap,
-        media_type="application/xml",
-        headers={"X-Content-Type-Options": "nosniff"},
-    )
+    return Response(content=fallback_sitemap, media_type="application/xml", headers=_NOSNIFF)
 
 
 @app.get("/google736311ca6ba1b7ad.html", response_class=HTMLResponse)
 async def google_verification():
     """Serve Google search console verification file."""
-    # Hardcoded string as a fail-safe since this is a static verification token
-    verification_string = "google-site-verification: google736311ca6ba1b7ad.html"
-
-    content = _load_static_file("google736311ca6ba1b7ad.html")
-    if content:
-        return HTMLResponse(content, headers={"X-Content-Type-Options": "nosniff"})
+    cached = _get_static("google736311ca6ba1b7ad.html")
+    if cached:
+        return HTMLResponse(cached, headers=_NOSNIFF)
 
     # Fallback to hardcoded string
-    return HTMLResponse(verification_string)
+    return HTMLResponse("google-site-verification: google736311ca6ba1b7ad.html", headers=_NOSNIFF)
 
 
 @app.get("/favicon.ico")
