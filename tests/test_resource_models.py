@@ -1,5 +1,7 @@
 """Tests for resource_models.py — shared dataclasses and enums."""
 
+import pytest
+
 from datadetector.models import Category, Severity
 from datadetector.resource_models import (
     ConnectionConfig,
