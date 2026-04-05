@@ -63,6 +63,20 @@ jobs:
       - name: Validate Patterns
         run: python -c "from datadetector import load_registry; load_registry(validate_examples=True); print('✓ All patterns valid')"
 
+      - name: Debug pattern-engine sync
+        run: |
+          echo "=== Submodule commit ==="
+          git -C pattern-engine rev-parse HEAD
+          echo "=== Root repo expected submodule ref ==="
+          git ls-tree HEAD pattern-engine
+          echo "=== Submodule file list (regex/hash/) ==="
+          ls -la pattern-engine/regex/hash/ 2>&1 || echo "directory not found"
+          echo "=== api/pattern-engine file list (regex/hash/) ==="
+          ls -la api/pattern-engine/regex/hash/ 2>&1 || echo "directory not found"
+          echo "=== Diff details ==="
+          diff -r pattern-engine/regex api/pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || true
+          diff -r pattern-engine/verification api/pattern-engine/verification --exclude='.git*' --exclude='__pycache__' || true
+
       - name: Check api/pattern-engine in sync with submodule
         run: |
           diff -rq pattern-engine/regex api/pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || \
