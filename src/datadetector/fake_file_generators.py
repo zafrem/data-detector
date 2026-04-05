@@ -112,8 +112,8 @@ class OfficeFileGenerator:
             ImportError: If openpyxl is not installed
         """
         try:
-            from openpyxl import Workbook  # type: ignore[import-untyped]
-            from openpyxl.styles import Font, PatternFill  # type: ignore[import-untyped]
+            from openpyxl import Workbook
+            from openpyxl.styles import Font, PatternFill
         except ImportError:
             raise ImportError(
                 "openpyxl is required for Excel file generation. "

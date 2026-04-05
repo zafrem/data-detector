@@ -69,7 +69,8 @@ class APIAdapter(ResourceAdapter):
             )
 
         # Resolve $ref pointers
-        self._resolved_spec = self._resolve_refs(self._spec)  # type: ignore[arg-type]
+        assert self._spec is not None
+        self._resolved_spec = self._resolve_refs(self._spec)
         self._connected = True
         logger.info(f"Loaded API spec: {self.resource.name}")
 

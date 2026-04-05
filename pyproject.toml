@@ -178,22 +178,16 @@ module = [
     "konlpy.*",
     "jieba.*",
     "sudachipy",
-    "sudachipy.*",
     "re2",
     "chromadb",
-    "chromadb.*",
     "datasets",
-    "datasets.*",
     "confluent_kafka",
-    "confluent_kafka.*",
     "requests",
-    "requests.*",
     "pyarrow",
-    "pyarrow.*",
+    "pyarrow.parquet",
     "openpyxl",
     "openpyxl.*",
     "sqlalchemy",
-    "sqlalchemy.*",
 ]
 ignore_missing_imports = true
 ignore_errors = true
