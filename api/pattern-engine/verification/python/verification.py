@@ -390,8 +390,7 @@ def korean_zipcode_valid(value: str) -> bool:
     digits_only = "".join(c for c in value if c.isdigit())
     if len(digits_only) != 5:
         return False
-    if not ("0" <= digits_only[0] <= "6"):
-        return False
+    return "0" <= digits_only[0] <= "6"
 
     # Reject sequential patterns (12345, 54321, etc.)
     is_sequential_up = all(
@@ -2532,6 +2531,8 @@ def kr_corporate_registration_valid(value: str) -> bool:
         total += int(digits[i]) * weights[i]
 
     check_digit = (10 - (total % 10)) % 10
+    return int(digits[12]) == check_digit
+
     return int(digits[12]) == check_digit
 
 
