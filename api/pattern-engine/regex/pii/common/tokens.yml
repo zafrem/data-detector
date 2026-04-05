@@ -1,0 +1,72 @@
+namespace: comm
+description: Token and UUID patterns
+
+patterns:
+  - id: uuid_01
+    location: comm
+    category: tokens
+    description: RFC 4122 UUID (Versions 1–5)
+    pattern: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
+    mask: "********-****-****-****-************"
+    examples:
+      match:
+        - "550e8400-e29b-41d4-a716-446655440000"
+        - "d30e7b78-e29b-41d4-a716-446655440000"
+      nomatch:
+        - "550e8400-e29b-61d4-a716-446655440000"
+        - "550e8400e29b41d4a716446655440000"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
+      go: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
+      java: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
+      javascript: '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}'
+
+  - id: fcm_token_01
+    location: comm
+    category: tokens
+    description: Firebase Cloud Messaging tokens
+    pattern: '[a-zA-Z0-9\-_]{140,200}:[a-zA-Z0-9\-_]{11}'
+    mask: "****************:***********"
+    examples:
+      match:
+        - "fX6L8yT6E012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890:APA91bE5k0y"
+      nomatch:
+        - "short:token"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '[a-zA-Z0-9\-_]{140,200}:[a-zA-Z0-9\-_]{11}'
+      go: '[a-zA-Z0-9\-_]{140,200}:[a-zA-Z0-9\-_]{11}'
+      java: '[a-zA-Z0-9\-_]{140,200}:[a-zA-Z0-9\-_]{11}'
+      javascript: '[a-zA-Z0-9\-_]{140,200}:[a-zA-Z0-9\-_]{11}'
+
+  - id: artifactory_token_01
+    location: comm
+    category: tokens
+    description: JFrog Artifactory tokens
+    pattern: '\b(cm|AKC)[a-zA-Z0-9]{10,}\b'
+    mask: "AKC**********"
+    verification: high_entropy_token
+    examples:
+      match:
+        - "AKCp8fG7XmN2Vp9kR3sT5uW1xY0zQ2b4c6e8"
+      nomatch:
+        - "AKC123"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: high
+    match_type: exactly_matches
+    langs:
+      python: '\b(cm|AKC)[a-zA-Z0-9]{10,}\b'
+      go: '\b(cm|AKC)[a-zA-Z0-9]{10,}\b'
+      java: '\b(cm|AKC)[a-zA-Z0-9]{10,}\b'
+      javascript: '\b(cm|AKC)[a-zA-Z0-9]{10,}\b'

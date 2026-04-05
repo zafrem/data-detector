@@ -1,0 +1,75 @@
+namespace: cn
+description: China identification documents
+patterns:
+- id: national_id_01
+  location: cn
+  category: other
+  description: Chinese National ID (18 digits)
+  pattern: '[0-9]{17}[0-9X]'
+  flags:
+  - IGNORECASE
+  verification: cn_national_id_valid
+  mask: '******************'
+  examples:
+    match:
+    - '110101199003074557'
+    - 32010219901010123X
+    - '440301198501014568'
+    nomatch:
+    - '11010119900307777'
+    - '1101011990030777777'
+    - 110101199003077A
+    - '110101199003074559'
+    - '990101199003074559'
+    - '110101199013074557'
+    - '110101199000324557'
+    - '11010119900307455'
+    - '1101011990030745571'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: '18 digits: area(6) + birth date(8) + sequence(3) + check digit(1, can be
+      X). Uses checksum verification.'
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{17}[0-9X]'
+    go: '[0-9]{17}[0-9X]'
+    java: '[0-9]{17}[0-9X]'
+    javascript: '[0-9]{17}[0-9X]'
+- id: passport_01
+  location: cn
+  category: passport
+  description: Chinese passport number (1 letter + 8 digits)
+  pattern: '[EG][0-9]{8}'
+  flags:
+  - IGNORECASE
+  mask: E********
+  examples:
+    match:
+    - E12345678
+    - G87654321
+    - e23456789
+    - E99887766
+    - G11223344
+    nomatch:
+    - A12345678
+    - E1234567
+    - E123456789
+    - F12345678
+    - H12345678
+    - 12345678E
+    - EG1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: E for regular passport, G for diplomatic/service passport
+  match_type: exactly_matches
+  langs:
+    python: '[EG][0-9]{8}'
+    go: '[EG][0-9]{8}'
+    java: '[EG][0-9]{8}'
+    javascript: '[EG][0-9]{8}'

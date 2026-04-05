@@ -1,0 +1,28 @@
+namespace: comm
+description: URL patterns
+patterns:
+- id: url_01
+  location: comm
+  category: other
+  description: URL with http/https protocol
+  pattern: https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)
+  flags:
+  - IGNORECASE
+  mask: https://***
+  examples:
+    match:
+    - https://example.com
+    - http://www.test.org/path?query=value
+    nomatch:
+    - ftp://example.com
+    - example.com
+  policy:
+    store_raw: true
+    action_on_match: report
+    severity: low
+  match_type: exactly_matches
+  langs:
+    python: https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)
+    go: https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)
+    java: https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)
+    javascript: https?://(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b(?:[-a-zA-Z0-9()@:%_\+.~#?&/=]*)

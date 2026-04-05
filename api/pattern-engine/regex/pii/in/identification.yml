@@ -1,0 +1,171 @@
+namespace: in
+description: India identification documents
+patterns:
+- id: aadhaar_01
+  location: in
+  category: other
+  description: Aadhaar number (12 digits)
+  pattern: '[0-9]{4}-?[0-9]{4}-?[0-9]{4}'
+  mask: '****-****-****'
+  verification: india_aadhaar_valid
+  examples:
+    match:
+    - 2345-6789-0124
+    - '499118665246'
+    - 8765-4321-0988
+    nomatch:
+    - 123-456-789012
+    - 12345-6789-012
+    - '1234567890'
+    - 0234-5678-9012
+    - 1234-5678-9012
+    - '111111111111'
+    - '000000000000'
+    - '123456789012'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: India's unique identification number. Uses Verhoeff checksum. First digit
+      cannot be 0 or 1.
+  priority: 150
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{4}-?[0-9]{4}-?[0-9]{4}'
+    go: '[0-9]{4}-?[0-9]{4}-?[0-9]{4}'
+    java: '[0-9]{4}-?[0-9]{4}-?[0-9]{4}'
+    javascript: '[0-9]{4}-?[0-9]{4}-?[0-9]{4}'
+- id: pan_01
+  location: in
+  category: other
+  description: PAN (Permanent Account Number) - 5 letters + 4 digits + 1 letter
+  pattern: '[A-Z]{5}[0-9]{4}[A-Z]'
+  flags:
+  - IGNORECASE
+  verification: india_pan_valid
+  mask: AAAAA****A
+  examples:
+    match:
+    - BNZPM2501F
+    - AFRPC1234M
+    - xyzkp9876m
+    - CDHPL5678K
+    - GHJPT9012N
+    nomatch:
+    - ABCD1234F
+    - ABCDE12345
+    - ABCDE1234FF
+    - AAAAA1234F
+    - ABCDE1234F
+    - ABXYZ1234F
+    - 12345ABCDE
+    - BNZPM25012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Income Tax Department identification number. 4th character indicates entity
+      type (P=Person, C=Company, etc).
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{5}[0-9]{4}[A-Z]'
+    go: '[A-Z]{5}[0-9]{4}[A-Z]'
+    java: '[A-Z]{5}[0-9]{4}[A-Z]'
+    javascript: '[A-Z]{5}[0-9]{4}[A-Z]'
+- id: passport_01
+  location: in
+  category: passport
+  description: Indian passport number (1 letter + 7 digits)
+  pattern: '[A-Z][0-9]{7}'
+  flags:
+  - IGNORECASE
+  mask: A*******
+  examples:
+    match:
+    - A1234567
+    - Z9876543
+    - m2345678
+    - K5678901
+    - P9012345
+    nomatch:
+    - AB123456
+    - A123456
+    - A12345678
+    - 1A234567
+    - AA123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z][0-9]{7}'
+    go: '[A-Z][0-9]{7}'
+    java: '[A-Z][0-9]{7}'
+    javascript: '[A-Z][0-9]{7}'
+- id: voter_id_01
+  location: in
+  category: other
+  description: Voter ID (EPIC) - 3 letters + 7 digits
+  pattern: '[A-Z]{3}[0-9]{7}'
+  flags:
+  - IGNORECASE
+  mask: AAA*******
+  examples:
+    match:
+    - ABC1234567
+    - XYZ9876543
+    - def2345678
+    - MNO5678901
+    - PQR2468135
+    nomatch:
+    - AB1234567
+    - ABC123456
+    - ABC12345678
+    - ABCD123456
+    - 1234567ABC
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{3}[0-9]{7}'
+    go: '[A-Z]{3}[0-9]{7}'
+    java: '[A-Z]{3}[0-9]{7}'
+    javascript: '[A-Z]{3}[0-9]{7}'
+- id: driving_license_01
+  location: in
+  category: other
+  description: Indian driving license (varies by state, 13-16 alphanumeric)
+  pattern: '[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}'
+  flags:
+  - IGNORECASE
+  mask: AA**-****-*******
+  examples:
+    match:
+    - DL1420110012345
+    - MH1220110098765
+    - ka0320110054321
+    - TN0520150067890
+    - KA1020180012345
+    nomatch:
+    - DL142011001234
+    - DL14201100123456
+    - A142011001234567
+    - DL1A20110012345
+    - '123420110012345'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: 'Format: State(2) + RTO(2) + Year(4) + Serial(7)'
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}'
+    go: '[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}'
+    java: '[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}'
+    javascript: '[A-Z]{2}[0-9]{2}[0-9]{4}[0-9]{7}'

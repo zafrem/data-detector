@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "git": {
-    "submodules": true
-  },
   "builds": [
     {
       "src": "api/index.py",

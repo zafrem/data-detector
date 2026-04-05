@@ -1,0 +1,138 @@
+namespace: cn
+description: China bank account patterns
+patterns:
+- id: icbc_account_01
+  location: cn
+  category: bank
+  description: ICBC (Industrial and Commercial Bank of China) account number
+  pattern: 622[0-9]{13,17}
+  mask: 622****-****-****-****
+  examples:
+    match:
+    - '6225123456789012345'
+    - '6228123456789012345'
+    - '62251234567890123456'
+    nomatch:
+    - '622512345678901'
+    - '622512345678901234567'
+    - '621123456789012345'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: ICBC cards typically start with 622 and are 19-20 digits total
+  match_type: exactly_matches
+  langs:
+    python: 622[0-9]{13,17}
+    go: 622[0-9]{13,17}
+    java: 622[0-9]{13,17}
+    javascript: 622[0-9]{13,17}
+- id: ccb_account_01
+  location: cn
+  category: bank
+  description: CCB (China Construction Bank) account number
+  pattern: 436[0-9]{13,17}
+  mask: 436****-****-****-****
+  examples:
+    match:
+    - '4367123456789012'
+    - '4367123456789012345'
+    - '43671234567890123456'
+    nomatch:
+    - '436712345678901'
+    - '436712345678901234567'
+    - '437123456789012'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: CCB cards typically start with 436 and are 16-20 digits total
+  match_type: exactly_matches
+  langs:
+    python: 436[0-9]{13,17}
+    go: 436[0-9]{13,17}
+    java: 436[0-9]{13,17}
+    javascript: 436[0-9]{13,17}
+- id: abc_account_01
+  location: cn
+  category: bank
+  description: ABC (Agricultural Bank of China) account number
+  pattern: 103[0-9]{15,17}
+  mask: 103****-****-****-****
+  examples:
+    match:
+    - '1031234567890123456'
+    - '10312345678901234567'
+    - '103123456789012345'
+    nomatch:
+    - '10312345678901234'
+    - '103123456789012345678'
+    - '104123456789012345'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: ABC cards typically start with 103 and are 19-20 digits total
+  match_type: exactly_matches
+  langs:
+    python: 103[0-9]{15,17}
+    go: 103[0-9]{15,17}
+    java: 103[0-9]{15,17}
+    javascript: 103[0-9]{15,17}
+- id: boc_account_01
+  location: cn
+  category: bank
+  description: BOC (Bank of China) account number
+  pattern: 456[0-9]{13,17}
+  mask: 456****-****-****-****
+  examples:
+    match:
+    - '4561234567890123'
+    - '4561234567890123456'
+    - '45612345678901234567'
+    nomatch:
+    - '456123456789012'
+    - '456123456789012345678'
+    - '457123456789012345'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: BOC cards typically start with 456 and are 16-20 digits total
+  match_type: exactly_matches
+  langs:
+    python: 456[0-9]{13,17}
+    go: 456[0-9]{13,17}
+    java: 456[0-9]{13,17}
+    javascript: 456[0-9]{13,17}
+- id: cmb_account_01
+  location: cn
+  category: bank
+  description: CMB (China Merchants Bank) account number
+  pattern: 621[0-9]{13,17}
+  mask: 621****-****-****-****
+  examples:
+    match:
+    - '6214567890123456'
+    - '6214567890123456789'
+    - '621456789012345678'
+    nomatch:
+    - '621456789012345'
+    - '6214567890123456789012'
+    - '622456789012345678'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: CMB (招商银行) cards typically start with 621 and are 16-20 digits total
+  match_type: exactly_matches
+  langs:
+    python: 621[0-9]{13,17}
+    go: 621[0-9]{13,17}
+    java: 621[0-9]{13,17}
+    javascript: 621[0-9]{13,17}

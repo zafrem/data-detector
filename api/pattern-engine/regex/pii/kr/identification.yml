@@ -1,0 +1,57 @@
+namespace: kr
+description: Korean identification documents (passport, driver license)
+patterns:
+- id: passport_01
+  location: kr
+  category: passport
+  description: Korean passport number (M+8 digits or S+8 digits)
+  pattern: '[MS][0-9]{8}'
+  flags:
+  - IGNORECASE
+  mask: M********
+  examples:
+    match:
+    - M12345678
+    - S87654321
+    - m12345678
+    nomatch:
+    - A12345678
+    - M1234567
+    - M123456789
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  match_type: exactly_matches
+  langs:
+    python: '[MS][0-9]{8}'
+    go: '[MS][0-9]{8}'
+    java: '[MS][0-9]{8}'
+    javascript: '[MS][0-9]{8}'
+- id: driver_license_01
+  location: kr
+  category: other
+  description: Korean driver's license number (XX-XX-XXXXXX-XX or XX-XXXXXX-XX)
+  pattern: '\b(\d{2}-?\d{2}-?\d{6}-?\d{2}|\d{2}-?\d{6}-?\d{2})\b'
+  verification: kr_driver_license_valid
+  mask: '**-**-******-**'
+  examples:
+    match:
+    - 11-01-123456-78
+    - 12-345678-90
+    - '110112345678'
+    nomatch:
+    - 01-01-123456-78
+    - 123-45678-90
+    - '111111111111'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  priority: 90
+  match_type: exactly_matches
+  langs:
+    python: '\b(\d{2}-?\d{2}-?\d{6}-?\d{2}|\d{2}-?\d{6}-?\d{2})\b'
+    go: '\b(\d{2}-?\d{2}-?\d{6}-?\d{2}|\d{2}-?\d{6}-?\d{2})\b'
+    java: '\b(\d{2}-?\d{2}-?\d{6}-?\d{2}|\d{2}-?\d{6}-?\d{2})\b'
+    javascript: '\b(\d{2}-?\d{2}-?\d{6}-?\d{2}|\d{2}-?\d{6}-?\d{2})\b'

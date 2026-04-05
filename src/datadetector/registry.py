@@ -89,11 +89,16 @@ def _get_project_root() -> Path:
     if (vercel_root / "pattern-engine").exists():
         return vercel_root
 
-    # 3. Docker /app
+    # 3. Bundled pattern-engine in api/ directory (Vercel serverless fallback)
+    vercel_api_pe = Path("/var/task/api/pattern-engine")
+    if vercel_api_pe.exists():
+        return vercel_api_pe.parent  # returns /var/task/api
+
+    # 4. Docker /app
     if Path("/app/pattern-engine").exists():
         return Path("/app")
 
-    # 4. CWD
+    # 5. CWD
     if (Path.cwd() / "pattern-engine").exists():
         return Path.cwd()
 

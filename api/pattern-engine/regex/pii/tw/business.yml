@@ -1,0 +1,28 @@
+namespace: tw
+description: Taiwan Business and Corporate Identification
+
+patterns:
+  - id: tw_ubn
+    verification: tw_ubn_valid
+    location: tw
+    category: identification
+    description: Taiwan Unified Business Number (統一編號 - 8 digits)
+    pattern: '[0-9]{8}'
+    mask: "UBN-********"
+    examples:
+      match:
+        - "04595257"
+        - "22099131"
+      nomatch:
+        - "1234567"
+        - "123456789"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '[0-9]{8}'
+      go: '[0-9]{8}'
+      java: '[0-9]{8}'
+      javascript: '[0-9]{8}'

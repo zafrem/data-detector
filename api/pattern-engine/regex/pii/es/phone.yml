@@ -1,0 +1,77 @@
+namespace: es
+description: Spanish phone number patterns (mobile and landline)
+patterns:
+- id: mobile_01
+  location: es
+  category: phone
+  description: Spanish mobile phone number (starts with 6 or 7)
+  pattern: (?:(?:\+|00)34\s?)?[67]\d{8}
+  mask: '*** *** ***'
+  examples:
+    match:
+    - '612345678'
+    - '712345678'
+    - '+34 612345678'
+    - '0034 612345678'
+    nomatch:
+    - '512345678'
+    - '61234567'
+    - '6123456789'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: (?:(?:\+|00)34\s?)?[67]\d{8}
+    go: (?:(?:\+|00)34\s?)?[67]\d{8}
+    java: (?:(?:\+|00)34\s?)?[67]\d{8}
+    javascript: (?:(?:\+|00)34\s?)?[67]\d{8}
+- id: mobile_02
+  location: es
+  category: phone
+  description: Spanish mobile phone number with spaces or hyphens
+  pattern: (?:(?:\+|00)34\s?)?[67](?:[ -]?\d{2}){4}
+  mask: '*** ** ** **'
+  examples:
+    match:
+    - '612 34 56 78'
+    - '612-34-56-78'
+    - '+34 612 34 56 78'
+    nomatch:
+    - '612 34 56 7'
+    - '612 34 56 789'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: (?:(?:\+|00)34\s?)?[67](?:[ -]?\d{2}){4}
+    go: (?:(?:\+|00)34\s?)?[67](?:[ -]?\d{2}){4}
+    java: (?:(?:\+|00)34\s?)?[67](?:[ -]?\d{2}){4}
+    javascript: (?:(?:\+|00)34\s?)?[67](?:[ -]?\d{2}){4}
+- id: landline_01
+  location: es
+  category: phone
+  description: Spanish landline phone number (starts with 8 or 9)
+  pattern: (?:(?:\+|00)34\s?)?[89]\d{8}
+  mask: '*** *** ***'
+  examples:
+    match:
+    - '912345678'
+    - '812345678'
+    - '+34 912345678'
+    nomatch:
+    - '712345678'
+    - '91234567'
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: low
+  match_type: exactly_matches
+  langs:
+    python: (?:(?:\+|00)34\s?)?[89]\d{8}
+    go: (?:(?:\+|00)34\s?)?[89]\d{8}
+    java: (?:(?:\+|00)34\s?)?[89]\d{8}
+    javascript: (?:(?:\+|00)34\s?)?[89]\d{8}

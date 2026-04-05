@@ -5,12 +5,18 @@ from pathlib import Path
 
 # Ensure the src/ directory and pattern-engine are on sys.path for Vercel deployments
 _project_root = Path(__file__).resolve().parent.parent
+_api_dir = Path(__file__).resolve().parent
 _src_dir = _project_root / "src"
 if str(_src_dir) not in sys.path:
     sys.path.insert(0, str(_src_dir))
 _pattern_engine_dir = _project_root / "pattern-engine"
+_bundled_pattern_engine_dir = _api_dir / "pattern-engine"
+# Use submodule pattern-engine if available, otherwise use bundled copy in api/
 if _pattern_engine_dir.exists() and str(_pattern_engine_dir) not in sys.path:
     sys.path.insert(0, str(_pattern_engine_dir))
+elif _bundled_pattern_engine_dir.exists():
+    if str(_bundled_pattern_engine_dir) not in sys.path:
+        sys.path.insert(0, str(_bundled_pattern_engine_dir))
 
 import base64  # noqa: E402
 import hashlib  # noqa: E402
@@ -617,12 +623,18 @@ _engine_instance = None
 def _get_engine():
     global _engine_instance
     if _engine_instance is None:
-        from datadetector.engine import Engine
-        from datadetector.models import RedactionStrategy  # noqa: F401
-        from datadetector.registry import load_registry
+        try:
+            from datadetector.engine import Engine
+            from datadetector.models import RedactionStrategy  # noqa: F401
+            from datadetector.registry import load_registry
 
-        registry = load_registry(validate_examples=False)
-        _engine_instance = Engine(registry)
+            registry = load_registry(validate_examples=False)
+            _engine_instance = Engine(registry)
+        except Exception as e:
+            import traceback
+
+            logger.error(f"Engine init failed: {e}\n{traceback.format_exc()}")
+            raise
     return _engine_instance
 
 
@@ -758,7 +770,7 @@ async def sitemap_xml(request: Request):
     # Fallback hardcoded sitemap
     host = request.base_url
     fallback_sitemap = f"""<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>{host}</loc>
     <lastmod>2026-03-20</lastmod>

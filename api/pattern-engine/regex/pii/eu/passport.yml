@@ -1,0 +1,342 @@
+namespace: eu
+description: EU passport numbers for GDPR compliance
+patterns:
+- id: passport_germany_01
+  location: eu
+  category: passport
+  description: German passport number (9 alphanumeric starting with C, F, G, H, J,
+    or K)
+  pattern: '[CFGHJK][0-9A-Z]{8}'
+  mask: '*********'
+  examples:
+    match:
+    - C01X00T47
+    - F22000129
+    - G9Y1BTM58
+    nomatch:
+    - A01X00T47
+    - C01X00T4
+    - C01X00T471
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: German Reisepass number. Series C (2007-2010), F (since 2007 biometric),
+      G (official), H (diplomatic), J (service), K (child).
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[CFGHJK][0-9A-Z]{8}'
+    go: '[CFGHJK][0-9A-Z]{8}'
+    java: '[CFGHJK][0-9A-Z]{8}'
+    javascript: '[CFGHJK][0-9A-Z]{8}'
+- id: passport_france_01
+  location: eu
+  category: passport
+  description: French passport number (2 digits + 2 letters + 5 digits)
+  pattern: \d{2}[A-Z]{2}\d{5}
+  mask: '*********'
+  examples:
+    match:
+    - 12AB34567
+    - 99ZZ99999
+    - 01CD12345
+    nomatch:
+    - 1AB34567
+    - 12A34567
+    - 12AB3456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: French Passeport number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: \d{2}[A-Z]{2}\d{5}
+    go: \d{2}[A-Z]{2}\d{5}
+    java: \d{2}[A-Z]{2}\d{5}
+    javascript: \d{2}[A-Z]{2}\d{5}
+- id: passport_italy_01
+  location: eu
+  category: passport
+  description: Italian passport number (2 letters + 7 digits)
+  pattern: '[A-Z]{2}\d{7}'
+  mask: '*********'
+  examples:
+    match:
+    - AB1234567
+    - YZ9876543
+    - CD0000001
+    nomatch:
+    - A1234567
+    - AB123456
+    - AB12345678
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Italian Passaporto number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}\d{7}'
+    go: '[A-Z]{2}\d{7}'
+    java: '[A-Z]{2}\d{7}'
+    javascript: '[A-Z]{2}\d{7}'
+- id: passport_spain_01
+  location: eu
+  category: passport
+  description: Spanish passport number (3 letters + 6 digits)
+  pattern: '[A-Z]{3}\d{6}'
+  mask: '*********'
+  examples:
+    match:
+    - AAA123456
+    - ZZZ999999
+    - ABC000001
+    nomatch:
+    - AA123456
+    - AAA12345
+    - AAA1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Spanish Pasaporte number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{3}\d{6}'
+    go: '[A-Z]{3}\d{6}'
+    java: '[A-Z]{3}\d{6}'
+    javascript: '[A-Z]{3}\d{6}'
+- id: passport_uk_01
+  location: eu
+  category: passport
+  description: UK passport number (9 digits or 12 alphanumeric)
+  pattern: (?:\d{9}|[A-Z0-9]{12})
+  mask: '*********'
+  examples:
+    match:
+    - '123456789'
+    - ABC123DEF456
+    - '999999999'
+    nomatch:
+    - '12345678'
+    - '1234567890'
+    - ABCD1234
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: 'UK Passport number. Older passports: 9 digits. Newer biometric: 12 alphanumeric.
+      Note: UK left EU but included for transition.'
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: (?:\d{9}|[A-Z0-9]{12})
+    go: (?:\d{9}|[A-Z0-9]{12})
+    java: (?:\d{9}|[A-Z0-9]{12})
+    javascript: (?:\d{9}|[A-Z0-9]{12})
+- id: passport_netherlands_01
+  location: eu
+  category: passport
+  description: Dutch passport number (2 letters + 6 digits)
+  pattern: '[A-Z]{2}\d{6}'
+  mask: '********'
+  examples:
+    match:
+    - AB123456
+    - NL999999
+    - CD000001
+    nomatch:
+    - A123456
+    - AB12345
+    - AB1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Dutch Paspoort number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}\d{6}'
+    go: '[A-Z]{2}\d{6}'
+    java: '[A-Z]{2}\d{6}'
+    javascript: '[A-Z]{2}\d{6}'
+- id: passport_belgium_01
+  location: eu
+  category: passport
+  description: Belgian passport number (2 letters + 6 digits)
+  pattern: '[A-Z]{2}\d{6}'
+  mask: '********'
+  examples:
+    match:
+    - AB123456
+    - BE999999
+    - CD000001
+    nomatch:
+    - A123456
+    - AB12345
+    - AB1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Belgian Paspoort/Passeport number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}\d{6}'
+    go: '[A-Z]{2}\d{6}'
+    java: '[A-Z]{2}\d{6}'
+    javascript: '[A-Z]{2}\d{6}'
+- id: passport_sweden_01
+  location: eu
+  category: passport
+  description: Swedish passport number (8 digits)
+  pattern: \d{8}
+  mask: '********'
+  examples:
+    match:
+    - '12345678'
+    - '99999999'
+    - '00000001'
+    nomatch:
+    - '1234567'
+    - '123456789'
+    - ABC12345
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Swedish Pass number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: \d{8}
+    go: \d{8}
+    java: \d{8}
+    javascript: \d{8}
+- id: passport_poland_01
+  location: eu
+  category: passport
+  description: Polish passport number (2 letters + 7 digits)
+  pattern: '[A-Z]{2}\d{7}'
+  mask: '*********'
+  examples:
+    match:
+    - AB1234567
+    - ZZ9999999
+    - CD0000001
+    nomatch:
+    - A1234567
+    - AB123456
+    - AB12345678
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Polish Paszport number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}\d{7}'
+    go: '[A-Z]{2}\d{7}'
+    java: '[A-Z]{2}\d{7}'
+    javascript: '[A-Z]{2}\d{7}'
+- id: passport_austria_01
+  location: eu
+  category: passport
+  description: Austrian passport number (letter + 7 digits)
+  pattern: '[A-Z]\d{7}'
+  mask: '********'
+  examples:
+    match:
+    - P1234567
+    - A9999999
+    - C0000001
+    nomatch:
+    - '1234567'
+    - P123456
+    - P12345678
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Austrian Reisepass number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]\d{7}'
+    go: '[A-Z]\d{7}'
+    java: '[A-Z]\d{7}'
+    javascript: '[A-Z]\d{7}'
+- id: passport_portugal_01
+  location: eu
+  category: passport
+  description: Portuguese passport number (letter + 6 digits)
+  pattern: '[A-Z]\d{6}'
+  mask: '*******'
+  examples:
+    match:
+    - N123456
+    - Z999999
+    - A000001
+    nomatch:
+    - '123456'
+    - N12345
+    - N1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Portuguese Passaporte number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]\d{6}'
+    go: '[A-Z]\d{6}'
+    java: '[A-Z]\d{6}'
+    javascript: '[A-Z]\d{6}'
+- id: passport_ireland_01
+  location: eu
+  category: passport
+  description: Irish passport number (2 letters + 7 digits)
+  pattern: '[A-Z]{2}\d{7}'
+  mask: '*********'
+  examples:
+    match:
+    - PA1234567
+    - ZZ9999999
+    - AB0000001
+    nomatch:
+    - A1234567
+    - PA123456
+    - PA12345678
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Irish Pas number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}\d{7}'
+    go: '[A-Z]{2}\d{7}'
+    java: '[A-Z]{2}\d{7}'
+    javascript: '[A-Z]{2}\d{7}'

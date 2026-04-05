@@ -1,0 +1,121 @@
+namespace: es
+description: Spanish identification documents (DNI, NIE, passport, CIF)
+patterns:
+- id: dni_01
+  location: es
+  category: other
+  description: Spanish DNI (8 digits + letter)
+  pattern: \d{8}[A-Z]
+  verification: spain_dni_valid
+  mask: '********-*'
+  examples:
+    match:
+    - 12345678Z
+    - 87654321X
+    - 44444444A
+    nomatch:
+    - 1234567Z
+    - 123456789Z
+    - '12345678'
+    - 12345678A
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Spanish DNI (Documento Nacional de Identidad). Uses mod-23 checksum for
+      the letter.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{8}[A-Z]
+    go: \d{8}[A-Z]
+    java: \d{8}[A-Z]
+    javascript: \d{8}[A-Z]
+- id: nie_01
+  location: es
+  category: other
+  description: Spanish NIE (foreigner ID - letter + 7 digits + letter)
+  pattern: '[XYZ]\d{7}[A-Z]'
+  verification: spain_nie_valid
+  mask: '*-*******-*'
+  examples:
+    match:
+    - X1234567L
+    - Y1234567X
+    - Z1234567R
+    nomatch:
+    - A1234567L
+    - X123456L
+    - X12345678L
+    - X1234567A
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Spanish NIE (Número de Identidad de Extranjero) for non-Spanish residents.
+      Uses mod-23 checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[XYZ]\d{7}[A-Z]'
+    go: '[XYZ]\d{7}[A-Z]'
+    java: '[XYZ]\d{7}[A-Z]'
+    javascript: '[XYZ]\d{7}[A-Z]'
+- id: passport_01
+  location: es
+  category: passport
+  description: Spanish passport number (3 letters + 6 digits)
+  pattern: '[A-Z]{3}\d{6}'
+  mask: '*********'
+  examples:
+    match:
+    - AAA123456
+    - ZZZ999999
+    - ABC000001
+    nomatch:
+    - AA123456
+    - AAA12345
+    - AAA1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Spanish Pasaporte number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{3}\d{6}'
+    go: '[A-Z]{3}\d{6}'
+    java: '[A-Z]{3}\d{6}'
+    javascript: '[A-Z]{3}\d{6}'
+- id: cif_01
+  location: es
+  category: other
+  description: Spanish CIF (Business tax ID - letter + 7 digits + control character)
+  pattern: '[A-HJKLMNPQSVW]\d{7}[0-9A-J]'
+  mask: '*-*******-*'
+  examples:
+    match:
+    - A12345678
+    - B87654321
+    - G4444444A
+    nomatch:
+    - Z12345678
+    - A1234567
+    - A123456789
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Spanish CIF (Código de Identificación Fiscal) for businesses.
+  priority: 150
+  match_type: exactly_matches
+  langs:
+    python: '[A-HJKLMNPQSVW]\d{7}[0-9A-J]'
+    go: '[A-HJKLMNPQSVW]\d{7}[0-9A-J]'
+    java: '[A-HJKLMNPQSVW]\d{7}[0-9A-J]'
+    javascript: '[A-HJKLMNPQSVW]\d{7}[0-9A-J]'

@@ -1,0 +1,37 @@
+namespace: comm
+description: Email address patterns
+patterns:
+- id: email_01
+  location: comm
+  category: email
+  description: Standard email address (RFC 5322 simplified with RFC 1034 domain rules)
+  pattern: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}'
+  flags:
+  - IGNORECASE
+  mask: '***@***.***'
+  examples:
+    match:
+    - user@example.com
+    - john.doe+tag@company.co.uk
+    - test_user123@mail-server.org
+    - user@sub.domain.example.com
+    nomatch:
+    - invalid.email@
+    - '@example.com'
+    - user@
+    - user@-example.com
+    - user@example-.com
+    - user@.example.com
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: medium
+  metadata:
+    note: 'Domain part follows RFC 1034/1035: labels must start/end with alphanumeric,
+      hyphens only in middle'
+  match_type: exactly_matches
+  langs:
+    python: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}'
+    go: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}'
+    java: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}'
+    javascript: '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}'

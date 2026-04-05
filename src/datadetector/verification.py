@@ -34,6 +34,7 @@ def _find_pattern_engine() -> Optional[Path]:
     # 4. Try common deployment paths (Vercel serverless)
     for deploy_path in [
         Path("/var/task/pattern-engine"),
+        Path("/var/task/api/pattern-engine"),
         Path("/var/task/src/../pattern-engine"),
         Path("/vercel/path0/pattern-engine"),
     ]:

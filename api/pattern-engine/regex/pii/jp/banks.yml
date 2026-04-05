@@ -1,0 +1,196 @@
+namespace: jp
+description: Japan bank account patterns
+patterns:
+- id: mizuho_bank_account_01
+  location: jp
+  category: bank
+  description: Mizuho Bank account (0001-XXX-XXXXXXX)
+  pattern: 0001-?[0-9]{3}-?[0-9]{7}
+  mask: 0001-***-*******
+  examples:
+    match:
+    - 0001-123-1234567
+    - '00011231234567'
+    - 0001-456-7890123
+    nomatch:
+    - 0002-123-1234567
+    - 0001-12-1234567
+    - 0001-123-123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Mizuho Bank (みずほ銀行) - One of Japan's three megabanks
+  match_type: exactly_matches
+  langs:
+    python: 0001-?[0-9]{3}-?[0-9]{7}
+    go: 0001-?[0-9]{3}-?[0-9]{7}
+    java: 0001-?[0-9]{3}-?[0-9]{7}
+    javascript: 0001-?[0-9]{3}-?[0-9]{7}
+- id: smbc_bank_account_01
+  location: jp
+  category: bank
+  description: SMBC account (0009-XXX-XXXXXXX)
+  pattern: 0009-?[0-9]{3}-?[0-9]{7}
+  mask: 0009-***-*******
+  examples:
+    match:
+    - 0009-123-1234567
+    - 00091231234567
+    - 0009-789-0123456
+    nomatch:
+    - 0008-123-1234567
+    - 0009-12-1234567
+    - 0009-123-123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Sumitomo Mitsui Banking Corporation (三井住友銀行) - Major Japanese megabank
+  match_type: exactly_matches
+  langs:
+    python: 0009-?[0-9]{3}-?[0-9]{7}
+    go: 0009-?[0-9]{3}-?[0-9]{7}
+    java: 0009-?[0-9]{3}-?[0-9]{7}
+    javascript: 0009-?[0-9]{3}-?[0-9]{7}
+- id: mufg_bank_account_01
+  location: jp
+  category: bank
+  description: MUFG Bank account (0005-XXX-XXXXXXX)
+  pattern: 0005-?[0-9]{3}-?[0-9]{7}
+  mask: 0005-***-*******
+  examples:
+    match:
+    - 0005-123-1234567
+    - '00051231234567'
+    - 0005-456-7890123
+    nomatch:
+    - 0004-123-1234567
+    - 0005-12-1234567
+    - 0005-123-123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: MUFG Bank (三菱UFJ銀行) - Mitsubishi UFJ Financial Group
+  match_type: exactly_matches
+  langs:
+    python: 0005-?[0-9]{3}-?[0-9]{7}
+    go: 0005-?[0-9]{3}-?[0-9]{7}
+    java: 0005-?[0-9]{3}-?[0-9]{7}
+    javascript: 0005-?[0-9]{3}-?[0-9]{7}
+- id: resona_bank_account_01
+  location: jp
+  category: bank
+  description: Resona Bank account (0010-XXX-XXXXXXX)
+  pattern: 0010-?[0-9]{3}-?[0-9]{7}
+  mask: 0010-***-*******
+  examples:
+    match:
+    - 0010-123-1234567
+    - '00101231234567'
+    - 0010-789-0123456
+    nomatch:
+    - 0011-123-1234567
+    - 0010-12-1234567
+    - 0010-123-123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Resona Bank (りそな銀行) - Major regional bank
+  match_type: exactly_matches
+  langs:
+    python: 0010-?[0-9]{3}-?[0-9]{7}
+    go: 0010-?[0-9]{3}-?[0-9]{7}
+    java: 0010-?[0-9]{3}-?[0-9]{7}
+    javascript: 0010-?[0-9]{3}-?[0-9]{7}
+- id: seven_bank_account_01
+  location: jp
+  category: bank
+  description: Seven Bank account (0034-XXX-XXXXXXX)
+  pattern: 0034-?[0-9]{3}-?[0-9]{7}
+  mask: 0034-***-*******
+  examples:
+    match:
+    - 0034-123-1234567
+    - '00341231234567'
+    - 0034-001-7890123
+    nomatch:
+    - 0035-123-1234567
+    - 0034-12-1234567
+    - 0034-123-123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Seven Bank (セブン銀行) - Convenience store banking
+  match_type: exactly_matches
+  langs:
+    python: 0034-?[0-9]{3}-?[0-9]{7}
+    go: 0034-?[0-9]{3}-?[0-9]{7}
+    java: 0034-?[0-9]{3}-?[0-9]{7}
+    javascript: 0034-?[0-9]{3}-?[0-9]{7}
+- id: rakuten_bank_account_01
+  location: jp
+  category: bank
+  description: Rakuten Bank account (0036-XXX-XXXXXXX)
+  pattern: 0036-?[0-9]{3}-?[0-9]{7}
+  verification: generic_number_not_timestamp
+  mask: 0036-***-*******
+  examples:
+    match:
+    - 0036-123-1234567
+    - '00361231234567'
+    - 0036-001-7890123
+    nomatch:
+    - 0037-123-1234567
+    - 0036-12-1234567
+    - 0036-123-123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Rakuten Bank (楽天銀行) - Online banking service
+  match_type: exactly_matches
+  langs:
+    python: 0036-?[0-9]{3}-?[0-9]{7}
+    go: 0036-?[0-9]{3}-?[0-9]{7}
+    java: 0036-?[0-9]{3}-?[0-9]{7}
+    javascript: 0036-?[0-9]{3}-?[0-9]{7}
+- id: generic_japanese_bank_account_01
+  location: jp
+  category: bank
+  description: Generic Japanese bank account (XXXX-XXX-XXXXXXX)
+  pattern: '[0-9]{4}-?[0-9]{3}-?[0-9]{7}'
+  mask: '****-***-*******'
+  verification: generic_number_not_timestamp
+  examples:
+    match:
+    - 1234-567-8901234
+    - '12345678901234'
+    - 9999-001-1111111
+    nomatch:
+    - 123-567-8901234
+    - 1234-56-8901234
+    - 1234-567-890123
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'Generic format for Japanese banks: 4-digit bank code + 3-digit branch code
+      + 7-digit account number'
+  priority: 100
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{4}-?[0-9]{3}-?[0-9]{7}'
+    go: '[0-9]{4}-?[0-9]{3}-?[0-9]{7}'
+    java: '[0-9]{4}-?[0-9]{3}-?[0-9]{7}'
+    javascript: '[0-9]{4}-?[0-9]{3}-?[0-9]{7}'

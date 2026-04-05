@@ -1,0 +1,53 @@
+namespace: comm
+description: Crypto wallet address patterns
+
+patterns:
+  - id: crypto_btc_p2pkh
+    verification: crypto_btc_valid
+    location: comm
+    category: financial
+    description: Bitcoin P2PKH address (Starts with 1)
+    pattern: '1[a-km-zA-HJ-NP-Z1-9]{25,34}'
+    mask: "1***"
+    examples:
+      match:
+        - "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+        - "1P5ZEDiStobHCTURbbZhpCW776v8D6En2M"
+      nomatch:
+        - "0A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"
+        - "101OIl"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    match_type: exactly_matches
+    langs:
+      python: '1[a-km-zA-HJ-NP-Z1-9]{25,34}'
+      go: '1[a-km-zA-HJ-NP-Z1-9]{25,34}'
+      java: '1[a-km-zA-HJ-NP-Z1-9]{25,34}'
+      javascript: '1[a-km-zA-HJ-NP-Z1-9]{25,34}'
+
+  - id: crypto_eth_01
+    verification: crypto_eth_valid
+    location: comm
+    category: financial
+    description: Ethereum / ERC-20 address
+    pattern: '0x[a-fA-F0-9]{40}'
+    mask: "0x***"
+    examples:
+      match:
+        - "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+        - "0x32Be343B94f860124dC4fEe278FDCBD38C102D88"
+      nomatch:
+        - "0x742d35Cc6634C0532925a3b844Bc454e4438f44"
+        - "x742d35Cc6634C0532925a3b844Bc454e4438f44e"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    match_type: exactly_matches
+    langs:
+      python: '0x[a-fA-F0-9]{40}'
+      go: '0x[a-fA-F0-9]{40}'
+      java: '0x[a-fA-F0-9]{40}'
+      javascript: '0x[a-fA-F0-9]{40}'

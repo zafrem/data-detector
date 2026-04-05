@@ -1,0 +1,83 @@
+namespace: fr
+description: French identification documents (NIR, CNI, passport)
+patterns:
+- id: nir_01
+  location: fr
+  category: other
+  description: French Social Security Number (NIR - 15 digits)
+  pattern: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+  verification: france_insee_valid
+  mask: '***************'
+  examples:
+    match:
+    - '188057813579816'
+    - '295017535679891'
+    nomatch:
+    - '388057813579897'
+    - '18805781357989'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: French NIR (Numéro d'Inscription au Répertoire). Uses mod-97 checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+    go: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+    java: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+    javascript: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+- id: cni_01
+  location: fr
+  category: other
+  description: French National Identity Card (CNI - 12 digits)
+  pattern: \d{12}
+  mask: '************'
+  examples:
+    match:
+    - '123456789012'
+    nomatch:
+    - '12345678901'
+    - '1234567890123'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: French CNI (Carte Nationale d'Identité).
+  priority: 150
+  match_type: exactly_matches
+  langs:
+    python: \d{12}
+    go: \d{12}
+    java: \d{12}
+    javascript: \d{12}
+- id: passport_01
+  location: fr
+  category: passport
+  description: French passport number (2 digits + 2 letters + 5 digits)
+  pattern: \d{2}[A-Z]{2}\d{5}
+  mask: '*********'
+  examples:
+    match:
+    - 12AB34567
+    - 99ZZ99999
+    - 01CD12345
+    nomatch:
+    - 1AB34567
+    - 12A34567
+    - 12AB3456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: French Passeport number.
+  priority: 180
+  match_type: exactly_matches
+  langs:
+    python: \d{2}[A-Z]{2}\d{5}
+    go: \d{2}[A-Z]{2}\d{5}
+    java: \d{2}[A-Z]{2}\d{5}
+    javascript: \d{2}[A-Z]{2}\d{5}

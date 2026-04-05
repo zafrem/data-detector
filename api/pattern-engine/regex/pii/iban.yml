@@ -1,0 +1,126 @@
+namespace: co
+description: IBAN (International Bank Account Number) patterns with Mod-97 verification
+patterns:
+- id: iban_01
+  location: co
+  category: iban
+  description: International Bank Account Number (IBAN) with Mod-97 verification
+  pattern: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
+  mask: '********************'
+  verification: iban_mod97
+  examples:
+    match:
+    - GB82WEST12345698765432
+    - DE89370400440532013000
+    - FR1420041010050500013M02606
+    - IT60X0542811101000000123456
+    nomatch:
+    - GB82WEST1234569876543
+    - '1234567890'
+    - ABCD1234567890123456
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
+    go: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
+    java: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
+    javascript: '[A-Z]{2}\d{2}[A-Z0-9]{11,30}'
+- id: iban_de_01
+  location: co
+  category: iban
+  description: IBAN for Germany (DE)
+  pattern: DE\d{2}[A-Z0-9]{18}
+  mask: DE********************
+  verification: iban_mod97
+  examples:
+    match:
+    - DE89370400440532013000
+    - DE12500105170648489890
+    nomatch:
+    - DE8937040044053201300
+    - FR1420041010050500013M02606
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: DE\d{2}[A-Z0-9]{18}
+    go: DE\d{2}[A-Z0-9]{18}
+    java: DE\d{2}[A-Z0-9]{18}
+    javascript: DE\d{2}[A-Z0-9]{18}
+- id: iban_fr_01
+  location: co
+  category: iban
+  description: IBAN for France (FR)
+  pattern: FR\d{2}[A-Z0-9]{23}
+  mask: FR***********************
+  verification: iban_mod97
+  examples:
+    match:
+    - FR1420041010050500013M02606
+    - FR7630006000011234567890189
+    nomatch:
+    - FR142004101005050001
+    - DE89370400440532013000
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: FR\d{2}[A-Z0-9]{23}
+    go: FR\d{2}[A-Z0-9]{23}
+    java: FR\d{2}[A-Z0-9]{23}
+    javascript: FR\d{2}[A-Z0-9]{23}
+- id: iban_gb_01
+  location: co
+  category: iban
+  description: IBAN for United Kingdom (GB)
+  pattern: GB\d{2}[A-Z0-9]{18}
+  mask: GB********************
+  verification: iban_mod97
+  examples:
+    match:
+    - GB82WEST12345698765432
+    - GB29NWBK60161331926819
+    nomatch:
+    - GB82WEST1234569876543
+    - DE89370400440532013000
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: GB\d{2}[A-Z0-9]{18}
+    go: GB\d{2}[A-Z0-9]{18}
+    java: GB\d{2}[A-Z0-9]{18}
+    javascript: GB\d{2}[A-Z0-9]{18}
+- id: iban_it_01
+  location: co
+  category: iban
+  description: IBAN for Italy (IT)
+  pattern: IT\d{2}[A-Z0-9]{23}
+  mask: IT***********************
+  verification: iban_mod97
+  examples:
+    match:
+    - IT60X0542811101000000123456
+    - IT40S0542811101000000123456
+    nomatch:
+    - IT60X054281110100000012345
+    - GB82WEST12345698765432
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: IT\d{2}[A-Z0-9]{23}
+    go: IT\d{2}[A-Z0-9]{23}
+    java: IT\d{2}[A-Z0-9]{23}
+    javascript: IT\d{2}[A-Z0-9]{23}

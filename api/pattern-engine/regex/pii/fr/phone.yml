@@ -1,0 +1,75 @@
+namespace: fr
+description: French phone number patterns (mobile and landline)
+patterns:
+- id: phone_01
+  location: fr
+  category: phone
+  description: French phone number (10 digits starting with 0)
+  pattern: 0[1-9]\d{8}
+  mask: 0* ** ** ** **
+  examples:
+    match:
+    - '0123456789'
+    - '0612345678'
+    - '0712345678'
+    nomatch:
+    - '1234567890'
+    - '0023456789'
+    - '012345678'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: 0[1-9]\d{8}
+    go: 0[1-9]\d{8}
+    java: 0[1-9]\d{8}
+    javascript: 0[1-9]\d{8}
+- id: phone_international_01
+  location: fr
+  category: phone
+  description: French phone number with international prefix (+33)
+  pattern: (?:\+33|0033)\s?[1-9]\d{8}
+  mask: +33 * ** ** ** **
+  examples:
+    match:
+    - '+33 123456789'
+    - '+33612345678'
+    - '0033 123456789'
+    nomatch:
+    - '+33 0123456789'
+    - '+34 123456789'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: (?:\+33|0033)\s?[1-9]\d{8}
+    go: (?:\+33|0033)\s?[1-9]\d{8}
+    java: (?:\+33|0033)\s?[1-9]\d{8}
+    javascript: (?:\+33|0033)\s?[1-9]\d{8}
+- id: phone_formatted_01
+  location: fr
+  category: phone
+  description: French phone number with spaces or dots
+  pattern: 0[1-9](?:[\s\.]\d{2}){4}
+  mask: 0* ** ** ** **
+  examples:
+    match:
+    - 01 23 45 67 89
+    - 06.12.34.56.78
+    nomatch:
+    - 01 23 45 67 8
+    - 0123456789
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: 0[1-9](?:[\s\.]\d{2}){4}
+    go: 0[1-9](?:[\s\.]\d{2}){4}
+    java: 0[1-9](?:[\s\.]\d{2}){4}
+    javascript: 0[1-9](?:[\s\.]\d{2}){4}

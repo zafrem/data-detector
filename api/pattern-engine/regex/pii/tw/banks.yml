@@ -1,0 +1,297 @@
+namespace: tw
+description: Taiwan bank account patterns
+patterns:
+- id: bank_of_taiwan_account_01
+  location: tw
+  category: bank
+  description: Bank of Taiwan account (004-XXXXXXXXXXXX)
+  pattern: 004-?[0-9]{9,13}
+  mask: 004-*********
+  examples:
+    match:
+    - 004-123456789012
+    - 004123456789012
+    - 004-987654321098
+    - 004-12345678901
+    nomatch:
+    - 005-123456789012
+    - 004-12345678
+    - 004-12345678901234
+    - 04-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Bank of Taiwan (臺灣銀行) - Taiwan's central bank and largest government bank
+  match_type: exactly_matches
+  langs:
+    python: 004-?[0-9]{9,13}
+    go: 004-?[0-9]{9,13}
+    java: 004-?[0-9]{9,13}
+    javascript: 004-?[0-9]{9,13}
+- id: first_bank_account_01
+  location: tw
+  category: bank
+  description: First Commercial Bank account (007-XXXXXXXXXXXX)
+  pattern: 007-?[0-9]{9,13}
+  verification: generic_number_not_timestamp
+  mask: 007-*********
+  examples:
+    match:
+    - 007-123456789012
+    - 007123456789012
+    - 007-987654321098
+    - 007-12345678901
+    nomatch:
+    - 008-123456789012
+    - 007-12345678
+    - 007-12345678901234
+    - 07-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: First Commercial Bank (第一銀行) - One of Taiwan's oldest and largest banks
+  match_type: exactly_matches
+  langs:
+    python: 007-?[0-9]{9,13}
+    go: 007-?[0-9]{9,13}
+    java: 007-?[0-9]{9,13}
+    javascript: 007-?[0-9]{9,13}
+- id: hua_nan_bank_account_01
+  location: tw
+  category: bank
+  description: Hua Nan Commercial Bank account (008-XXXXXXXXXXXX)
+  pattern: 008-?[0-9]{9,13}
+  mask: 008-*********
+  examples:
+    match:
+    - 008-123456789012
+    - 008123456789012
+    - 008-987654321098
+    - 008-12345678901
+    nomatch:
+    - 009-123456789012
+    - 008-12345678
+    - 008-12345678901234
+    - 08-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Hua Nan Commercial Bank (華南銀行) - Major commercial bank in Taiwan
+  match_type: exactly_matches
+  langs:
+    python: 008-?[0-9]{9,13}
+    go: 008-?[0-9]{9,13}
+    java: 008-?[0-9]{9,13}
+    javascript: 008-?[0-9]{9,13}
+- id: chang_hwa_bank_account_01
+  location: tw
+  category: bank
+  description: Chang Hwa Commercial Bank account (009-XXXXXXXXXXXX)
+  pattern: 009-?[0-9]{9,13}
+  mask: 009-*********
+  examples:
+    match:
+    - 009-123456789012
+    - 009123456789012
+    - 009-987654321098
+    - 009-12345678901
+    nomatch:
+    - 010-123456789012
+    - 009-12345678
+    - 009-12345678901234
+    - 09-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Chang Hwa Commercial Bank (彰化銀行) - Historic commercial bank
+  match_type: exactly_matches
+  langs:
+    python: 009-?[0-9]{9,13}
+    go: 009-?[0-9]{9,13}
+    java: 009-?[0-9]{9,13}
+    javascript: 009-?[0-9]{9,13}
+- id: shanghai_bank_account_01
+  location: tw
+  category: bank
+  description: Shanghai Commercial & Savings Bank account (011-XXXXXXXXXXXX)
+  pattern: 011-?[0-9]{9,13}
+  mask: 011-*********
+  examples:
+    match:
+    - 011-123456789012
+    - 011123456789012
+    - 011-987654321098
+    - 011-12345678901
+    nomatch:
+    - 012-123456789012
+    - 011-12345678
+    - 011-12345678901234
+    - 11-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Shanghai Commercial & Savings Bank (上海銀行) - Commercial and savings bank
+  match_type: exactly_matches
+  langs:
+    python: 011-?[0-9]{9,13}
+    go: 011-?[0-9]{9,13}
+    java: 011-?[0-9]{9,13}
+    javascript: 011-?[0-9]{9,13}
+- id: taipei_fubon_bank_account_01
+  location: tw
+  category: bank
+  description: Taipei Fubon Commercial Bank account (012-XXXXXXXXXXXX)
+  pattern: 012-?[0-9]{9,13}
+  mask: 012-*********
+  examples:
+    match:
+    - 012-123456789012
+    - 012123456789012
+    - 012-987654321098
+    - 012-12345678901
+    nomatch:
+    - 013-123456789012
+    - 012-12345678
+    - 012-12345678901234
+    - 12-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Taipei Fubon Commercial Bank (台北富邦銀行) - Major private commercial bank
+  match_type: exactly_matches
+  langs:
+    python: 012-?[0-9]{9,13}
+    go: 012-?[0-9]{9,13}
+    java: 012-?[0-9]{9,13}
+    javascript: 012-?[0-9]{9,13}
+- id: ctbc_bank_account_01
+  location: tw
+  category: bank
+  description: CTBC Bank account (822-XXXXXXXXXXXX)
+  pattern: 822-?[0-9]{9,13}
+  mask: 822-*********
+  examples:
+    match:
+    - 822-123456789012
+    - '822123456789012'
+    - 822-987654321098
+    - 822-12345678901
+    nomatch:
+    - 823-123456789012
+    - 822-12345678
+    - 822-12345678901234
+    - 82-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: CTBC Bank (中國信託銀行) - China Trust Commercial Bank, major financial institution
+  match_type: exactly_matches
+  langs:
+    python: 822-?[0-9]{9,13}
+    go: 822-?[0-9]{9,13}
+    java: 822-?[0-9]{9,13}
+    javascript: 822-?[0-9]{9,13}
+- id: esun_bank_account_01
+  location: tw
+  category: bank
+  description: E.SUN Commercial Bank account (808-XXXXXXXXXXXX)
+  pattern: 808-?[0-9]{9,13}
+  mask: 808-*********
+  examples:
+    match:
+    - 808-123456789012
+    - '808123456789012'
+    - 808-987654321098
+    - 808-12345678901
+    nomatch:
+    - 809-123456789012
+    - 808-12345678
+    - 808-12345678901234
+    - 80-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: E.SUN Commercial Bank (玉山銀行) - Leading private bank known for innovation
+  match_type: exactly_matches
+  langs:
+    python: 808-?[0-9]{9,13}
+    go: 808-?[0-9]{9,13}
+    java: 808-?[0-9]{9,13}
+    javascript: 808-?[0-9]{9,13}
+- id: taiwan_cooperative_bank_account_01
+  location: tw
+  category: bank
+  description: Taiwan Cooperative Bank account (006-XXXXXXXXXXXX)
+  pattern: 006-?[0-9]{9,13}
+  mask: 006-*********
+  examples:
+    match:
+    - 006-123456789012
+    - 006123456789012
+    - 006-987654321098
+    - 006-12345678901
+    nomatch:
+    - 007-123456789012
+    - 006-12345678
+    - 006-12345678901234
+    - 06-123456789012
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Taiwan Cooperative Bank (合作金庫銀行) - Major cooperative banking institution
+  match_type: exactly_matches
+  langs:
+    python: 006-?[0-9]{9,13}
+    go: 006-?[0-9]{9,13}
+    java: 006-?[0-9]{9,13}
+    javascript: 006-?[0-9]{9,13}
+- id: generic_taiwan_bank_account_01
+  location: tw
+  category: bank
+  description: Generic Taiwan bank account (XXX-XXXXXXXXXXXX)
+  pattern: '[0-9]{3}-?[0-9]{9,13}'
+  mask: '***-*********'
+  verification: generic_number_not_timestamp
+  examples:
+    match:
+    - 123-456789012345
+    - '999123456789012'
+    - 001-12345678901
+    - 888-987654321098
+    nomatch:
+    - 12-45678901
+    - 1234-567890123
+    - 123-12345678
+    - 123-123456789012345678
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'Generic format for Taiwan banks: 3-digit bank code + 9-13 digit account
+      number'
+  priority: 100
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{3}-?[0-9]{9,13}'
+    go: '[0-9]{3}-?[0-9]{9,13}'
+    java: '[0-9]{3}-?[0-9]{9,13}'
+    javascript: '[0-9]{3}-?[0-9]{9,13}'

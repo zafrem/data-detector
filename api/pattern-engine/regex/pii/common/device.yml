@@ -1,0 +1,52 @@
+namespace: comm
+description: Device-related identifiers (MAC, IMEI)
+
+patterns:
+  - id: mac_address_01
+    location: comm
+    category: device
+    description: MAC address (XX:XX:XX:XX:XX:XX or XX-XX-XX-XX-XX-XX)
+    pattern: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+    mask: "**:**:**:**:**:**"
+    verification: mac_address_valid
+    examples:
+      match:
+        - "00:1A:2B:3C:4D:5E"
+        - "00-1A-2B-3C-4D-5E"
+      nomatch:
+        - "00:1A:2B:3C:4D"
+        - "FFFFFFFFFFFF"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+      go: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+      java: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+      javascript: '([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})'
+
+  - id: imei_01
+    location: comm
+    category: device
+    description: 15-digit IMEI (includes Luhn checksum validation)
+    pattern: '\b[0-9]{15}\b'
+    mask: "**********#####"
+    verification: imei_valid
+    examples:
+      match:
+        - "351756051523993"
+      nomatch:
+        - "351756051523998"
+        - "12345678901234"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '\b[0-9]{15}\b'
+      go: '\b[0-9]{15}\b'
+      java: '\b[0-9]{15}\b'
+      javascript: '\b[0-9]{15}\b'

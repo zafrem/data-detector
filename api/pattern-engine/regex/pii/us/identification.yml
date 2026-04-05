@@ -1,0 +1,87 @@
+namespace: us
+description: United States identification documents (passport, driver license, Medicare)
+patterns:
+- id: passport_01
+  location: us
+  category: passport
+  description: US passport number (9 digits or letter followed by 8 digits)
+  pattern: (?:[0-9]{9}|[A-Z][0-9]{8})
+  flags:
+  - IGNORECASE
+  mask: '*********'
+  examples:
+    match:
+    - '123456789'
+    - A12345678
+    nomatch:
+    - '12345678'
+    - AB1234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  match_type: exactly_matches
+  langs:
+    python: (?:[0-9]{9}|[A-Z][0-9]{8})
+    go: (?:[0-9]{9}|[A-Z][0-9]{8})
+    java: (?:[0-9]{9}|[A-Z][0-9]{8})
+    javascript: (?:[0-9]{9}|[A-Z][0-9]{8})
+- id: driver_license_ca_01
+  location: us
+  category: other
+  description: California driver's license (1 letter + 7 digits)
+  pattern: '[A-Z][0-9]{7}'
+  flags:
+  - IGNORECASE
+  mask: A*******
+  examples:
+    match:
+    - A1234567
+    - z9876543
+    nomatch:
+    - AB123456
+    - '1234567'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    state: CA
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z][0-9]{7}'
+    go: '[A-Z][0-9]{7}'
+    java: '[A-Z][0-9]{7}'
+    javascript: '[A-Z][0-9]{7}'
+- id: medicare_01
+  location: us
+  category: other
+  description: Medicare Beneficiary Identifier (MBI format, excludes S/L/O/I/B/Z)
+  pattern: '[ACDEFGHJKMNPQRTUVWXY][0-9]{3}[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{4}[ACDEFGHJKMNPQRTUVWXY]'
+  flags:
+  - IGNORECASE
+  mask: A***AA****A
+  examples:
+    match:
+    - A123CD4567E
+    - T987HN6543P
+    - M456GJ1234K
+    nomatch:
+    - '123456789'
+    - A1234567890
+    - S123CD4567E
+    - A123OI4567Z
+    - L123BC4567S
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Medicare MBIs exclude S, L, O, I, B, Z to avoid confusion with 5, 1, 0,
+      1, 8, 2
+  match_type: exactly_matches
+  langs:
+    python: '[ACDEFGHJKMNPQRTUVWXY][0-9]{3}[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{4}[ACDEFGHJKMNPQRTUVWXY]'
+    go: '[ACDEFGHJKMNPQRTUVWXY][0-9]{3}[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{4}[ACDEFGHJKMNPQRTUVWXY]'
+    java: '[ACDEFGHJKMNPQRTUVWXY][0-9]{3}[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{4}[ACDEFGHJKMNPQRTUVWXY]'
+    javascript: '[ACDEFGHJKMNPQRTUVWXY][0-9]{3}[ACDEFGHJKMNPQRTUVWXY]{2}[0-9]{4}[ACDEFGHJKMNPQRTUVWXY]'
