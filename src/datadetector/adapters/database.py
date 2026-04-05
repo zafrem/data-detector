@@ -108,6 +108,7 @@ class DatabaseAdapter(ResourceAdapter):
             List of ContainerInfo objects.
         """
         self._ensure_connected()
+        assert self._inspector is not None
         schema = self.resource.connection.params.get("schema")
         include_views = self.resource.connection.params.get("include_views", True)
 
@@ -155,6 +156,7 @@ class DatabaseAdapter(ResourceAdapter):
             List of FieldInfo objects.
         """
         self._ensure_connected()
+        assert self._inspector is not None
         schema = self.resource.connection.params.get("schema")
         columns = self._inspector.get_columns(container_name, schema=schema)
 
@@ -192,6 +194,7 @@ class DatabaseAdapter(ResourceAdapter):
             List of string-coerced values.
         """
         self._ensure_connected()
+        assert self._engine is not None
         sa = _get_sqlalchemy()
 
         schema = self.resource.connection.params.get("schema")
@@ -222,6 +225,7 @@ class DatabaseAdapter(ResourceAdapter):
             List of FieldRelationship objects for all FK relationships.
         """
         self._ensure_connected()
+        assert self._inspector is not None
         schema = self.resource.connection.params.get("schema")
         relationships: List[FieldRelationship] = []
 
@@ -263,6 +267,7 @@ class DatabaseAdapter(ResourceAdapter):
             Row count.
         """
         self._ensure_connected()
+        assert self._engine is not None
         sa = _get_sqlalchemy()
 
         query = sa.text(f'SELECT COUNT(*) FROM "{container_name}"')
@@ -281,6 +286,7 @@ class DatabaseAdapter(ResourceAdapter):
             View SQL definition, or None if not available.
         """
         self._ensure_connected()
+        assert self._inspector is not None
         schema = self.resource.connection.params.get("schema")
         try:
             return self._inspector.get_view_definition(view_name, schema=schema)

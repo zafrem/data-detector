@@ -283,10 +283,10 @@ class DataLineageTracer:
             inv_map[key] = entry
 
         for node in graph.nodes:
-            entry = inv_map.get(node.full_path)
-            if entry is not None:
-                node.categories = list(entry.categories)
-                node.confidence = entry.confidence
+            inv_entry = inv_map.get(node.full_path)
+            if inv_entry is not None:
+                node.categories = list(inv_entry.categories)
+                node.confidence = inv_entry.confidence
 
     def to_dict(self) -> Dict[str, Any]:
         """Export graph as JSON-serializable dict.
@@ -374,7 +374,7 @@ class DataLineageTracer:
         collected_edges: List[LineageEdge],
     ) -> None:
         """BFS traversal in the specified direction."""
-        queue: deque = deque()
+        queue: "deque[tuple[LineageNode, int]]" = deque()
         queue.append((start, 0))
         seen: Set[str] = {start.full_path}
 
@@ -424,7 +424,7 @@ class DataLineageTracer:
                 field_index.setdefault(field_name, []).append(node)
 
         # Track existing edges to avoid duplicates
-        existing_pairs: Set[tuple] = set()
+        existing_pairs: Set["tuple[str, str]"] = set()
         for edge in existing_edges:
             existing_pairs.add((edge.source.full_path, edge.target.full_path))
             existing_pairs.add((edge.target.full_path, edge.source.full_path))

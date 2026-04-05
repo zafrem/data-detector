@@ -14,8 +14,8 @@ from typing import IO, Any, Dict, List, Optional
 
 import yaml
 
+from datadetector.models import Category, Severity
 from datadetector.resource_models import (
-    Category,
     DataInventory,
     InventoryDiff,
     InventoryEntry,
@@ -25,7 +25,6 @@ from datadetector.resource_models import (
     PIIConfidence,
     ResourceScanResult,
     ScanMetadata,
-    Severity,
 )
 
 logger = logging.getLogger(__name__)
@@ -209,7 +208,7 @@ class DataInventoryGenerator:
         by_severity: Dict[str, int] = {}
         by_resource: Dict[str, int] = {}
         by_confidence: Dict[str, int] = {}
-        resources: set = set()
+        resources: "set[str]" = set()
 
         for entry in inventory.entries:
             resources.add(entry.resource_name)

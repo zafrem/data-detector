@@ -404,7 +404,7 @@ class TrainingDataAdapter(ResourceAdapter):
 
         return values
 
-    def _extract_field_value(self, row: dict, field_name: str) -> Optional[str]:
+    def _extract_field_value(self, row: "dict[str, Any]", field_name: str) -> Optional[str]:
         """Extract a value from a row, supporting nested chat message fields."""
         # Chat format: messages.role.content
         if field_name.startswith("messages.") and "messages" in row:
@@ -464,8 +464,10 @@ class TrainingDataAdapter(ResourceAdapter):
                     if "text" in keys:
                         return "text"
                     return "custom"
+                return "unknown"
         except Exception:
             return "unknown"
+        return "unknown"
 
     # ── HuggingFace helpers ──────────────────────────────
 

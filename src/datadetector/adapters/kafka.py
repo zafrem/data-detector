@@ -156,7 +156,7 @@ class KafkaAdapter(ResourceAdapter):
             try:
                 subjects = self._get_sr_subjects()
                 # Extract topic names from subjects (format: "topic-value" or "topic-key")
-                seen_topics: set = set()
+                seen_topics: "set[str]" = set()
                 for subject in subjects:
                     topic = subject
                     for suffix in ("-value", "-key"):
@@ -238,6 +238,7 @@ class KafkaAdapter(ResourceAdapter):
             List of string-coerced values.
         """
         self._ensure_connected()
+        assert self._consumer is not None
 
         timeout_ms = self.resource.connection.params.get("timeout_ms", 5000)
         timeout_s = timeout_ms / 1000.0
@@ -296,7 +297,7 @@ class KafkaAdapter(ResourceAdapter):
         self._ensure_connected()
 
         # Build field map: field_name -> [(topic, field_info)]
-        field_map: Dict[str, List[tuple]] = {}
+        field_map: Dict[str, List["tuple[str, FieldInfo]"]] = {}
         containers = self.list_containers()
 
         for container in containers:
@@ -335,7 +336,7 @@ class KafkaAdapter(ResourceAdapter):
             return []
         resp = self._requests.get(f"{self._schema_registry_url}/subjects", timeout=10)
         resp.raise_for_status()
-        return resp.json()  # type: ignore[no-any-return]
+        return resp.json()
 
     def _get_topic_schema(self, topic: str) -> Optional[Dict[str, Any]]:
         """Fetch and cache schema for a topic from Schema Registry."""

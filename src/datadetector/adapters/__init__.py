@@ -21,7 +21,7 @@ from datadetector.resource_models import ResourceType
 logger = logging.getLogger(__name__)
 
 # Maps resource type to (module_path, class_name) for lazy loading
-_ADAPTER_REGISTRY: Dict[str, tuple] = {
+_ADAPTER_REGISTRY: Dict[str, "tuple[str, str]"] = {
     ResourceType.DATABASE.value: (
         "datadetector.adapters.database",
         "DatabaseAdapter",
@@ -72,7 +72,7 @@ def get_adapter_class(resource_type: str) -> Type[ResourceAdapter]:
 
     try:
         module = importlib.import_module(module_path)
-        return getattr(module, class_name)  # type: ignore[no-any-return]
+        return getattr(module, class_name)
     except ImportError as e:
         raise ImportError(
             f"Cannot load adapter for '{resource_type}': {e}. "

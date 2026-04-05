@@ -63,6 +63,17 @@ jobs:
       - name: Validate Patterns
         run: python -c "from datadetector import load_registry; load_registry(validate_examples=True); print('✓ All patterns valid')"
 
+      - name: Check api/pattern-engine in sync with submodule
+        run: |
+          diff -rq pattern-engine/regex api/pattern-engine/regex --exclude='.git*' || \
+            { echo "ERROR: api/pattern-engine is out of sync with the pattern-engine submodule."; \
+              echo "Run: cp -r pattern-engine/regex api/pattern-engine/ && cp -r pattern-engine/verification api/pattern-engine/"; \
+              exit 1; }
+          diff -rq pattern-engine/verification api/pattern-engine/verification --exclude='.git*' || \
+            { echo "ERROR: api/pattern-engine/verification is out of sync."; \
+              echo "Run: cp -r pattern-engine/verification api/pattern-engine/"; \
+              exit 1; }
+
   test:
     name: Test (${{ matrix.os }}, ${{ matrix.python-version }})
     needs: syntax-check

@@ -1,0 +1,100 @@
+namespace: tech
+description: Patent and Intellectual Property identifiers
+
+patterns:
+  - id: us_patent_number
+    location: tech
+    category: patent
+    description: United States Patent Number (7-9 digits)
+    pattern: '\bUS\s?([0-9]{7,9})\b'
+    mask: "US*******"
+    examples:
+      match:
+        - "US 7654321"
+        - "US12345678"
+      nomatch:
+        - "US 12345"
+        - "USB 1234567"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\bUS\s?([0-9]{7,9})\b'
+      go: '\bUS\s?([0-9]{7,9})\b'
+      java: '\bUS\s?([0-9]{7,9})\b'
+      javascript: '\bUS\s?([0-9]{7,9})\b'
+
+  - id: pct_patent_number
+    location: tech
+    category: patent
+    description: PCT (WO) Patent Number (e.g., WO 2023/123456)
+    pattern: '\bWO\s?([0-9]{4})/([0-9]{6})\b'
+    mask: "WO****/******"
+    examples:
+      match:
+        - "WO 2023/123456"
+        - "WO2020/000001"
+      nomatch:
+        - "WO 23/12345"
+        - "WO 2023-123456"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\bWO\s?([0-9]{4})/([0-9]{6})\b'
+      go: '\bWO\s?([0-9]{4})/([0-9]{6})\b'
+      java: '\bWO\s?([0-9]{4})/([0-9]{6})\b'
+      javascript: '\bWO\s?([0-9]{4})/([0-9]{6})\b'
+
+  - id: ep_patent_number
+    location: tech
+    category: patent
+    description: European Patent (EP) Number (7 digits)
+    pattern: '\bEP\s?([0-9]{7})\b'
+    mask: "EP*******"
+    examples:
+      match:
+        - "EP 1234567"
+        - "EP0987654"
+      nomatch:
+        - "EP 123456"
+        - "EPA 1234567"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\bEP\s?([0-9]{7})\b'
+      go: '\bEP\s?([0-9]{7})\b'
+      java: '\bEP\s?([0-9]{7})\b'
+      javascript: '\bEP\s?([0-9]{7})\b'
+
+  - id: ipc_classification_code
+    location: tech
+    category: patent
+    description: International Patent Classification (IPC) code (e.g., A61K 31/00)
+    pattern: '\b[A-H][0-9]{2}[A-Z]\s?[0-9]{1,4}/[0-9]{2,6}\b'
+    mask: "**** ***/**"
+    examples:
+      match:
+        - "A61K 31/00"
+        - "G06F 17/30"
+        - "H04L 29/06"
+      nomatch:
+        - "A61 31/00"
+        - "G06F 17-30"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\b[A-H][0-9]{2}[A-Z]\s?[0-9]{1,4}/[0-9]{2,6}\b'
+      go: '\b[A-H][0-9]{2}[A-Z]\s?[0-9]{1,4}/[0-9]{2,6}\b'
+      java: '\b[A-H][0-9]{2}[A-Z]\s?[0-9]{1,4}/[0-9]{2,6}\b'
+      javascript: '\b[A-H][0-9]{2}[A-Z]\s?[0-9]{1,4}/[0-9]{2,6}\b'

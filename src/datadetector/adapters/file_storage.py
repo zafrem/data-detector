@@ -503,7 +503,7 @@ class FileStorageAdapter(ResourceAdapter):
                 if len(values) >= limit:
                     break
 
-                if col_idx < len(row) and row[col_idx] is not None:
+                if col_idx is not None and col_idx < len(row) and row[col_idx] is not None:
                     values.append(str(row[col_idx]))
 
             if values:

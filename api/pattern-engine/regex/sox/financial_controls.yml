@@ -1,0 +1,172 @@
+namespace: sox
+description: SOX Compliance and Financial Data patterns
+
+patterns:
+  - id: sox_gl_account
+    location: sox
+    category: financial
+    description: General Ledger Account Number (Common 4-6 digit format)
+    pattern: '[1-9][0-9]{3,5}'
+    mask: "****"
+    examples:
+      match:
+        - "1001"
+        - "400010"
+      nomatch:
+        - "0123"
+        - "123"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '[1-9][0-9]{3,5}'
+      go: '[1-9][0-9]{3,5}'
+      java: '[1-9][0-9]{3,5}'
+      javascript: '[1-9][0-9]{3,5}'
+
+  - id: sox_revenue_transaction
+    location: sox
+    category: financial
+    description: Revenue Transaction Reference (prefix REV- followed by digits)
+    pattern: 'REV-[0-9]{6,12}'
+    mask: "REV-***"
+    examples:
+      match:
+        - "REV-123456"
+        - "REV-987654321012"
+      nomatch:
+        - "REV-12345"
+        - "RE-123456"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: high
+    match_type: exactly_matches
+    langs:
+      python: 'REV-[0-9]{6,12}'
+      go: 'REV-[0-9]{6,12}'
+      java: 'REV-[0-9]{6,12}'
+      javascript: 'REV-[0-9]{6,12}'
+
+  - id: sox_internal_control_id
+    location: sox
+    category: control
+    description: SOX Internal Control Identifier (e.g., IC-FIN-001)
+    pattern: '\bIC-[A-Z]{2,4}-[0-9]{3,4}\b'
+    mask: "IC-***-***"
+    examples:
+      match:
+        - "IC-FIN-001"
+        - "IC-IT-1002"
+      nomatch:
+        - "IC-F-01"
+        - "IC-FINANCE-001"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '\bIC-[A-Z]{2,4}-[0-9]{3,4}\b'
+      go: '\bIC-[A-Z]{2,4}-[0-9]{3,4}\b'
+      java: '\bIC-[A-Z]{2,4}-[0-9]{3,4}\b'
+      javascript: '\bIC-[A-Z]{2,4}-[0-9]{3,4}\b'
+
+  - id: sox_financial_period
+    location: sox
+    category: financial
+    description: Financial Reporting Period (e.g., FY2023, Q1-2024, Q4-24)
+    pattern: '\b(FY|Q[1-4])[- ]?([0-9]{2,4})\b'
+    mask: "**-****"
+    examples:
+      match:
+        - "FY2023"
+        - "Q1-2024"
+        - "Q4 25"
+      nomatch:
+        - "FY2"
+        - "Q5-2023"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\b(FY|Q[1-4])[- ]?([0-9]{2,4})\b'
+      go: '\b(FY|Q[1-4])[- ]?([0-9]{2,4})\b'
+      java: '\b(FY|Q[1-4])[- ]?([0-9]{2,4})\b'
+      javascript: '\b(FY|Q[1-4])[- ]?([0-9]{2,4})\b'
+
+  - id: sox_audit_log_id
+    location: sox
+    category: audit
+    description: Audit Log Reference ID (e.g., AUD-20231027-0001)
+    pattern: '\bAUD-[0-9]{8}-[0-9]{4,6}\b'
+    mask: "AUD-********-****"
+    examples:
+      match:
+        - "AUD-20231027-0001"
+        - "AUD-20240101-123456"
+      nomatch:
+        - "AUD-231027-001"
+        - "LOG-20231027-0001"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '\bAUD-[0-9]{8}-[0-9]{4,6}\b'
+      go: '\bAUD-[0-9]{8}-[0-9]{4,6}\b'
+      java: '\bAUD-[0-9]{8}-[0-9]{4,6}\b'
+      javascript: '\bAUD-[0-9]{8}-[0-9]{4,6}\b'
+
+  - id: sox_sec_cik
+    location: sox
+    category: financial
+    description: SEC Central Index Key (CIK) (10-digit identifier)
+    pattern: '\b[0-9]{10}\b'
+    mask: "**********"
+    examples:
+      match:
+        - "0000320193"
+        - "0000051143"
+      nomatch:
+        - "320193"
+        - "000032019A"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '\b[0-9]{10}\b'
+      go: '\b[0-9]{10}\b'
+      java: '\b[0-9]{10}\b'
+      javascript: '\b[0-9]{10}\b'
+
+  - id: sox_sec_file_number
+    location: sox
+    category: financial
+    description: SEC File Number (e.g., 001-33156, 333-12345)
+    pattern: '\b[0-9]{3}-[0-9]{5}\b'
+    mask: "***-*****"
+    examples:
+      match:
+        - "001-33156"
+        - "333-12345"
+      nomatch:
+        - "01-33156"
+        - "333-1234"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\b[0-9]{3}-[0-9]{5}\b'
+      go: '\b[0-9]{3}-[0-9]{5}\b'
+      java: '\b[0-9]{3}-[0-9]{5}\b'
+      javascript: '\b[0-9]{3}-[0-9]{5}\b'

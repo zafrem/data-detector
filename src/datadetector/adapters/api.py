@@ -69,7 +69,7 @@ class APIAdapter(ResourceAdapter):
             )
 
         # Resolve $ref pointers
-        self._resolved_spec = self._resolve_refs(self._spec)
+        self._resolved_spec = self._resolve_refs(self._spec)  # type: ignore[arg-type]
         self._connected = True
         logger.info(f"Loaded API spec: {self.resource.name}")
 
@@ -316,15 +316,15 @@ class APIAdapter(ResourceAdapter):
             content = f.read()
 
         if path.suffix in (".yaml", ".yml"):
-            return yaml.safe_load(content)  # type: ignore[no-any-return]
+            return yaml.safe_load(content)
         elif path.suffix == ".json":
-            return json.loads(content)  # type: ignore[no-any-return]
+            return json.loads(content)
         else:
             # Try YAML first, then JSON
             try:
-                return yaml.safe_load(content)  # type: ignore[no-any-return]
+                return yaml.safe_load(content)
             except yaml.YAMLError:
-                return json.loads(content)  # type: ignore[no-any-return]
+                return json.loads(content)
 
     def _resolve_refs(self, spec: Dict[str, Any]) -> Dict[str, Any]:
         """Resolve $ref pointers in the spec (single-level)."""

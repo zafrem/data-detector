@@ -276,9 +276,9 @@ class VectorDBAdapter(ResourceAdapter):
 
     # ── Private helpers ──────────────────────────────────
 
-    def _discover_metadata_fields(self, container_name: str, backend: str) -> set:
+    def _discover_metadata_fields(self, container_name: str, backend: str) -> "set[str]":
         """Discover metadata field names by sampling documents."""
-        metadata_keys: set = set()
+        metadata_keys: "set[str]" = set()
         sample_size = min(20, self.resource.connection.params.get("metadata_sample_size", 20))
 
         if backend == "chromadb":

@@ -15,7 +15,7 @@ from typing import Callable, Dict, List, Optional, Set
 
 from datadetector.context import ContextHint, create_context_from_field_name
 from datadetector.engine import Engine
-from datadetector.models import Category, Severity
+from datadetector.models import Category, Match, Severity
 from datadetector.resource_adapter import ResourceAdapter
 from datadetector.resource_models import (
     ContainerInfo,
@@ -237,7 +237,7 @@ class DataExplorer:
         all_categories: Set[Category] = set()
         all_severities: Set[Severity] = set()
         all_ns_ids: Set[str] = set()
-        all_matches = []
+        all_matches: List[Match] = []
 
         if strategy != ScanStrategy.METADATA_ONLY:
             try:
@@ -333,7 +333,7 @@ class DataExplorer:
     def _analyze_metadata(
         self,
         field_info: FieldInfo,
-    ) -> tuple:
+    ) -> "tuple[float, Optional[ContextHint]]":
         """Score field name/type/description for PII likelihood.
 
         Uses create_context_from_field_name() from context.py to extract
