@@ -1,9 +1,8 @@
-name: CI/CD
+name: CI
 
 on:
   push:
     branches: [ main, develop ]
-    tags: [ 'v*.*.*' ]
     paths:
       - 'src/**'
       - 'tests/**'
@@ -27,21 +26,21 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   syntax-check:
     name: Syntax and Style Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
           token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
@@ -61,37 +60,20 @@ jobs:
         run: mypy src/
 
       - name: Validate Patterns
-        run: python -c "from datadetector import load_registry; load_registry(validate_examples=True); print('✓ All patterns valid')"
-
-      - name: Debug pattern-engine sync
-        run: |
-          echo "=== Submodule commit ==="
-          git -C pattern-engine rev-parse HEAD
-          echo "=== Root repo expected submodule ref ==="
-          git ls-tree HEAD pattern-engine
-          echo "=== Submodule file list (regex/hash/) ==="
-          ls -la pattern-engine/regex/hash/ 2>&1 || echo "directory not found"
-          echo "=== api/pattern-engine file list (regex/hash/) ==="
-          ls -la api/pattern-engine/regex/hash/ 2>&1 || echo "directory not found"
-          echo "=== Diff details ==="
-          diff -r pattern-engine/regex api/pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || true
-          diff -r pattern-engine/verification api/pattern-engine/verification --exclude='.git*' --exclude='__pycache__' || true
+        run: python -c "from datadetector import load_registry; load_registry(validate_examples=True); print('All patterns valid')"
 
       - name: Check api/pattern-engine in sync with submodule
         run: |
           diff -rq pattern-engine/regex api/pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || \
             { echo "ERROR: api/pattern-engine is out of sync with the pattern-engine submodule."; \
-              echo "Run: ./scripts/sync-patterns.sh"; \
-              exit 1; }
+              echo "Run: ./scripts/sync-patterns.sh"; exit 1; }
           diff -rq pattern-engine/verification api/pattern-engine/verification --exclude='.git*' --exclude='__pycache__' || \
             { echo "ERROR: api/pattern-engine/verification is out of sync."; \
-              echo "Run: ./scripts/sync-patterns.sh"; \
-              exit 1; }
+              echo "Run: ./scripts/sync-patterns.sh"; exit 1; }
 
   test:
-    name: Test (${{ matrix.os }}, ${{ matrix.python-version }})
+    name: Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
     needs: syntax-check
-    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -99,14 +81,14 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
           token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
@@ -121,260 +103,73 @@ jobs:
 
       - name: Upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.11'
-        uses: codecov/codecov-action@ab904c41d6ece82784817410c45d8b8c02684457 # v3
+        uses: codecov/codecov-action@v3
         with:
           file: ./coverage.xml
           flags: unittests
-          name: codecov-umbrella
 
-  build:
-    name: Build Package
+  cjk-test:
+    name: CJK Multi-Language Detection
+    needs: syntax-check
     runs-on: ubuntu-latest
-    needs: [syntax-check, test]
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           submodules: true
           token: ${{ secrets.GH_TOKEN || github.token }}
 
       - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          cache: 'pip'
 
-      - name: Install build dependencies
+      - name: Install with NLP dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build twine
+          pip install -e ".[test,nlp]"
 
-      - name: Build package
-        run: python -m build
+      - name: Run CJK pattern tests
+        run: pytest tests/test_cjk_patterns.py tests/test_nlp.py -v --tb=short
 
-      - name: Check package
-        run: twine check dist/*
-
-      - name: Upload build artifacts
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-  docker:
-    name: Build Docker Image
-    runs-on: ubuntu-latest
-    needs: [syntax-check, test]
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          token: ${{ secrets.GH_TOKEN || github.token }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Build Docker image
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: false
-          load: true
-          tags: data-detector:latest
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Test Docker image
+      - name: Run CJK integration tests
         run: |
-          docker run --rm data-detector:latest data-detector --version
+          python -c "
+          from datadetector import Engine, load_registry, NLPConfig
 
-  # ============================================================================
-  # RELEASE PIPELINE (only runs on tag pushes)
-  # ============================================================================
+          reg = load_registry()
+          engine = Engine(reg, nlp_config=NLPConfig(
+              enable_language_detection=True,
+              enable_tokenization=True,
+              enable_korean_particles=True,
+              enable_chinese_segmentation=True,
+          ))
 
-  publish-testpypi:
-    name: Publish to TestPyPI
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [build, docker]
-    runs-on: ubuntu-latest
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/datadetector
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: python-package-distributions
-          path: dist/
+          # Korean: phone with particle
+          r = engine.find('전화번호는 010-1234-5678입니다', namespaces=['kr'])
+          assert r.has_matches, 'Korean phone with particle not detected'
+          print(f'Korean phone: {r.match_count} matches')
 
-      - name: Publish to TestPyPI
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          skip-existing: true
+          # Chinese: mobile number
+          r = engine.find('我的手机号是13812345678', namespaces=['cn'])
+          assert r.has_matches, 'Chinese mobile not detected'
+          print(f'Chinese mobile: {r.match_count} matches')
 
-  test-testpypi:
-    name: Test TestPyPI Package
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [publish-testpypi]
-    runs-on: ubuntu-latest
-    continue-on-error: true  # Don't fail if package already exists on TestPyPI
-    steps:
-      - name: Set up Python
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
-        with:
-          python-version: '3.11'
+          # Japanese: phone number
+          r = engine.find('電話番号は090-1234-5678です', namespaces=['jp'])
+          assert r.has_matches, 'Japanese phone not detected'
+          print(f'Japanese phone: {r.match_count} matches')
 
-      - name: Extract version from tag
-        id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+          # Korean: RRN with particle
+          r = engine.find('주민등록번호는 900101-1234568입니다', namespaces=['kr'])
+          assert r.has_matches, 'Korean RRN with particle not detected'
+          print(f'Korean RRN: {r.match_count} matches')
 
-      - name: Wait for TestPyPI to process package
-        run: sleep 60
+          # Multi-namespace CJK scan
+          text = '이메일: test@example.com 전화: 010-9876-5432'
+          r = engine.find(text, namespaces=['kr', 'comm'])
+          assert r.match_count >= 2, f'Multi-namespace CJK: expected >= 2, got {r.match_count}'
+          print(f'Multi-namespace: {r.match_count} matches')
 
-      - name: Install from TestPyPI
-        id: install
-        continue-on-error: true
-        run: |
-          python -m pip install --upgrade pip
-          # Install dependencies from PyPI first to avoid broken TestPyPI packages
-          pip install pyyaml jsonschema click fastapi pydantic starlette uvicorn grpcio protobuf
-          # Then install data-detector from TestPyPI (no deps to avoid conflicts)
-          pip install --index-url https://test.pypi.org/simple/ \
-            --no-deps \
-            data-detector==${{ steps.version.outputs.VERSION }}
-
-      - name: Test installed package
-        if: steps.install.outcome == 'success'
-        run: |
-          python -c "import datadetector; print(datadetector.__version__)"
-          data-detector --version
-          data-detector list-patterns
-
-      - name: Run basic functional test
-        if: steps.install.outcome == 'success'
-        run: |
-          echo "test@example.com" | data-detector find --text -
-
-      - name: TestPyPI test skipped
-        if: steps.install.outcome != 'success'
-        run: |
-          echo "⚠️  TestPyPI installation failed or version already exists"
-          echo "Continuing to PyPI publish..."
-
-  publish-pypi:
-    name: Publish to PyPI
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [test-testpypi]
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/datadetector
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Publish to PyPI
-        uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # release/v1
-        with:
-          password: ${{ secrets.PYPI_API_TOKEN }}
-          skip-existing: true
-
-  github-release:
-    name: Create GitHub Release
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [publish-pypi]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          token: ${{ secrets.GH_TOKEN || github.token }}
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Create complete source archive
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          FILENAME="data-detector-${VERSION}-full.tar.gz"
-          # Create tarball in runner temp to avoid "file changed as we read it" error
-          tar -czf "${RUNNER_TEMP}/$FILENAME" --exclude='.git*' .
-          mv "${RUNNER_TEMP}/$FILENAME" .
-          echo "FILENAME=$FILENAME" >> $GITHUB_ENV
-
-      - name: Generate changelog
-        id: changelog
-        run: |
-          echo "## Changes" > CHANGELOG.md
-          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          if [ -z "$PREV_TAG" ]; then
-            echo "Initial release" >> CHANGELOG.md
-          else
-            git log ${PREV_TAG}..HEAD --pretty=format:"- %s" >> CHANGELOG.md
-          fi
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
-        with:
-          files: |
-            dist/*
-            ${{ env.FILENAME }}
-          body_path: CHANGELOG.md
-          draft: false
-          prerelease: false
-
-  docker-release:
-    name: Build and Push Docker Image
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [github-release]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
-        with:
-          fetch-depth: 0
-          submodules: true
-          token: ${{ secrets.GH_TOKEN || github.token }}
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}  # Use Docker Hub Access Token, not password
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@c299e40c65443455700f0fdfc63efafe5b349051 # v5
-        env:
-          DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
-        with:
-          images: ${{ env.DOCKER_USER }}/data-detector
-          tags: |
-            type=semver,pattern={{version}}
-            type=raw,value=latest
-
-      - name: Build and push
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5
-        with:
-          context: .
-          file: docker/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          print('All CJK integration tests passed')
+          "

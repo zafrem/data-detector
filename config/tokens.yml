@@ -82,10 +82,10 @@ patterns:
     priority: 1
     mask: "ghp_************************************"
     examples:
-      match:  # NOSONAR — synthetic test tokens, not real credentials
-        - "ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T1u2V3w4X5y6Z"
-        - "gho_Qz7Xe4Lp2F9Wc6R12eN77T0cK38U47AeS78B4aWk9LpNm"
-        - "ghu_Rm5Yf8Mq3G9Xd7R23fH88V0dK49T58BfZ89C5bXn0MqJw"
+      match:
+        - "ghp_Tf8k2Lm9Xp4Qr7Wn1Yv6Bj3Hd0Gs5Uc8Eo2Ai"
+        - "gho_Kw3Nz7Rf1Xp5Ym9Tq4Uc8Lj2Bv6Hd0Gs5Eo1Ai"
+        - "ghu_Mj4Qr8Tf2Xp6Yn0Wk3Uc9Lv7Bh1Gs5Ed0Ai2Rn"
       nomatch:
         - "ghp_short"
         - "github_token_123"
