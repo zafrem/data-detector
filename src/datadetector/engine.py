@@ -2,7 +2,7 @@
 
 import hashlib
 import logging
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
     from datadetector.fake_generator import FakeDataGenerator
@@ -14,6 +14,8 @@ from datadetector.models import (
     Match,
     RedactionResult,
     RedactionStrategy,
+    ScoringConfig,
+    TransformerConfig,
     ValidationResult,
 )
 from datadetector.nlp import NLPConfig, NLPProcessor
@@ -57,6 +59,8 @@ class Engine:
         keyword_registry: Optional[KeywordRegistry] = None,
         enable_context_filtering: bool = True,
         nlp_config: Optional[NLPConfig] = None,
+        transformer_config: Optional[TransformerConfig] = None,
+        scoring_config: Optional[ScoringConfig] = None,
     ) -> None:
         """
         Initialize engine with pattern registry.
@@ -71,10 +75,16 @@ class Engine:
                                     Set to False to disable the feature entirely.
             nlp_config: Optional NLP configuration for language detection, tokenization,
                        and stopword filtering. If None, NLP features are disabled.
+            transformer_config: Optional Transformer config for NER detection (Way 1)
+                              and ML context classification (Way 2). Requires:
+                              pip install data-detector[transformer]
+            scoring_config: Optional scoring weights and thresholds. Controls initial
+                          scores, keyword boosts, ML weights, and min_score filtering.
         """
         self.registry = registry
         self.default_mask_char = default_mask_char
         self.hash_algorithm = hash_algorithm
+        self.scoring = scoring_config or ScoringConfig()
 
         # Context filtering support
         self.enable_context_filtering = enable_context_filtering
@@ -93,8 +103,34 @@ class Engine:
         if nlp_config and nlp_config.is_enabled():
             self.nlp_processor = NLPProcessor(nlp_config)
 
-        # Context Analysis (Pipeline Step 3)
-        self.analyzer = ContextAnalyzer()
+        # Context Analysis (Pipeline Step 3) -- pass transformer config for Way 2
+        self.analyzer = ContextAnalyzer(
+            transformer_config=transformer_config,
+            scoring_config=self.scoring,
+        )
+
+        # NER Detection (Way 1) -- lazy-loaded
+        self.transformer_config = transformer_config
+        self._ner_detector: Any = None  # None=not loaded, False=failed
+
+    def _get_ner_detector(self) -> Any:
+        """Lazy-load the Transformer NER detector. Returns None if unavailable."""
+        if self._ner_detector is not None:
+            return self._ner_detector if self._ner_detector is not False else None
+
+        if not self.transformer_config or not self.transformer_config.is_ner_enabled():
+            self._ner_detector = False
+            return None
+
+        try:
+            from datadetector.transformer_ner import TransformerNERDetector
+
+            self._ner_detector = TransformerNERDetector(self.transformer_config)
+            return self._ner_detector
+        except ImportError:
+            logger.debug("transformer_ner not available, NER detection disabled")
+            self._ner_detector = False
+            return None
 
     def find(
         self,
@@ -194,13 +230,16 @@ class Engine:
                     matched_value = text[start:end]
 
                 # Apply verification function if specified
-                if pattern.verification_func is not None:
+                has_verification = pattern.verification_func is not None
+                passed_verification = False
+                if has_verification:
                     if not pattern.verification_func(matched_value):
                         logger.debug(
                             f"Pattern {pattern.full_id} matched but failed "
                             f"verification: {matched_value}"
                         )
                         continue
+                    passed_verification = True
 
                 # Check for overlaps if not allowed
                 if not allow_overlaps:
@@ -214,6 +253,12 @@ class Engine:
                 if include_matched_text and pattern.policy.store_raw:
                     matched_text = matched_value
 
+                # Verified matches start at higher confidence
+                initial_score = (
+                    self.scoring.initial_verified if passed_verification
+                    else self.scoring.initial_unverified
+                )
+
                 match = Match(
                     ns_id=pattern.full_id,
                     pattern_id=pattern.id,
@@ -224,6 +269,8 @@ class Engine:
                     matched_text=matched_text,
                     mask=pattern.mask,
                     severity=pattern.policy.severity,
+                    score=initial_score,
+                    verified=passed_verification,
                 )
                 matches.append(match)
 
@@ -255,10 +302,38 @@ class Engine:
                     resolved_matches.append(m)
             matches = resolved_matches
 
+        # Step 2.75: NER Detection (Way 1 - Transformer)
+        # Run NER model alongside regex to find entities regex might miss.
+        # Skip if we already found matches in stop_on_first_match mode.
+        if not (stop_on_first_match and matches):
+            ner_detector = self._get_ner_detector()
+            if ner_detector:
+                ner_matches = ner_detector.detect(text)
+                for nm in ner_matches:
+                    overlapping = [
+                        m for m in matches
+                        if self._spans_overlap((nm.start, nm.end), (m.start, m.end))
+                    ]
+                    if not overlapping or allow_overlaps:
+                        # NER found something regex missed -- add it
+                        matches.append(nm)
+                    else:
+                        # NER and regex agree on the same span -- boost regex score
+                        for m in overlapping:
+                            m.context_evidence.append(
+                                f"NER-corroboration:{nm.category.value}"
+                            )
+                            m.score = min(0.99, m.score + self.scoring.ner_corroboration_boost)
+                            m.detection_method = "regex+ner"
+
         # Step 3: Context Analysis
-        # Analyze surrounding text to boost confidence using keywords (and future ML/LLM)
+        # Analyze surrounding text to boost confidence using keywords and ML classifier
         if self.analyzer:
             matches = self.analyzer.analyze(text, matches)
+
+        # Step 4: min_score filtering
+        if self.scoring.min_score > 0:
+            matches = [m for m in matches if m.score >= self.scoring.min_score]
 
         # Sort matches by position
         matches.sort(key=lambda m: (m.start, m.end))

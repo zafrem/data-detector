@@ -2,7 +2,7 @@
 
 import pytest
 
-from datadetector import Engine, load_registry
+from datadetector import Engine, ScoringConfig, load_registry
 from datadetector.models import RedactionStrategy
 
 
@@ -14,8 +14,8 @@ def registry():
 
 @pytest.fixture
 def engine(registry):
-    """Create engine instance."""
-    return Engine(registry)
+    """Create engine instance. Disable placeholder filtering for test data."""
+    return Engine(registry, scoring_config=ScoringConfig(filter_placeholders=False))
 
 
 class TestFind:

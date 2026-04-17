@@ -638,11 +638,29 @@ def _get_engine():
     if _engine_instance is None:
         try:
             from datadetector.engine import Engine
-            from datadetector.models import RedactionStrategy  # noqa: F401
+            from datadetector.models import RedactionStrategy, TransformerConfig  # noqa: F401
             from datadetector.registry import load_registry
 
             registry = load_registry(validate_examples=False)
-            _engine_instance = Engine(registry)
+
+            # Transformer config from environment variables
+            transformer_config = None
+            enable_ner = os.environ.get("DD_ENABLE_NER") == "1"
+            enable_ctx = os.environ.get("DD_ENABLE_CONTEXT_ML") == "1"
+            if enable_ner or enable_ctx:
+                transformer_config = TransformerConfig(
+                    enable_ner=enable_ner,
+                    ner_model=os.environ.get("DD_NER_MODEL", "dslim/bert-base-NER"),
+                    enable_context_classifier=enable_ctx,
+                    context_model=os.environ.get(
+                        "DD_CONTEXT_MODEL", "facebook/bart-large-mnli"
+                    ),
+                    binary_model_path=os.environ.get("DD_BINARY_MODEL_PATH", ""),
+                    category_model_path=os.environ.get("DD_CATEGORY_MODEL_PATH", ""),
+                    device=os.environ.get("DD_DEVICE", "cpu"),
+                )
+
+            _engine_instance = Engine(registry, transformer_config=transformer_config)
         except Exception as e:
             import traceback
 

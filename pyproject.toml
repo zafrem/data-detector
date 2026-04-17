@@ -88,6 +88,11 @@ nlp = [
 re2 = [
     "google-re2>=1.1",
 ]
+transformer = [
+    "transformers>=4.30.0",
+    "torch>=2.0.0",
+    "accelerate>=0.20.1",
+]
 database = [
     "sqlalchemy>=2.0.0",
 ]
@@ -179,6 +184,9 @@ module = [
     "jieba.*",
     "sudachipy",
     "re2",
+    "transformers",
+    "transformers.*",
+    "torch",
     "chromadb",
     "datasets",
     "confluent_kafka",

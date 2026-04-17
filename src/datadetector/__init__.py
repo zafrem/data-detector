@@ -29,7 +29,7 @@ from datadetector.fake_file_generators import (
     XMLGenerator,
 )
 from datadetector.fake_generator import FakeDataGenerator
-from datadetector.models import FindResult, RedactionResult, ValidationResult
+from datadetector.models import FindResult, RedactionResult, ScoringConfig, TransformerConfig, ValidationResult
 from datadetector.nlp import (
     ChineseTokenizer,
     KoreanTokenizer,
@@ -78,6 +78,7 @@ from datadetector.resource_models import (
     ScanStrategy,
 )
 from datadetector.stream_engine import StreamEngine
+from datadetector.transformer_ner import TransformerNERDetector
 from datadetector.tokenization import SecureTokenizer
 from datadetector.utils.yaml_utils import (
     PatternFileHandler,
@@ -131,6 +132,11 @@ __all__ = [
     "SeverityLevel",
     "RAGPolicyConfig",
     "load_rag_policy",
+    # Transformer NLP
+    "TransformerConfig",
+    # Scoring
+    "ScoringConfig",
+    "TransformerNERDetector",
     # Regex engine configuration
     "RegexEngine",
     "set_engine",

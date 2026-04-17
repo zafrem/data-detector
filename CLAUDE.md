@@ -131,7 +131,23 @@ make docker-run
    - Configurable via `set_engine(RegexEngine.STANDARD|RE2|AUTO)`
    - Handles Unicode/CJK pattern transformations automatically
 
-7. **Vercel API** (`api/index.py`)
+7. **Context Analysis** (`src/datadetector/analysis.py`)
+   - Pipeline Step 3: scores regex matches using surrounding context
+   - Step 3a: Keyword proximity scoring (anchor keywords within ±60 chars)
+   - Step 3b: ML context classification using fine-tuned DistilBERT models
+     - Binary classifier (PII vs non-PII): boosts/penalizes match scores
+     - Category classifier (21 PII types): validates regex category assignment
+   - Step 3c: LLM check (reserved for future use)
+   - Models auto-discovered from `pattern-engine-ml/models/transformer/`
+   - Training code: `src/datadetector/training/train_pii_classifier.py`
+   - Data generation: `pattern-engine-ml/generate_data.py`
+
+8. **Transformer NER Detector** (`src/datadetector/transformer_ner.py`)
+   - Complementary detection using HuggingFace NER models (Way 1)
+   - Creates new matches for entities regex might miss (e.g., person names)
+   - Maps NER labels to data-detector Category enum
+
+9. **Vercel API** (`api/index.py`)
    - Serverless FastAPI app for Vercel deployment
    - Endpoints: detect, validate, mask, fake (with change counts)
    - HMAC-based stateless API key auth with embedded system name
@@ -140,7 +156,7 @@ make docker-run
    - Logs endpoint with system/event filtering
    - See `docs/vercel-api.md` for full documentation
 
-8. **Resource Scanning** (`src/datadetector/data_explorer.py`, `data_inventory.py`, `data_lineage.py`)
+10. **Resource Scanning** (`src/datadetector/data_explorer.py`, `data_inventory.py`, `data_lineage.py`)
    
    The resource scanning system follows a three-stage pipeline designed so that each stage can be used independently or linked together:
    
@@ -179,14 +195,19 @@ The engine processes text through these steps:
    - Apply context filtering to select relevant patterns
    - Sort patterns by priority (lower number = higher priority)
    - Run regex matching on preprocessed text
-   - Apply verification functions
+   - Apply verification functions → `verified=True` gets score 0.95, else 0.50
    - Handle overlaps based on `allow_overlaps` flag
 
-3. **Context Analysis**:
-   - Analyze surrounding text for confidence boosting
-   - Use keyword analysis to validate matches
+3. **Context Analysis** (`analysis.py`):
+   - 3a. Keyword proximity check: boost score if anchor keywords near match (configurable via `ScoringConfig`)
+   - 3b. ML context check (if `TransformerConfig.enable_context_classifier=True`):
+     - Binary classifier: boost/penalize score (skipped for verified matches)
+     - Category classifier: validate regex category matches ML prediction
+   - 3c. LLM check (reserved for future)
 
-4. **Post-processing**:
+4. **Post-pipeline Filtering**:
+   - `min_score`: drop matches below threshold (`ScoringConfig.min_score`)
+   - `filter_placeholders`: remove test/placeholder data (`ScoringConfig.filter_placeholders`)
    - Map positions back to original text
    - Sort matches by position
    - Return FindResult/RedactionResult
@@ -222,7 +243,7 @@ patterns:
 
 ### Pattern Loading
 - Default patterns loaded from `pattern-engine/regex/pii/{country}/`
-- Countries supported: common, us, kr, cn, jp, tw, in, eu, iban
+- Countries supported: common, us, kr, cn, jp, tw, in, eu, es, fr, iban
 - Custom patterns can be loaded via `load_registry(paths=["path/to/patterns.yml"])`
 - Patterns are validated against JSON schema at `schemas/pattern-schema.json`
 
@@ -271,6 +292,35 @@ engine = Engine(registry, nlp_config=nlp_config)
 
 # Detects PII with particles: "전화번호는 010-1234-5678입니다"
 results = engine.find(text, namespaces=["kr"])
+```
+
+### ML-Enhanced Detection (Transformer Classifiers)
+```python
+from datadetector import Engine, load_registry
+from datadetector.models import TransformerConfig
+
+# Enable ML context classification (models auto-discovered from pattern-engine)
+config = TransformerConfig(enable_context_classifier=True)
+engine = Engine(load_registry(), transformer_config=config)
+
+results = engine.find("My phone is 010-1234-5678")
+# Scores refined by binary PII classifier + category classifier
+```
+
+### Configurable Scoring
+```python
+from datadetector import Engine, ScoringConfig, load_registry
+
+# High-precision: only keep confident matches, reduce keyword influence
+scoring = ScoringConfig(
+    min_score=0.7,
+    keyword_pre_close_boost=0.20,
+    filter_placeholders=True,  # default: filters test data
+)
+engine = Engine(load_registry(), scoring_config=scoring)
+
+results = engine.find("Phone: 010-1234-5678", namespaces=["kr"])
+# Verified matches (Luhn, checksum) start at 0.95 and skip ML binary classifier
 ```
 
 ### Context-Aware Filtering
@@ -339,6 +389,9 @@ data-detector list-patterns --ns kr
 
 # Start REST API server
 data-detector serve --port 8080
+
+# Restore tokenized PII (separate CLI entry point)
+data-detector-restore-tokens
 ```
 
 ## Performance Optimization

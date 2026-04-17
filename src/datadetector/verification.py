@@ -61,6 +61,7 @@ from verification.python.verification import (  # noqa: E402
     crypto_btc_valid,
     crypto_eth_valid,
     dms_coordinate,
+    english_name_valid,
     finland_hetu_valid,
     france_insee_valid,
     generic_number_not_timestamp,
@@ -154,6 +155,7 @@ for func_name in [
     "google_api_key_valid",
     "crypto_btc_valid",
     "crypto_eth_valid",
+    "english_name_valid",
 ]:
     _func = globals().get(func_name)
     if _func:
@@ -209,6 +211,7 @@ __all__ = [
     "google_api_key_valid",
     "crypto_btc_valid",
     "crypto_eth_valid",
+    "english_name_valid",
     "get_verification_function",
     "register_verification_function",
     "unregister_verification_function",

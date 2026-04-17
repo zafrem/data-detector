@@ -116,7 +116,9 @@ class Match:
     mask: Optional[str] = None
     severity: Severity = Severity.MEDIUM
     score: float = 0.5  # Confidence score (0.0-1.0)
+    verified: bool = False  # True if passed a verification function (Luhn, checksum, etc.)
     context_evidence: List[str] = field(default_factory=list)  # Found context keywords
+    detection_method: str = "regex"  # "regex", "ner", or "regex+ner" for merged
 
     @property
     def span(self) -> Tuple[int, int]:
@@ -162,3 +164,71 @@ class RedactionResult:
     strategy: RedactionStrategy
     matches: List[Match] = field(default_factory=list)
     redaction_count: int = 0
+
+
+@dataclass
+class ScoringConfig:
+    """Configuration for PII detection weights and scoring."""
+
+    # Initial scores
+    initial_verified: float = 0.95
+    initial_unverified: float = 0.50
+
+    # Keyword proximity boosts
+    keyword_window: int = 60
+    # Before match
+    keyword_pre_close_boost: float = 0.45  # < 10 chars
+    keyword_pre_far_boost: float = 0.30    # < 30 chars
+    keyword_pre_weak_boost: float = 0.10   # > 30 chars
+    # After match
+    keyword_post_close_boost: float = 0.40  # < 10 chars
+    keyword_post_far_boost: float = 0.25    # < 30 chars
+    keyword_post_weak_boost: float = 0.10   # > 30 chars
+
+    # ML weights (TransformerConfig also has some, but we consolidate logic here)
+    ml_category_boost: float = 0.15
+    ner_corroboration_boost: float = 0.15
+
+    # Filtering
+    min_score: float = 0.0  # Filter results below this score
+    filter_placeholders: bool = True  # Filter out test/placeholder data (010-1234-5678, test@example.com)
+
+
+@dataclass
+class TransformerConfig:
+    """Configuration for Transformer-based detection features."""
+
+    # Way 1: NER-based detection
+    enable_ner: bool = False
+    ner_model: str = "dslim/bert-base-NER"
+    ner_confidence_threshold: float = 0.7
+    ner_score: float = 0.6
+
+    # Way 2: Context classification
+    enable_context_classifier: bool = False
+    context_model: str = "facebook/bart-large-mnli"
+    context_window_chars: int = 100
+    context_confidence_threshold: float = 0.5
+    context_max_boost: float = 0.35
+    context_penalty: float = 0.2
+
+    # Fine-tuned model paths (use local models instead of generic zero-shot)
+    # Set these after running: python -m datadetector.training.train_pii_classifier
+    binary_model_path: str = ""    # Path to fine-tuned binary PII classifier
+    category_model_path: str = ""  # Path to fine-tuned category classifier
+
+    # Shared settings
+    device: str = "cpu"
+    batch_size: int = 8
+
+    def is_ner_enabled(self) -> bool:
+        """Check if NER detection is enabled."""
+        return self.enable_ner
+
+    def is_context_enabled(self) -> bool:
+        """Check if context classification is enabled."""
+        return self.enable_context_classifier
+
+    def is_enabled(self) -> bool:
+        """Check if any transformer feature is enabled."""
+        return self.enable_ner or self.enable_context_classifier

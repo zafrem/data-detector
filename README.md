@@ -96,6 +96,61 @@ pip install data-detector[nlp]
 
 See [NLP Features Documentation](docs/nlp-features.md) for more details.
 
+### ML-Enhanced Detection (Transformer Classifiers)
+
+Boost detection accuracy with fine-tuned DistilBERT classifiers that validate regex matches:
+
+```python
+from datadetector import Engine, load_registry
+from datadetector.models import TransformerConfig
+
+config = TransformerConfig(enable_context_classifier=True)
+engine = Engine(load_registry(), transformer_config=config)
+
+results = engine.find("My SSN is 123-45-6789")
+# Binary classifier confirms PII, category classifier validates type
+# Scores are boosted/penalized based on ML confidence
+```
+
+| Model | Task | Accuracy | F1 |
+|:------|:-----|:---------|:---|
+| Binary Classifier | PII vs Non-PII | 96.2% | 96.9% |
+| Category Classifier | 21 PII types | 87.9% | 86.5% |
+
+Install Transformer dependencies:
+```bash
+pip install data-detector[transformer]
+```
+
+See [Context Analysis Guide](docs/guides/context-analysis.md) for details.
+
+### Configurable Scoring (ScoringConfig)
+
+Fine-tune detection sensitivity by adjusting scoring weights, initial scores, and filtering thresholds:
+
+```python
+from datadetector import Engine, ScoringConfig, load_registry
+
+# High-precision mode: only keep confident matches
+scoring = ScoringConfig(
+    min_score=0.7,                   # Drop low-confidence matches
+    keyword_pre_close_boost=0.20,    # Reduce keyword influence
+    filter_placeholders=True,        # Remove test data (default)
+)
+engine = Engine(load_registry(), scoring_config=scoring)
+
+results = engine.find("Phone: 010-1234-5678", namespaces=["kr"])
+for m in results.matches:
+    print(f"{m.category.value}: score={m.score:.3f}, verified={m.verified}")
+```
+
+Key features:
+- **Verified matches** (Luhn, checksum) start at score 0.95 and skip ML binary classifier
+- **min_score filtering** drops matches below a configurable threshold
+- **Placeholder filtering** automatically removes test data like `010-1234-5678`
+
+See [Context Analysis Guide](docs/guides/context-analysis.md) for the full parameter reference.
+
 ### Resource Scanning: Search > Inventory > Lineage
 
 Data Detector provides a three-stage pipeline for securing structured data resources. Each stage can be used independently or linked together:
@@ -258,7 +313,7 @@ For detailed guides and references, please see the following:
 
 - **Guides**: [Quick Start](docs/quickstart.md) | [Architecture](docs/ARCHITECTURE.md) | [Configuration](docs/configuration.md)
 - **Patterns**: [Supported Patterns](docs/supported-patterns.md) | [Custom Patterns](docs/custom-patterns.md) | [Pattern Structure](docs/patterns.md)
-- **Features**: [NLP Processing](docs/nlp-features.md) | [Resource Scanning](docs/guides/resource-scanning.md) | [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
+- **Features**: [NLP Processing](docs/nlp-features.md) | [ML Context Analysis](docs/guides/context-analysis.md) | [Resource Scanning](docs/guides/resource-scanning.md) | [Fake Data Generation](docs/yaml_utilities.md) | [RAG Security](docs/rag-integration.md) | [Verification Functions](docs/verification.md)
 - **API**: [API Reference](docs/api-reference.md)
 
 ## CI/CD Integration

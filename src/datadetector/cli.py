@@ -11,7 +11,7 @@ import yaml
 
 from datadetector import __version__
 from datadetector.engine import Engine
-from datadetector.models import RedactionStrategy
+from datadetector.models import RedactionStrategy, TransformerConfig
 from datadetector.registry import load_registry
 
 
@@ -84,6 +84,16 @@ def main(ctx: click.Context, verbose: bool) -> None:
     default="skip",
     help="Action when matches found: 'exit' (fail/non-zero code) or 'skip' (pass/zero code)",
 )
+@click.option(
+    "--ml-context",
+    is_flag=True,
+    help="Enable ML-based context classification (improves precision)",
+)
+@click.option(
+    "--ner",
+    is_flag=True,
+    help="Enable Transformer-based NER detection (improves recall)",
+)
 @click.pass_context
 def find(
     ctx: click.Context,
@@ -95,6 +105,8 @@ def find(
     include_text: bool,
     first_only: bool,
     on_match: str,
+    ml_context: bool,
+    ner: bool,
 ) -> None:
     """Find PII in text or file."""
     # Load text
@@ -110,8 +122,16 @@ def find(
     pattern_paths = [str(p) for p in patterns] if patterns else None
     registry = load_registry(paths=pattern_paths)
 
+    # Configure Transformer features
+    transformer_config = None
+    if ml_context or ner:
+        transformer_config = TransformerConfig(
+            enable_context_classifier=ml_context,
+            enable_ner=ner
+        )
+
     # Create engine and find
-    engine = Engine(registry)
+    engine = Engine(registry, transformer_config=transformer_config)
     ns_list = list(namespaces) if namespaces else None
     result = engine.find(
         text, namespaces=ns_list, include_matched_text=include_text, stop_on_first_match=first_only
@@ -151,6 +171,9 @@ def find(
                 f"  {match.ns_id} ({match.category.value}) at {match.start}-{match.end}"
                 f" [severity: {match.severity.value}] [score: {match.score:.2f}]{text_preview}"
             )
+            if match.context_evidence:
+                for evidence in match.context_evidence:
+                    click.echo(f"    - {evidence}")
 
     # Handle exit mode
     if result.match_count > 0 and on_match == "exit":

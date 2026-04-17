@@ -46,6 +46,14 @@ The following diagram illustrates the high-level layers of the Data Detector sys
 │  │  │ Pattern    │ │  Policy    │ │ Match/Result   │      │  │
 │  │  │ (dataclass)│ │(dataclass) │ │   Models       │      │  │
 │  │  └────────────┘ └────────────┘ └────────────────┘      │  │
+│  │  ┌──────────────────────────────────────────────┐      │  │
+│  │  │ ScoringConfig                                │      │  │
+│  │  │ (weights, thresholds, min_score, filtering)  │      │  │
+│  │  └──────────────────────────────────────────────┘      │  │
+│  │  ┌──────────────────────────────────────────────┐      │  │
+│  │  │ TransformerConfig                            │      │  │
+│  │  │ (NER, context classifier, fine-tuned models) │      │  │
+│  │  └──────────────────────────────────────────────┘      │  │
 │  └────────────────────────────────────────────────────────┘  │
 │                                                              │
 │  ┌────────────────────────────────────────────────────────┐  │
@@ -134,7 +142,7 @@ The Interface Layer is the entry point for all user interactions. It supports th
 
 ### 2. Core Engine Layer
 
-The Core Engine is the heart of Data Detector. It contains the business logic for finding, validating, and redacting data. It uses a 3-step pipeline: Regex Matching -> Verification -> Context Analysis.
+The Core Engine is the heart of Data Detector. It contains the business logic for finding, validating, and redacting data. It uses a 4-step pipeline: Regex Matching -> Verification -> Context Analysis -> Post-pipeline Filtering.
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -146,9 +154,12 @@ The Core Engine is the heart of Data Detector. It contains the business logic fo
 │  │ 1. Get patterns from registry              │          │
 │  │ 2. Apply each pattern to text (Regex)      │          │
 │  │ 3. Run verification functions (Logic)      │          │
-│  │ 4. Apply Context Analysis (Scoring)        │◄── NEW!  │
-│  │ 5. Collect matches with metadata           │          │
-│  │ 6. Return FindResult                       │          │
+│  │    → verified=True: score=0.95             │          │
+│  │    → unverified:    score=0.50             │          │
+│  │ 4. Apply Context Analysis (Scoring)        │          │
+│  │ 5. Post-pipeline: min_score + placeholder  │          │
+│  │ 6. Collect matches with metadata           │          │
+│  │ 7. Return FindResult                       │          │
 │  └────────────────────────────────────────────┘          │
 │                                                          │
 │  validate(text, pattern_id)                              │
@@ -175,11 +186,63 @@ The Core Engine is the heart of Data Detector. It contains the business logic fo
 │      PatternRegistry         │  │     ContextAnalyzer         │
 │ - Pattern compilation/cache  │  │ - Proximity Scoring         │
 │ - Namespace organization     │  │ - Keyword/Anchor detection  │
-│ - Verification func registry │  │ - Window-based analysis     │
-└──────────────────────────────┘  └─────────────────────────────┘
+│ - Verification func registry │  │ - ML: Binary PII classifier │
+└──────────────────────────────┘  │ - ML: Category classifier   │
+                                  └─────────────────────────────┘
 ```
 
-The `PatternRegistry` handles pattern loading, while the `ContextAnalyzer` provides the intelligence to score matches based on their surrounding context.
+The `PatternRegistry` handles pattern loading, while the `ContextAnalyzer` provides the intelligence to score matches based on their surrounding context using keywords and fine-tuned Transformer classifiers.
+
+#### Context Analysis Detail
+
+The `ContextAnalyzer` runs a 3-step pipeline on every regex match:
+
+```
+Step 3a: Keyword Check     — proximity-based anchor scoring (±60 chars)
+Step 3b: ML Context Check  — fine-tuned Transformer classifiers
+Step 3c: LLM Check         — (reserved for future use)
+```
+
+**Step 3b** uses two DistilBERT models stored in `pattern-engine-ml/models/transformer/`:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│          ML Context Check (Fine-tuned Mode)              │
+│                                                          │
+│  For each regex match:                                   │
+│    matched_text = text[start:end]                        │
+│                                                          │
+│  ┌────────────────────────────────────────────┐          │
+│  │  Model 1: Binary Classifier                │          │
+│  │  (DistilBERT — "pii" vs "non_pii")         │          │
+│  │                                            │          │
+│  │  ⚠ SKIPPED if match.verified=True          │          │
+│  │  (Luhn/checksum already confirmed)         │          │
+│  │                                            │          │
+│  │  if pii  AND conf > 0.5 → boost +0.35*conf│          │
+│  │  if non_pii AND conf > 0.5 → penalty -0.2 │          │
+│  │  Score clamped to [0.01, 0.99]             │          │
+│  └────────────────────────────────────────────┘          │
+│                                                          │
+│  ┌────────────────────────────────────────────┐          │
+│  │  Model 2: Category Classifier              │          │
+│  │  (DistilBERT — 21 PII categories)           │          │
+│  │                                            │          │
+│  │  if ML cat == regex cat AND conf > 0.5     │          │
+│  │    → boost +0.15*conf                      │          │
+│  │  if ML cat != regex cat AND conf > 0.7     │          │
+│  │    → log mismatch (no score change)        │          │
+│  └────────────────────────────────────────────┘          │
+│                                                          │
+│  Models auto-discovered from:                            │
+│    pattern-engine-ml/models/transformer/                        │
+│      binary_classifier/   (model.safetensors ~256MB)     │
+│      category_classifier/ (model.safetensors ~256MB)     │
+└──────────────────────────────────────────────────────────┘
+```
+
+Training code: `src/datadetector/training/train_pii_classifier.py`
+Data generation: `pattern-engine-ml/generate_data.py`
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -255,14 +318,30 @@ User Request (CLI/API/Server)
 │ - Luhn check      │
 │ - IBAN Mod-97     │
 │ - Custom funcs    │
+│ → verified=True:  │
+│   score=0.95      │
+│ → unverified:     │
+│   score=0.50      │
 └────────┬──────────┘
          │
          ▼
 ┌───────────────────┐
 │ Context Analysis  │
-│ - Load keywords   │
-│ - Check proximity │
-│ - Calculate Score │
+│ a. Keyword check  │
+│ b. ML classifiers │
+│    - Binary (PII?)│
+│      (skip if     │
+│       verified)   │
+│    - Category     │
+│ c. LLM (reserved) │
+└────────┬──────────┘
+         │
+         ▼
+┌───────────────────┐
+│ Post-pipeline     │
+│ - min_score filter│
+│ - Placeholder     │
+│   detection       │
 └────────┬──────────┘
          │
          ▼
@@ -684,12 +763,16 @@ data-detector/
 │   ├── __init__.py          # Public API exports
 │   ├── engine.py            # Core Engine class
 │   ├── registry.py          # PatternRegistry & load_registry
-│   ├── models.py            # Data models (Pattern, Policy, Results)
+│   ├── models.py            # Data models (Pattern, Policy, Results, ScoringConfig)
+│   ├── analysis.py          # Context Analysis (keyword scoring + ML classifiers)
 │   ├── nlp.py               # NLP processor (Korean/Chinese/Japanese)
 │   ├── context.py           # Context-aware filtering
 │   ├── utils/
 │   │   └── yaml_utils.py    # YAML utilities
 │   ├── verification.py      # Verification functions (Luhn, IBAN)
+│   ├── transformer_ner.py   # Transformer NER detector (Way 1)
+│   ├── training/
+│   │   └── train_pii_classifier.py  # Fine-tune binary + category models
 │   ├── cli.py               # Click CLI implementation
 │   ├── server.py            # HTTP/gRPC server
 │   │
@@ -709,11 +792,19 @@ data-detector/
 │       └── training_data.py # TrainingDataAdapter (JSONL/HuggingFace)
 │
 ├── pattern-engine/          # Git submodule with pattern definitions
-│   └── regex/pii/           # PII patterns by country
-│       ├── common/          # Cross-country patterns
-│       ├── kr/              # Korean patterns
-│       ├── us/              # US patterns
-│       └── ...              # Other countries
+│   ├── regex/pii/           # PII patterns by country
+│   │   ├── common/          # Cross-country patterns
+│   │   ├── kr/              # Korean patterns
+│   │   ├── us/              # US patterns
+│   │   └── ...              # Other countries
+│   └── ml/
+│       ├── generate_data.py # Training data generation
+│       ├── model.py         # sklearn model definitions
+│       ├── train.py         # sklearn training script
+│       ├── predict.py       # sklearn inference
+│       └── models/transformer/  # Fine-tuned DistilBERT models (gitignored)
+│           ├── binary_classifier/   # PII vs non-PII
+│           └── category_classifier/ # 21 PII category types
 │
 ├── tests/
 │   ├── test_engine.py
