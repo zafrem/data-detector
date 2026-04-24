@@ -8,6 +8,8 @@ on:
     paths:
       - 'src/**'
       - 'pii-pattern-engine/**'
+      - 'pii-ml-engine/**'
+      - 'pii-llm-engine/**'
       - '.github/workflows/pii-scan.yml'
   workflow_dispatch: # Allow manual trigger
 

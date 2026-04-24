@@ -111,7 +111,7 @@ _DATA_CACHE: Dict[str, Set[str]] = {}
 
 def _get_data_path() -> Path:
     """Determine data directory path."""
-    # Data is in pattern-engine/datas/
+    # Data is in pii-pattern-engine/datas/
     return Path(__file__).parent.parent.parent / "datas"
 
 

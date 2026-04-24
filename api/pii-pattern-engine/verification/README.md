@@ -15,7 +15,7 @@ verification/
 ├── golang/             # Go implementation
 │   └── verification.go # Verification functions
 └── java/               # Java implementation
-    └── src/main/java/com/patternengine/verification/Verification.java
+    └── src/main/java/com/piipatternengine/verification/Verification.java
 ```
 
 ## Python Verification Functions
@@ -98,7 +98,7 @@ if verification.HighEntropyToken("ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T")
 ### Java
 
 ```java
-import com.patternengine.verification.Verification;
+import com.piipatternengine.verification.Verification;
 
 if (Verification.highEntropyToken("ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T")) {
     System.out.println("Valid high-entropy token");
