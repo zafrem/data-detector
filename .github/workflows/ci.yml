@@ -6,7 +6,7 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
-      - 'pattern-engine/**'
+      - 'pii-pattern-engine/**'
       - 'pyproject.toml'
       - 'requirements.txt'
       - '.github/workflows/ci.yml'
@@ -15,7 +15,7 @@ on:
     paths:
       - 'src/**'
       - 'tests/**'
-      - 'pattern-engine/**'
+      - 'pii-pattern-engine/**'
       - 'pyproject.toml'
       - 'requirements.txt'
       - '.github/workflows/ci.yml'
@@ -62,13 +62,13 @@ jobs:
       - name: Validate Patterns
         run: python -c "from datadetector import load_registry; load_registry(validate_examples=True); print('All patterns valid')"
 
-      - name: Check api/pattern-engine in sync with submodule
+      - name: Check api/pii-pattern-engine in sync with submodule
         run: |
-          diff -rq pattern-engine/regex api/pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || \
-            { echo "ERROR: api/pattern-engine is out of sync with the pattern-engine submodule."; \
+          diff -rq pii-pattern-engine/regex api/pii-pattern-engine/regex --exclude='.git*' --exclude='__pycache__' || \
+            { echo "ERROR: api/pii-pattern-engine is out of sync with the pii-pattern-engine submodule."; \
               echo "Run: ./scripts/sync-patterns.sh"; exit 1; }
-          diff -rq pattern-engine/verification api/pattern-engine/verification --exclude='.git*' --exclude='__pycache__' || \
-            { echo "ERROR: api/pattern-engine/verification is out of sync."; \
+          diff -rq pii-pattern-engine/verification api/pii-pattern-engine/verification --exclude='.git*' --exclude='__pycache__' || \
+            { echo "ERROR: api/pii-pattern-engine/verification is out of sync."; \
               echo "Run: ./scripts/sync-patterns.sh"; exit 1; }
 
   test:

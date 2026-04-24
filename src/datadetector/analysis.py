@@ -39,7 +39,7 @@ class ContextAnalyzer:
 
         Args:
             context_dir: Directory containing keyword YAML files.
-                        If None, attempts to locate pattern-engine/keyword.
+                        If None, attempts to locate pii-pattern-engine/keyword.
             transformer_config: Optional Transformer config for ML context classification.
             scoring_config: Optional configuration for detection weights.
         """
@@ -60,7 +60,7 @@ class ContextAnalyzer:
         """Determine project root directory."""
         # src/datadetector/analysis.py -> src/datadetector -> src -> root
         root = Path(__file__).parent.parent.parent
-        if (root / "pattern-engine").exists():
+        if (root / "pii-pattern-engine").exists():
             return root
 
         # Check standard locations
@@ -69,15 +69,15 @@ class ContextAnalyzer:
             Path.cwd(),
         ]
         for candidate in candidates:
-            if (candidate / "pattern-engine").exists():
+            if (candidate / "pii-pattern-engine").exists():
                 return candidate
 
         return root
 
     def _auto_discover_models(self) -> None:
-        """Auto-discover fine-tuned transformer models in pattern-engine-ml if paths not set.
+        """Auto-discover fine-tuned transformer models in pii-ml-engine if paths not set.
 
-        Gracefully skips if pattern-engine-ml submodule is missing or not populated.
+        Gracefully skips if pii-ml-engine submodule is missing or not populated.
         """
         if self._transformer_config is None:
             return
@@ -86,11 +86,11 @@ class ContextAnalyzer:
             return  # already explicitly configured
 
         root = self._get_project_root()
-        model_base = root / "pattern-engine-ml" / "models" / "transformer"
+        model_base = root / "pii-ml-engine" / "models" / "transformer"
 
         if not model_base.exists():
             logger.debug(
-                "pattern-engine-ml/models/transformer/ not found — "
+                "pii-ml-engine/models/transformer/ not found — "
                 "ML context classifiers will not be auto-loaded. "
                 "Run 'git submodule update --init' or train models first."
             )
@@ -112,7 +112,7 @@ class ContextAnalyzer:
         """Load context keywords from YAML files."""
         if context_dir is None:
             root = self._get_project_root()
-            context_dir = root / "pattern-engine" / "keyword"
+            context_dir = root / "pii-pattern-engine" / "keyword"
 
         if not context_dir.exists():
             logger.warning(f"Context directory not found: {context_dir}")
@@ -439,7 +439,7 @@ class ContextAnalyzer:
 
         # Check if fine-tuned models are available
         # Validate paths exist before attempting to load (avoids slow fallback on
-        # missing pattern-engine-ml submodule or incomplete model files)
+        # missing pii-ml-engine submodule or incomplete model files)
         binary_path = config.binary_model_path
         category_path = config.category_model_path
         if binary_path and not Path(binary_path).exists():

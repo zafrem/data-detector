@@ -143,16 +143,16 @@ class NLPConfig:
 
 
 def _load_default_stopwords() -> Dict[str, Set[str]]:
-    """Load default stopwords from pattern-engine YAML file."""
+    """Load default stopwords from pii-pattern-engine YAML file."""
     try:
         # Determine path to stopwords.yml
-        # src/datadetector/nlp.py -> ... -> pattern-engine/keyword/stopwords.yml
+        # src/datadetector/nlp.py -> ... -> pii-pattern-engine/keyword/stopwords.yml
         root = Path(__file__).parent.parent.parent
 
         # Check potential locations
         possible_paths = [
-            root / "pattern-engine" / "keyword" / "stopwords.yml",
-            root / "pattern-engine" / "keyword" / "stopwords.yaml",
+            root / "pii-pattern-engine" / "keyword" / "stopwords.yml",
+            root / "pii-pattern-engine" / "keyword" / "stopwords.yaml",
             # Fallback for installed package if patterns are packaged differently
             Path(__file__).parent / "patterns" / "keyword" / "stopwords.yml",
         ]

@@ -48,7 +48,7 @@ def registry():
     """Load a subset of patterns that pass validation."""
     from pathlib import Path
 
-    base = Path(__file__).parent.parent / "pattern-engine" / "regex" / "pii"
+    base = Path(__file__).parent.parent / "pii-pattern-engine" / "regex" / "pii"
     safe_paths = [
         str(base / "common" / "email.yml"),
         str(base / "common" / "ip.yml"),

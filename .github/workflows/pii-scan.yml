@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
     paths:
       - 'src/**'
-      - 'pattern-engine/**'
+      - 'pii-pattern-engine/**'
       - '.github/workflows/pii-scan.yml'
   workflow_dispatch: # Allow manual trigger
 

@@ -22,7 +22,7 @@ For more options, see the [Installation Guide](docs/installation.md).
 
 If you cloned the repository without submodules or downloaded the auto-generated GitHub source zip, you may encounter errors like:
 - `ModuleNotFoundError: No module named 'verification'`
-- `FileNotFoundError: Pattern directory not found: .../pattern-engine/...`
+- `FileNotFoundError: Pattern directory not found: .../pii-pattern-engine/...`
 
 **To fix this:**
 

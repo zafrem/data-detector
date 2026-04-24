@@ -28,7 +28,7 @@ pip install -e .
 ```
 The `-e` flag installs the package in "editable" mode, which means that changes you make to the source code will be immediately available without needing to reinstall.
 
-> **Note:** Data Detector relies on the `pattern-engine` submodule for its PII detection logic. Ensure you have properly checked out submodules to avoid `ModuleNotFoundError` or `FileNotFoundError` during execution.
+> **Note:** Data Detector relies on the `pii-pattern-engine` submodule for its PII detection logic. Ensure you have properly checked out submodules to avoid `ModuleNotFoundError` or `FileNotFoundError` during execution.
 
 ## Install with Optional Features
 

@@ -203,7 +203,7 @@ Step 3b: ML Context Check  — fine-tuned Transformer classifiers
 Step 3c: LLM Check         — (reserved for future use)
 ```
 
-**Step 3b** uses two DistilBERT models stored in `pattern-engine-ml/models/transformer/`:
+**Step 3b** uses two DistilBERT models stored in `pii-ml-engine/models/transformer/`:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -235,14 +235,14 @@ Step 3c: LLM Check         — (reserved for future use)
 │  └────────────────────────────────────────────┘          │
 │                                                          │
 │  Models auto-discovered from:                            │
-│    pattern-engine-ml/models/transformer/                        │
+│    pii-ml-engine/models/transformer/                        │
 │      binary_classifier/   (model.safetensors ~256MB)     │
 │      category_classifier/ (model.safetensors ~256MB)     │
 └──────────────────────────────────────────────────────────┘
 ```
 
 Training code: `src/datadetector/training/train_pii_classifier.py`
-Data generation: `pattern-engine-ml/generate_data.py`
+Data generation: `pii-ml-engine/generate_data.py`
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -791,7 +791,7 @@ data-detector/
 │       ├── vector_db.py     # VectorDBAdapter (ChromaDB)
 │       └── training_data.py # TrainingDataAdapter (JSONL/HuggingFace)
 │
-├── pattern-engine/          # Git submodule with pattern definitions
+├── pii-pattern-engine/      # Git submodule with pattern definitions
 │   ├── regex/pii/           # PII patterns by country
 │   │   ├── common/          # Cross-country patterns
 │   │   ├── kr/              # Korean patterns

@@ -1,6 +1,9 @@
-[submodule "pattern-engine"]
-	path = pattern-engine
-	url = https://github.com/zafrem/pattern-engine.git
-[submodule "pattern-engine-ml"]
-	path = pattern-engine-ml
-	url = https://github.com/zafrem/pattern-engine-ml.git
+[submodule "pii-pattern-engine"]
+	path = pii-pattern-engine
+	url = https://github.com/zafrem/pii-pattern-engine.git
+[submodule "pii-ml-engine"]
+	path = pii-ml-engine
+	url = https://github.com/zafrem/pii-ml-engine.git
+[submodule "pii-llm-engine"]
+	path = pii-llm-engine
+	url = https://github.com/zafrem/pii-llm-engine.git

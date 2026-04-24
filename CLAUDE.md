@@ -106,7 +106,7 @@ make docker-run
 2. **Pattern Registry** (`src/datadetector/registry.py`)
    - Loads and compiles regex patterns from YAML files
    - Patterns organized by namespace (country code: us, kr, cn, jp, etc.)
-   - Patterns stored in `pattern-engine` submodule at `pattern-engine/regex/pii/`
+   - Patterns stored in `pii-pattern-engine` submodule at `pii-pattern-engine/regex/pii/`
    - Each pattern has: id, location, category, regex, verification function, examples
 
 3. **NLP Processor** (`src/datadetector/nlp.py`)
@@ -123,7 +123,7 @@ make docker-run
 5. **Verification Functions** (`src/datadetector/verification.py`)
    - Additional validation beyond regex matching
    - Examples: Luhn algorithm (credit cards), IBAN mod-97, entropy checks
-   - Located in `pattern-engine/verification/python/verification.py` (symlinked)
+   - Located in `pii-pattern-engine/verification/python/verification.py` (symlinked)
 
 6. **Regex Compatibility Layer** (`src/datadetector/regex_compat.py`)
    - Unified interface for regex operations
@@ -138,9 +138,9 @@ make docker-run
      - Binary classifier (PII vs non-PII): boosts/penalizes match scores
      - Category classifier (21 PII types): validates regex category assignment
    - Step 3c: LLM check (reserved for future use)
-   - Models auto-discovered from `pattern-engine-ml/models/transformer/`
+   - Models auto-discovered from `pii-ml-engine/models/transformer/`
    - Training code: `src/datadetector/training/train_pii_classifier.py`
-   - Data generation: `pattern-engine-ml/generate_data.py`
+   - Data generation: `pii-ml-engine/generate_data.py`
 
 8. **Transformer NER Detector** (`src/datadetector/transformer_ner.py`)
    - Complementary detection using HuggingFace NER models (Way 1)
@@ -242,7 +242,7 @@ patterns:
 ## Key Patterns
 
 ### Pattern Loading
-- Default patterns loaded from `pattern-engine/regex/pii/{country}/`
+- Default patterns loaded from `pii-pattern-engine/regex/pii/{country}/`
 - Countries supported: common, us, kr, cn, jp, tw, in, eu, es, fr, iban
 - Custom patterns can be loaded via `load_registry(paths=["path/to/patterns.yml"])`
 - Patterns are validated against JSON schema at `schemas/pattern-schema.json`
@@ -253,9 +253,9 @@ patterns:
 - This enables multiple variations of similar patterns
 
 ### Submodules
-- `pattern-engine` is a git submodule containing all pattern definitions
+- `pii-pattern-engine` is a git submodule containing all pattern definitions
 - Run `git submodule update --init` to initialize
-- The `verification` module is symlinked from `pattern-engine/verification`
+- The `verification` module is symlinked from `pii-pattern-engine/verification`
 
 ## API Usage Examples
 
@@ -299,7 +299,7 @@ results = engine.find(text, namespaces=["kr"])
 from datadetector import Engine, load_registry
 from datadetector.models import TransformerConfig
 
-# Enable ML context classification (models auto-discovered from pattern-engine)
+# Enable ML context classification (models auto-discovered from pii-pattern-engine)
 config = TransformerConfig(enable_context_classifier=True)
 engine = Engine(load_registry(), transformer_config=config)
 
@@ -366,7 +366,7 @@ results = engine.find(text, context=context)
 ### Git Workflow
 - Main branch: `main`
 - Submodules: Use `--recurse-submodules` when cloning
-- Pattern changes may require updating the `pattern-engine` submodule
+- Pattern changes may require updating the `pii-pattern-engine` submodule
 - CI automatically runs on PRs to `main` and `develop` branches
 
 ## CLI Commands

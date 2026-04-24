@@ -90,7 +90,7 @@ The extension source is located in `chrome-extension/`.
 *   `chrome-extension/`: Source code for the Chrome browser extension.
 *   `tests/`: Unit and integration tests.
 *   `docs/`: Extensive documentation (Architecture, API, Guides).
-*   `pattern-engine/`: Submodule/Directory containing detection patterns.
+*   `pii-pattern-engine/`: Submodule/Directory containing detection patterns.
 *   `examples/`: Usage examples.
 *   `docker/`: Docker configuration files.
 

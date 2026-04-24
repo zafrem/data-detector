@@ -47,7 +47,7 @@ Validates a number using the Luhn algorithm. This is widely used for credit card
 
 ## Data-Driven Verification
 
-Some verification functions go beyond algorithms and check against actual reference data stored in `pattern-engine/datas/`.
+Some verification functions go beyond algorithms and check against actual reference data stored in `pii-pattern-engine/datas/`.
 
 ### Zip Code Validation
 The `us_zipcode_valid` and `korean_zipcode_valid` functions provide high-accuracy validation by checking against real-world data sets:

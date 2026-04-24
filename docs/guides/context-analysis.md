@@ -60,7 +60,7 @@ The system includes built-in support for address context in three major regions.
 
 ## Configuration
 
-Context keywords are defined in YAML files located in `pattern-engine/keyword/`.
+Context keywords are defined in YAML files located in `pii-pattern-engine/keyword/`.
 
 ### Example: `address.yml`
 
@@ -94,10 +94,10 @@ When `TransformerConfig(enable_context_classifier=True)` is set, the engine runs
 
 | Model | Task | Location | Performance |
 |:------|:-----|:---------|:------------|
-| Binary Classifier | PII vs Non-PII | `pattern-engine-ml/models/transformer/binary_classifier/` | 96.2% accuracy, F1 96.9% |
-| Category Classifier | 21 PII types | `pattern-engine-ml/models/transformer/category_classifier/` | 87.9% accuracy, F1 86.5% |
+| Binary Classifier | PII vs Non-PII | `pii-ml-engine/models/transformer/binary_classifier/` | 96.2% accuracy, F1 96.9% |
+| Category Classifier | 21 PII types | `pii-ml-engine/models/transformer/category_classifier/` | 87.9% accuracy, F1 86.5% |
 
-Models are **auto-discovered** from `pattern-engine-ml/models/transformer/` when present. No explicit paths required.
+Models are **auto-discovered** from `pii-ml-engine/models/transformer/` when present. No explicit paths required.
 
 ### Scoring Logic
 
@@ -218,12 +218,12 @@ To retrain models on your own data:
 ```bash
 python -m datadetector.training.train_pii_classifier \
     --data-dir /path/to/data \
-    --output-dir pattern-engine-ml/transformer \
+    --output-dir pii-ml-engine/transformer \
     --base-model distilbert-base-uncased \
     --epochs 5 --batch-size 16
 ```
 
-Data generation: `pattern-engine-ml/generate_data.py`
+Data generation: `pii-ml-engine/generate_data.py`
 
 ### Fallback Behavior
 
@@ -235,7 +235,7 @@ Requires: `pip install data-detector[transformer]`
 
 To add context for a new category (e.g., "medical"):
 
-1.  Create `pattern-engine/keyword/medical.yml`.
+1.  Create `pii-pattern-engine/keyword/medical.yml`.
 2.  Define the category and anchor patterns:
     ```yaml
     category: medical

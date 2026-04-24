@@ -81,25 +81,25 @@ def _get_project_root() -> Path:
     # src/datadetector/registry.py -> src/datadetector -> src -> root
     root = Path(__file__).resolve().parent.parent.parent
 
-    if (root / "pattern-engine").exists():
+    if (root / "pii-pattern-engine").exists():
         return root
 
     # 2. Try Vercel environment
     vercel_root = Path("/var/task")
-    if (vercel_root / "pattern-engine").exists():
+    if (vercel_root / "pii-pattern-engine").exists():
         return vercel_root
 
-    # 3. Bundled pattern-engine in api/ directory (Vercel serverless fallback)
-    vercel_api_pe = Path("/var/task/api/pattern-engine")
+    # 3. Bundled pii-pattern-engine in api/ directory (Vercel serverless fallback)
+    vercel_api_pe = Path("/var/task/api/pii-pattern-engine")
     if vercel_api_pe.exists():
         return vercel_api_pe.parent  # returns /var/task/api
 
     # 4. Docker /app
-    if Path("/app/pattern-engine").exists():
+    if Path("/app/pii-pattern-engine").exists():
         return Path("/app")
 
     # 5. CWD
-    if (Path.cwd() / "pattern-engine").exists():
+    if (Path.cwd() / "pii-pattern-engine").exists():
         return Path.cwd()
 
     return root
@@ -133,7 +133,7 @@ def load_registry(
         # Load default patterns from package
         root = _get_project_root()
         config_dir = root / "config"
-        pii_patterns_dir = root / "pattern-engine" / "regex" / "pii"
+        pii_patterns_dir = root / "pii-pattern-engine" / "regex" / "pii"
         paths = [
             str(config_dir / "tokens.yml"),  # Load tokens first for faster detection
             str(pii_patterns_dir / "common"),  # Load all common patterns

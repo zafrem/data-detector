@@ -1,5 +1,5 @@
 # Include pattern and schema files
-recursive-include pattern-engine *.yml *.yaml *.md
+recursive-include pii-pattern-engine *.yml *.yaml *.md
 recursive-include config *.yml *.yaml
 include schemas/*.json
 
@@ -23,7 +23,7 @@ recursive-include examples *.py *.yml
 # Include tests (optional, for source distributions)
 recursive-include tests *.py
 
-# Include verification module from pattern-engine submodule
+# Include verification module from pii-pattern-engine submodule
 recursive-include src/verification *.py
 
 # Exclude compiled Python files

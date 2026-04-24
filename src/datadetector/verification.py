@@ -1,10 +1,10 @@
 """Verification functions for additional validation after regex matching.
 
 This module re-exports verification functions from the centralized
-verification library located in pattern-engine/verification/python/.
+verification library located in pii-pattern-engine/verification/python/.
 
 For the actual implementation and documentation, see:
-pattern-engine/verification/python/verification.py
+pii-pattern-engine/verification/python/verification.py
 """
 
 import sys
@@ -12,31 +12,31 @@ from pathlib import Path
 from typing import Optional
 
 
-# Add pattern-engine to path if running from source (not installed package)
+# Add pii-pattern-engine to path if running from source (not installed package)
 # This handles both Unix (with symlink) and Windows (without symlink support)
 def _find_pattern_engine() -> Optional[Path]:
     # 1. Try relative to this file (without resolving symlinks)
     # src/datadetector/verification.py -> src/datadetector -> src -> root
-    rel_path = Path(__file__).parent.parent.parent / "pattern-engine"
+    rel_path = Path(__file__).parent.parent.parent / "pii-pattern-engine"
     if rel_path.exists():
         return rel_path.resolve()
 
     # 2. Try with resolved symlinks
-    resolved_path = Path(__file__).resolve().parent.parent.parent / "pattern-engine"
+    resolved_path = Path(__file__).resolve().parent.parent.parent / "pii-pattern-engine"
     if resolved_path.exists():
         return resolved_path
 
     # 3. Try relative to project root (CWD)
-    cwd_path = Path.cwd() / "pattern-engine"
+    cwd_path = Path.cwd() / "pii-pattern-engine"
     if cwd_path.exists():
         return cwd_path
 
     # 4. Try common deployment paths (Vercel serverless)
     for deploy_path in [
-        Path("/var/task/pattern-engine"),
-        Path("/var/task/api/pattern-engine"),
-        Path("/var/task/src/../pattern-engine"),
-        Path("/vercel/path0/pattern-engine"),
+        Path("/var/task/pii-pattern-engine"),
+        Path("/var/task/api/pii-pattern-engine"),
+        Path("/var/task/src/../pii-pattern-engine"),
+        Path("/vercel/path0/pii-pattern-engine"),
     ]:
         if deploy_path.exists():
             return deploy_path.resolve()

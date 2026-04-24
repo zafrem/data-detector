@@ -7,7 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 - **License Update**: Formally transitioned project from MIT to **Apache License 2.0**.
   - Updated `LICENSE`, `README.md`, `CONTRIBUTING.md`, and all documentation.
-  - Submodule `pattern-engine` also updated to Apache 2.0.
+  - Submodule `pii-pattern-engine` also updated to Apache 2.0.
 - **API Authentication**: Enhanced Vercel serverless API with robust authentication.
   - Implemented `ADMIN_TOKEN` requirement for API key issuance.
   - Stateless HMAC-based API keys with embedded system identifiers.

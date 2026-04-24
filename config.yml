@@ -14,9 +14,9 @@ security:
 registry:
   paths:
     - config/tokens.yml
-    - pattern-engine/regex/pii/common
-    - pattern-engine/regex/pii/us
-    - pattern-engine/regex/pii/kr
+    - pii-pattern-engine/regex/pii/common
+    - pii-pattern-engine/regex/pii/us
+    - pii-pattern-engine/regex/pii/kr
   hot_reload: true
   reload_interval: 60  # seconds
 

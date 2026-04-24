@@ -3,15 +3,15 @@
 import sys
 from pathlib import Path
 
-# Ensure the src/ directory and pattern-engine are on sys.path for Vercel deployments
+# Ensure the src/ directory and pii-pattern-engine are on sys.path for Vercel deployments
 _project_root = Path(__file__).resolve().parent.parent
 _api_dir = Path(__file__).resolve().parent
 _src_dir = _project_root / "src"
 if str(_src_dir) not in sys.path:
     sys.path.insert(0, str(_src_dir))
-_pattern_engine_dir = _project_root / "pattern-engine"
-_bundled_pattern_engine_dir = _api_dir / "pattern-engine"
-# Use submodule pattern-engine if available, otherwise use bundled copy in api/
+_pattern_engine_dir = _project_root / "pii-pattern-engine"
+_bundled_pattern_engine_dir = _api_dir / "pii-pattern-engine"
+# Use submodule pii-pattern-engine if available, otherwise use bundled copy in api/
 if _pattern_engine_dir.exists() and str(_pattern_engine_dir) not in sys.path:
     sys.path.insert(0, str(_pattern_engine_dir))
 elif _bundled_pattern_engine_dir.exists():
