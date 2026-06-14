@@ -49,7 +49,7 @@ The Python verification module provides functions for validating matched pattern
 
 ```python
 # Import from the verification module
-from regex_patterns._verification.python import high_entropy_token, luhn
+from pii_pattern_engine.verification.python import high_entropy_token, luhn
 
 # Use in pattern validation
 if high_entropy_token("ghp_1a2B3c4D5e6F7g8H9i0J1k2L3m4N5o6P7q8R9s0T"):
@@ -62,7 +62,7 @@ if luhn("4532015112830366"):
 ### Adding Custom Verification Functions
 
 ```python
-from regex_patterns._verification.python import register_verification_function
+from pii_pattern_engine.verification.python import register_verification_function
 
 def custom_verify(value: str) -> bool:
     # Your custom validation logic

@@ -13,7 +13,6 @@ on:
       - 'public/**'
       - 'vercel.json'
       - 'package.json'
-      - 'requirements.txt'
       - '.github/workflows/vercel-deploy.yml'
 
 concurrency:

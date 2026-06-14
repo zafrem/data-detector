@@ -47,7 +47,7 @@ Detailed references and specifications:
 Understand Data Detector's architecture and design:
 
 - **[Architecture Overview](architecture/ARCHITECTURE.md)** - System architecture and design
-- **[Requirements](architecture/REQUIREMENTS.md)** - System requirements and dependencies
+- **[Software Requirements Specification (SRS)](architecture/REQUIREMENTS.md)** - Functional & non-functional requirements (current state)
 - **[RAG Security Architecture](architecture/RAG_SECURITY_ARCHITECTURE.md)** - Security for RAG systems
 
 ### 🔒 RAG Integration
@@ -76,12 +76,6 @@ Documentation in other languages:
 
 - **[中文文档 (Chinese)](cn/)** - Chinese language documentation
 - **[한국어 문서 (Korean)](kr/)** - Korean language documentation
-
-### 📦 Archive
-
-Historical documentation and migration guides:
-
-- **[Archive](archive/)** - Old documentation and migration summaries
 
 ## 🆘 Need Help?
 

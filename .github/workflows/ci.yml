@@ -8,9 +8,7 @@ on:
       - 'tests/**'
       - 'pii-pattern-engine/**'
       - 'pii-ml-engine/**'
-      - 'pii-llm-engine/**'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - '.github/workflows/ci.yml'
   pull_request:
     branches: [ main, develop ]
@@ -19,9 +17,7 @@ on:
       - 'tests/**'
       - 'pii-pattern-engine/**'
       - 'pii-ml-engine/**'
-      - 'pii-llm-engine/**'
       - 'pyproject.toml'
-      - 'requirements.txt'
       - '.github/workflows/ci.yml'
   workflow_call:
 

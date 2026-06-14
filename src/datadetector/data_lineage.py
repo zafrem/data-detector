@@ -40,6 +40,7 @@ class DataLineageTracer:
 
     def __init__(self) -> None:
         self._scan_results: List[ResourceScanResult] = []
+        self._inventories: List[DataInventory] = []
         self._relationships: List[FieldRelationship] = []
         self._graph: Optional[LineageGraph] = None
 
@@ -70,6 +71,22 @@ class DataLineageTracer:
                 logger.warning(
                     f"Could not extract relationships from " f"'{result.resource.name}': {e}"
                 )
+
+    def add_inventory(self, inventory: DataInventory) -> None:
+        """Add a DataInventory so the graph can be built directly from inventories.
+
+        This enables the distributed pattern where each source is scanned and
+        exported as an inventory artifact (e.g. JSON) elsewhere, and lineage is
+        built centrally by combining those artifacts -- no ResourceScanResult
+        needed. Each PII ``InventoryEntry`` becomes a graph node; cross-resource
+        links are still inferred from shared field names + categories.
+
+        Args:
+            inventory: DataInventory (e.g. from DataInventoryGenerator.generate()
+                or DataInventoryGenerator.load_json_str()).
+        """
+        self._inventories.append(inventory)
+        self._graph = None  # Invalidate cached graph
 
     def add_relationship(self, relationship: FieldRelationship) -> None:
         """Add a manual relationship.
@@ -133,6 +150,21 @@ class DataLineageTracer:
                         confidence=field_result.confidence,
                     )
                     node_map[full_path] = node
+
+        # Step 1b: Create nodes from inventories (artifacts generated elsewhere)
+        for inventory in self._inventories:
+            for entry in inventory.entries:
+                qualified = f"{entry.container_name}.{entry.field_name}"
+                full_path = f"{entry.resource_name}.{qualified}"
+                # Do not overwrite richer scan-result nodes (mixed scan+inventory).
+                if full_path in node_map:
+                    continue
+                node_map[full_path] = LineageNode(
+                    resource_name=entry.resource_name,
+                    field_qualified_name=qualified,
+                    categories=list(entry.categories),
+                    confidence=entry.confidence,
+                )
 
         # Step 2: Create edges from relationships
         edges: List[LineageEdge] = []

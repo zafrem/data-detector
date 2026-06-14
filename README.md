@@ -4,11 +4,65 @@
 
 # Data Detector
 
-**Data Detector** is a high-performance engine for detecting, redacting, and generating sensitive data (PII).
+**Data Detector** identifies personal information (PII) in **RAG pipelines** and **AI training data** — so sensitive data never leaks into vector stores, prompts, fine-tuning sets, or model responses.
+
+At its core is a general-purpose PII detection engine (regex patterns + format verification, with optional NLP and ML), surfaced through two primary integrations:
+
+- **RAG security** — a three-layer middleware that scans user **queries**, indexed **documents**, and LLM **responses**, with reversible tokenization so masked PII can be restored only when authorized.
+- **Training-data scanning** — scan JSONL, chat, and HuggingFace datasets to catalog which fields contain PII *before* you fine-tune.
+
+The same engine is also usable standalone (CLI / library / HTTP server) for general PII detection and redaction — that's the shared core the two integrations build on.
 
 ## The purpose behind the development
 
 "To be honest, data privacy wasn't exactly on my radar. But that changed when I started experimenting with RAG on a local LLM. I realized that using a personal AI agent could accidentally expose sensitive info. That 'aha' moment led me to build Data Detector. I really hope this tool helps keep people's data safe."
+
+## Primary Use Cases
+
+These two scenarios are what Data Detector is built for. Everything else in this README (general find/redact, NLP, scoring, other resource adapters, fake-data generation, the Chrome extension) is the shared engine and supporting tooling that power them.
+
+### 1. Identify PII in a RAG pipeline
+
+Scan at three points so PII never enters — or escapes — your retrieval flow:
+
+```python
+from datadetector import Engine, load_registry, RAGSecurityMiddleware
+
+middleware = RAGSecurityMiddleware(Engine(load_registry()))
+
+# Layer 2 (STORAGE): sanitize a document before it is embedded into the vector store
+result = await middleware.scan_document("Customer SSN: 123-45-6789")
+print(result.sanitized_text)   # PII masked or tokenized
+print(result.token_map)        # reversible map — store securely for authorized restore
+
+# Layer 1 (INPUT): inspect a user query   → middleware.scan_query(query)
+# Layer 3 (OUTPUT): inspect an LLM answer → middleware.scan_response(answer)
+```
+
+The same three layers are available over HTTP at `/rag/scan-query`, `/rag/scan-document`, and `/rag/scan-response` (see the [RAG Security guide](docs/rag/rag-integration.md)).
+
+### 2. Identify PII in AI training data
+
+Catalog which dataset fields contain PII before fine-tuning. Supports JSONL instruction/chat formats and HuggingFace datasets:
+
+```python
+from datadetector import Engine, load_registry, DataExplorer
+from datadetector.resource_models import ConnectionConfig, DataResource, ResourceType
+from datadetector.adapters.training_data import TrainingDataAdapter
+
+explorer = DataExplorer(Engine(load_registry()))
+resource = DataResource(
+    name="finetune-data",
+    resource_type=ResourceType.TRAINING_DATA,
+    connection=ConnectionConfig(uri="/data/training/", params={"backend": "jsonl"}),
+)
+
+with TrainingDataAdapter(resource) as adapter:
+    result = explorer.scan(adapter)
+    print(f"{result.pii_fields} fields contain PII across {result.pii_containers} datasets")
+```
+
+This feeds the same **Search → Inventory → Lineage** pipeline described under [Resource Scanning](#resource-scanning-search--inventory--lineage) below, so you can export a PII report or trace how training data flows between sources.
 
 ## Installation
 
@@ -34,6 +88,8 @@ If you cloned the repository without submodules or downloaded the auto-generated
 3.  **If using Docker**: Ensure you have checked out submodules before building. The included `Dockerfile` is pre-configured to handle the necessary internal paths and symlinks.
 
 ## Quick Start
+
+The sections below document the shared detection engine and its supporting features. If your goal is RAG or training-data PII, start with [Primary Use Cases](#primary-use-cases) above — the building blocks here (find, redact, NLP, scoring) are what those integrations run on.
 
 ### Library Usage
 

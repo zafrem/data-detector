@@ -10,6 +10,7 @@ All verification functions follow the signature: (str) -> bool
 import logging
 import math
 import os
+import yaml
 from collections import Counter
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Set
@@ -139,6 +140,56 @@ def _load_data_file(filename: str) -> Set[str]:
 
     _DATA_CACHE[filename] = values
     return values
+
+
+# Cache for no_words keyword configuration
+_NO_WORDS_CACHE: Dict[str, Set[str]] = {}
+
+
+def _get_no_words(lang: str) -> Set[str]:
+    """Load no-words (negative keywords) for a specific language from YAML."""
+    global _NO_WORDS_CACHE
+    if lang in _NO_WORDS_CACHE:
+        return _NO_WORDS_CACHE[lang]
+
+    no_words = set()
+    # Configuration is in pii-pattern-engine/keyword/no_words.yml
+    config_path = Path(__file__).parent.parent.parent / "keyword" / "no_words.yml"
+
+    if config_path.exists():
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                doc = yaml.safe_load(f)
+                if doc and "no_words" in doc:
+                    # Always include general no-words
+                    general = doc["no_words"].get("general", [])
+                    no_words.update(general)
+
+                    # Include language-specific no-words
+                    lang_data = doc["no_words"].get(lang, {})
+                    if isinstance(lang_data, dict):
+                        words = lang_data.get("words", [])
+                    else:
+                        words = []
+                    no_words.update(words)
+        except Exception as e:
+            logger.error(f"Failed to load no_words config: {e}")
+
+    # Fallback to hardcoded sets if YAML load failed or is empty
+    if not no_words:
+        # These are defined later in the file as global constants
+        try:
+            if lang == "zh":
+                no_words = globals().get("CHINESE_NON_NAME_KEYWORDS", set())
+            elif lang == "ko":
+                no_words = globals().get("KOREAN_NON_NAME_KEYWORDS", set())
+            elif lang == "ja":
+                no_words = globals().get("JAPANESE_NON_NAME_KEYWORDS", set())
+        except Exception:
+            pass
+
+    _NO_WORDS_CACHE[lang] = no_words
+    return no_words
 
 
 def iban_mod97(value: str) -> bool:
@@ -310,6 +361,78 @@ def high_entropy_token(value: str) -> bool:
     min_entropy = 4.5
 
     return entropy >= min_entropy
+
+
+# Common English surnames - covers ~25-30% of US/UK population
+ENGLISH_SURNAMES = {
+    "Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis",
+    "Rodriguez", "Martinez", "Hernandez", "Lopez", "Gonzalez", "Wilson", "Anderson",
+    "Thomas", "Taylor", "Moore", "Jackson", "Martin", "Lee", "Perez", "Thompson",
+    "White", "Harris", "Sanchez", "Clark", "Ramirez", "Lewis", "Robinson", "Walker",
+    "Young", "Allen", "King", "Wright", "Scott", "Torres", "Nguyen", "Hill",
+    "Flores", "Green", "Adams", "Nelson", "Baker", "Hall", "Rivera", "Campbell",
+    "Mitchell", "Carter", "Roberts", "Gomez", "Phillips", "Evans", "Turner",
+    "Diaz", "Parker", "Cruz", "Edwards", "Collins", "Reyes", "Stewart", "Morris",
+    "Morales", "Murphy", "Cook", "Rogers", "Gutierrez", "Ortiz", "Morgan", "Cooper",
+    "Peterson", "Bailey", "Reed", "Kelly", "Howard", "Ramos", "Kim", "Cox", "Ward",
+    "Richardson", "Watson", "Brooks", "Chavez", "Wood", "James", "Bennett", "Gray",
+    "Mendoza", "Ruiz", "Hughes", "Price", "Alvarez", "Castillo", "Sanders", "Patel",
+    "Myers", "Long", "Ross", "Foster", "Jimenez"
+}
+
+
+def english_name_valid(value: str) -> bool:
+    """
+    Verify English name format (First Last or First Middle Last).
+
+    Checks against common English surnames and uses a given name dictionary.
+    Also validates that components are capitalized correctly.
+
+    Args:
+        value: Name string to verify
+
+    Returns:
+        True if likely a valid English name, False otherwise
+    """
+    parts = value.strip().split()
+    if len(parts) < 2 or len(parts) > 4:
+        return False
+
+    # Check capitalization (at least first and last name should be capitalized)
+    if not all(p[0].isupper() for p in parts if p):
+        return False
+
+    first_name = parts[0]
+    last_name = parts[-1]
+
+    # Load surnames from data file
+    valid_surnames = _load_data_file("en_surnames.csv")
+    if not valid_surnames:
+        valid_surnames = ENGLISH_SURNAMES # Fallback
+
+    # 1. Data-driven check for given name
+    valid_given_names = _load_data_file("en_given_names.csv")
+    is_common_given = valid_given_names and first_name in valid_given_names
+
+    # 2. Check for common surname
+    is_common_surname = last_name in valid_surnames
+
+    # If both are common, high confidence
+    if is_common_given and is_common_surname:
+        return True
+
+    # If one is common, and name length is reasonable, moderate confidence
+    if (is_common_given or is_common_surname) and 2 <= len(last_name) <= 15:
+        return True
+
+    # Heuristic: if it's "First Last" and both parts look like names (capitalized, letters only)
+    if len(parts) == 2:
+        if first_name.isalpha() and last_name.isalpha():
+            # Avoid single letters unless it's an initial (which usually has a dot)
+            if len(first_name) >= 2 and len(last_name) >= 2:
+                return True
+
+    return False
 
 
 def not_timestamp(value: str) -> bool:
@@ -959,72 +1082,64 @@ CHINESE_SURNAMES = {
     "武",
     "莫",
     "孔",
-    # Traditional variants
-    "張",
-    "劉",
-    "陳",
-    "楊",
-    "黃",
-    "趙",
-    "吳",
-    "許",
-    "鄭",
-    "謝",
-    "鄧",
-    "馮",
-    "韓",
-    "蕭",
-    "葉",
-    "蔣",
-    "蘇",
-    "魏",
-    "呂",
-    "瀋",
-    "盧",
+    "丁",
+    "沈",
+    "任",
+    "姚",
+    "卢",
     "傅",
-    "鐘",
-    "薑",
-    "譚",
+    "钟",
+    "姜",
+    "崔",
+    "谭",
     "廖",
-    "範",
-    "陸",
-    "賈",
-    "鄒",
-    "閻",
-    "龍",
+    "范",
+    "汪",
+    "陆",
+    "金",
+    "石",
+    "戴",
+    "贾",
+    "韦",
+    "夏",
+    "邱",
+    "方",
+    "侯",
+    "邹",
+    "熊",
+    "孟",
+    "秦",
+    "白",
+    "江",
+    "阎",
+    "薛",
+    "尹",
+    "段",
+    "雷",
+    "黎",
+    "史",
+    "龙",
     "陶",
-    "賀",
-    "顧",
+    "贺",
+    "顾",
+    "毛",
     "郝",
-    "龔",
-    "萬",
-    "錢",
-    "嚴",
-    "賴",
+    "龚",
+    "邵",
+    "万",
+    "钱",
+    "严",
+    "赖",
     "覃",
-    # Compound surnames (2 characters)
-    "欧阳",
-    "歐陽",
-    "司马",
-    "司馬",
-    "上官",
-    "诸葛",
-    "諸葛",
-    "东方",
-    "東方",
-    "皇甫",
-    "尉迟",
-    "尉遲",
-    "公孙",
-    "公孫",
-    "令狐",
-    "慕容",
-    "轩辕",
-    "軒轅",
-    "夏侯",
-    "司徒",
-    "独孤",
-    "獨孤",
+    "洪",
+    "武",
+    # Traditional variants
+    "張", "劉", "陳", "楊", "黃", "趙", "吳", "許", "鄭", "謝", "鄧", "馮", "韓", "蕭",
+    "葉", "蔣", "蘇", "魏", "呂", "瀋", "盧", "傅", "鐘", "薑", "譚", "廖", "範", "陸",
+    "賈", "鄒", "閻", "龍", "陶", "賀", "顧", "郝", "龔", "萬", "錢", "嚴", "賴", "覃",
+    "歐陽", "司馬", "諸葛", "東方", "尉遲", "公孫", "軒轅", "獨孤",
+    # Simplified compound surnames
+    "欧阳", "司马", "诸葛", "东方", "尉迟", "公孙", "轩辕", "独孤",
 }
 
 # Korean surnames - covers ~95% of population
@@ -1215,6 +1330,41 @@ JAPANESE_SURNAMES = {
     "杉",
 }
 
+# Japanese surnames in Hiragana
+JAPANESE_SURNAMES_HIRAGANA = {
+    "さとう", "すずき", "たかはし", "たなか", "いとう", "わたなべ", "やまもと", "なかむら",
+    "こばやし", "かとう", "よしだ", "やまだ", "ささき", "やまぐち", "まつもと", "いのうえ",
+    "きむら", "はやし", "さいとう", "しみず", "やまざき", "もり", "あべ", "いけだ",
+    "はしもと", "やました", "いしかわ", "なかじま", "まえだ", "ふじた", "おがわ", "ごとう",
+    "おかだ", "はせがわ", "むらかみ", "こんどう", "いしい", "さかもと", "えんどう", "あおき",
+    "ふじい", "にしむら", "ふくだ", "おおた", "みうら", "ふじわら", "おかもと", "まつだ",
+    "なかがわ", "はらだ", "おの", "たけうち", "かねこ", "わだ", "なかの", "はら",
+    "たむら", "あんどう", "こうの", "うえだ", "おおの", "たかぎ", "くどう", "うちだ",
+    "まるやま", "いまい", "さかい", "みやざき", "よこやま", "せき", "ほり", "しま",
+    "たに", "はま", "さわ", "すぎ"
+}
+
+# Japanese surnames in Katakana
+JAPANESE_SURNAMES_KATAKANA = {
+    "サトウ", "スズキ", "タカハシ", "タナカ", "イトウ", "ワタナベ", "ヤマモト", "ナカムラ",
+    "コバヤシ", "カトウ", "ヨシダ", "ヤマダ", "ササキ", "ヤマグチ", "マツモト", "イノウエ",
+    "キムラ", "ハヤシ", "サイトウ", "シミズ", "ヤマザキ", "モリ", "アベ", "イケダ",
+    "ハシモト", "ヤマシタ", "イシカワ", "ナカジマ", "マエダ", "フジタ", "オガワ", "ゴトウ",
+    "オカダ", "ハセガワ", "マツモト", "ムラカミ", "コンドウ", "イシイ", "サカモト", "エンドウ",
+    "アオキ", "フジイ", "ニシムラ", "フクダ", "オオタ", "ミウラ", "フジワラ", "オカモト",
+    "マツダ", "ナカガワ", "ハラダ", "オノ", "タケウチ", "カネコ", "ワダ", "ナカノ", "ハラ",
+    "タムラ", "アンドウ", "コウノ", "ウエダ", "オオノ", "タカギ", "クドウ", "ウチダ",
+    "マルヤマ", "イマイ", "サカイ", "ミヤザキ", "ヨコヤマ", "セキ", "ホリ", "シマ",
+    "タニ", "ハマ", "サワ", "スギ"
+}
+
+# Japanese surnames in Simplified Chinese
+JAPANESE_SURNAMES_SIMPLIFIED = {
+    "渡边", "斋藤", "齐藤", "冈田", "长谷川", "近藤", "坂本", "远藤", "青木", "藤井",
+    "冈本", "原田", "竹内", "安藤", "河野", "上田", "大野", "工藤", "内田", "宫崎",
+    "横山", "岛", "谷", "滨", "泽"
+}
+
 
 # Common Chinese words that start with surname characters but aren't names.
 # Used by chinese_name_valid to filter false positives.
@@ -1351,33 +1501,41 @@ def chinese_name_valid(value: str) -> bool:
     if not value or len(value) < 2 or len(value) > 4:
         return False
 
-    # 1. Filter out non-name keywords (exact match)
-    if value in CHINESE_NON_NAME_KEYWORDS:
+    # 1. Filter out non-name keywords (from YAML config or fallback)
+    if value in _get_no_words("zh"):
         return False
 
     # 2. Extract surname and given name
     surname = None
     given_name = None
 
+    # Load surnames from data file
+    valid_surnames = _load_data_file("cn_surnames.csv")
+    if not valid_surnames:
+        valid_surnames = CHINESE_SURNAMES # Fallback to hardcoded for robustness
+
     # Check compound surnames first (2 chars)
-    if len(value) >= 3 and value[:2] in CHINESE_SURNAMES:
+    if len(value) >= 3 and value[:2] in valid_surnames:
         surname = value[:2]
         given_name = value[2:]
-    elif value[0] in CHINESE_SURNAMES:
+    elif value[0] in valid_surnames:
         surname = value[0]
         given_name = value[1:]
 
     if not surname:
         return False
 
-    # 3. Given name dictionary lookup
+    # 3. Given name dictionary lookup (Simplified, Traditional, or Generic)
     valid_given_names = _load_data_file("cn_given_names.csv")
-    if valid_given_names and given_name in valid_given_names:
+    simplified_names = _load_data_file("cn_given_names_simplified.csv")
+    traditional_names = _load_data_file("cn_given_names_traditional.csv")
+    
+    if (valid_given_names and given_name in valid_given_names) or \
+       (simplified_names and given_name in simplified_names) or \
+       (traditional_names and given_name in traditional_names):
         return True
 
     # 4. Length heuristic: for names not in dictionary, only accept 2-4 char names
-    # (Chinese names: 1-2 surname chars + 1-3 given name chars)
-    # Most common: 1 surname + 1-2 given (2-3 total) or 2 surname + 1-2 given (3-4 total)
     if not (2 <= len(value) <= 4):
         return False
 
@@ -1442,23 +1600,29 @@ def korean_name_valid(value: str) -> bool:
     if not value or len(value) < 2 or len(value) > 5:
         return False
 
-    # 1. Filter out common non-name keywords (exact match or with common particles)
-    if value in KOREAN_NON_NAME_KEYWORDS:
+    # 1. Filter out common non-name keywords (from YAML config or fallback)
+    no_words = _get_no_words("ko")
+    if value in no_words:
         return False
 
     # Check for keyword + Korean particles (은/는/이/가/을/를/의)
     if len(value) >= 3 and value[-1] in ("은", "는", "이", "가", "을", "를", "의"):
-        if value[:-1] in KOREAN_NON_NAME_KEYWORDS:
+        if value[:-1] in no_words:
             return False
 
     # 2. Extract potential surname and given name
     surname = None
     given_name = None
 
-    if len(value) >= 3 and value[:2] in KOREAN_SURNAMES:
+    # Load surnames from data file
+    valid_surnames = _load_data_file("kr_surnames.csv")
+    if not valid_surnames:
+        valid_surnames = KOREAN_SURNAMES # Fallback to hardcoded for robustness
+
+    if len(value) >= 3 and value[:2] in valid_surnames:
         surname = value[:2]
         given_name = value[2:]
-    elif value[0] in KOREAN_SURNAMES:
+    elif value[0] in valid_surnames:
         surname = value[0]
         given_name = value[1:]
 
@@ -1593,59 +1757,85 @@ JAPANESE_NON_NAME_KEYWORDS = {
 
 def japanese_name_kanji_valid(value: str) -> bool:
     """
-    Verify Japanese name (kanji) matches known surname patterns and given name.
+    Verify Japanese name (kanji, hiragana, katakana) matches known surname patterns and given name.
 
     Uses multi-tier verification: keyword filtering, surname extraction,
     given name dictionary lookup, and length heuristics.
 
     Args:
-        value: Japanese name string in kanji
+        value: Japanese name string
 
     Returns:
         True if name is a plausible Japanese name, False otherwise
     """
-    if not value or len(value) < 2 or len(value) > 6:
+    if not value or len(value) < 2 or len(value) > 8:
         return False
 
-    # 1. Filter out non-name keywords (exact match)
-    if value in JAPANESE_NON_NAME_KEYWORDS:
+    # 1. Filter out non-name keywords (from YAML config or fallback)
+    if value in _get_no_words("ja"):
         return False
 
-    # 2. For 2-char strings, check if it's a 2-char surname (like 田中, 鈴木)
-    if len(value) == 2:
-        return value in JAPANESE_SURNAMES
+    # Load surnames from data files
+    jp_surnames = _load_data_file("jp_surnames_kanji.csv") or JAPANESE_SURNAMES
+    jp_hiragana = _load_data_file("jp_surnames_hiragana.csv") or JAPANESE_SURNAMES_HIRAGANA
+    jp_katakana = _load_data_file("jp_surnames_katakana.csv") or JAPANESE_SURNAMES_KATAKANA
+
+    # 2. For strings that are likely just surnames (2-3 chars), check if they match known surnames
+    if len(value) in (2, 3):
+        return (value in jp_surnames or 
+                value in jp_hiragana or 
+                value in jp_katakana or 
+                value in JAPANESE_SURNAMES_SIMPLIFIED)
 
     # 3. Extract surname and given name
     surname = None
     given_name = None
 
-    # Check 3-char surnames first (e.g., 佐々木, 長谷川)
-    if len(value) >= 4 and value[:3] in JAPANESE_SURNAMES:
-        surname = value[:3]
-        given_name = value[3:]
-    # Check 2-char surnames (most common)
-    elif value[:2] in JAPANESE_SURNAMES:
-        surname = value[:2]
-        given_name = value[2:]
-    # Check 1-char surnames (e.g., 森, 林)
-    elif value[0] in JAPANESE_SURNAMES:
-        surname = value[0]
-        given_name = value[1:]
+    # Helper to check in all surname sets
+    def get_surname_len(val):
+        # 3-char check (e.g. 佐々木, 長谷川, or 3-char Hiragana/Katakana like さとう)
+        prefix3 = val[:3]
+        if (len(val) >= 4 and prefix3 in jp_surnames) or \
+           (len(val) >= 4 and (prefix3 in jp_hiragana or prefix3 in jp_katakana)):
+            return 3
+            
+        # 2-char check (most common)
+        prefix2 = val[:2]
+        if prefix2 in jp_surnames or prefix2 in jp_hiragana or \
+           prefix2 in jp_katakana or prefix2 in JAPANESE_SURNAMES_SIMPLIFIED:
+            return 2
+            
+        # 1-char check
+        prefix1 = val[0]
+        if prefix1 in jp_surnames or prefix1 in jp_hiragana or \
+           prefix1 in jp_katakana or prefix1 in JAPANESE_SURNAMES_SIMPLIFIED:
+            return 1
+        return 0
+
+    slen = get_surname_len(value)
+    if slen > 0:
+        surname = value[:slen]
+        given_name = value[slen:]
 
     if not surname:
         return False
 
     # 4. Given name dictionary lookup
     valid_given_names = _load_data_file("jp_given_names.csv")
-    if valid_given_names and given_name in valid_given_names:
+    hiragana_names = _load_data_file("jp_given_names_hiragana.csv")
+    katakana_names = _load_data_file("jp_given_names_katakana.csv")
+
+    if (valid_given_names and given_name in valid_given_names) or \
+       (hiragana_names and given_name in hiragana_names) or \
+       (katakana_names and given_name in katakana_names):
         return True
 
-    # 5. Length heuristic: for names not in dictionary, accept 3-4 char names
-    # (most common: 2 surname + 1-2 given name chars)
-    if len(value) not in (3, 4):
-        return False
+    # 5. Length heuristic: for names not in dictionary
+    # Kanji: 3-4 chars common, Hiragana/Katakana: can be longer (4-6)
+    if len(value) >= 3 and len(value) <= 6:
+        return True
 
-    return True
+    return False
 
 
 def cjk_name_standalone(value: str) -> bool:

@@ -4,6 +4,3 @@
 [submodule "pii-ml-engine"]
 	path = pii-ml-engine
 	url = https://github.com/zafrem/pii-ml-engine.git
-[submodule "pii-llm-engine"]
-	path = pii-llm-engine
-	url = https://github.com/zafrem/pii-llm-engine.git

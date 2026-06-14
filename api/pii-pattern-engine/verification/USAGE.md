@@ -2,22 +2,24 @@
 
 ## Overview
 
-The verification functions have been centralized in `regex-patterns/_verification/python/` to enable code reuse across different pattern detection implementations and languages.
+The verification functions have been centralized in `pii-pattern-engine/verification/python/` to enable code reuse across different pattern detection implementations and languages.
 
 ## Directory Structure
 
 ```
-regex-patterns/
-├── _verification/
+pii-pattern-engine/
+├── verification/
 │   ├── README.md              # Full documentation
 │   ├── USAGE.md               # This file - Quick usage guide
 │   └── python/
 │       ├── __init__.py        # Module exports
 │       └── verification.py    # Core verification functions
-├── hash/
-│   └── tokens.yml             # Token pattern definitions
-└── pii/
-    └── *.yml                  # PII pattern definitions
+├── regex/
+│   └── hash/
+│       └── tokens.yml         # Token pattern definitions
+└── regex/
+    └── pii/
+        └── *.yml              # PII pattern definitions
 ```
 
 ## Quick Start (Python)
@@ -26,7 +28,7 @@ regex-patterns/
 
 ```python
 # Direct import from verification module
-from regex_patterns._verification.python import (
+from pii_pattern_engine.verification.python import (
     high_entropy_token,
     luhn,
     iban_mod97,
@@ -71,7 +73,7 @@ is_valid = validator("4532015112830366")
 
 ## Using in Pattern YAML Files
 
-In your pattern definition files (e.g., `regex-patterns/hash/tokens.yml`):
+In your pattern definition files (e.g., `pii-pattern-engine/regex/hash/tokens.yml`):
 
 ```yaml
 patterns:
@@ -87,14 +89,14 @@ patterns:
 
 To implement verification functions in other languages:
 
-1. Create a directory: `regex-patterns/_verification/<language>/`
+1. Create a directory: `pii-pattern-engine/verification/<language>/`
 2. Implement the same functions with equivalent logic
 3. Maintain consistent function signatures
 4. Update the main README with usage examples
 
 Example for Go:
 ```go
-// regex-patterns/_verification/go/verification.go
+// pii-pattern-engine/verification/go/verification.go
 package verification
 
 func HighEntropyToken(value string) bool {
@@ -136,5 +138,5 @@ pytest tests/test_token_patterns.py -v
 ## See Also
 
 - [Full Documentation](README.md) - Complete verification functions reference
-- [Pattern Files](../hash/tokens.yml) - Example usage in patterns
+- [Pattern Files](../regex/hash/tokens.yml) - Example usage in patterns
 - [Tests](../../tests/test_verification.py) - Comprehensive test suite

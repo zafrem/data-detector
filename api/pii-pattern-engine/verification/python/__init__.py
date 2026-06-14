@@ -20,6 +20,11 @@ from .verification import (
     unregister_verification_function,
     us_ssn_valid,
     us_zipcode_valid,
+    chinese_name_valid,
+    korean_name_valid,
+    japanese_name_kanji_valid,
+    cjk_name_standalone,
+    english_name_valid,
 )
 
 __all__ = [
@@ -38,4 +43,9 @@ __all__ = [
     "unregister_verification_function",
     "us_ssn_valid",
     "us_zipcode_valid",
+    "chinese_name_valid",
+    "korean_name_valid",
+    "japanese_name_kanji_valid",
+    "cjk_name_standalone",
+    "english_name_valid",
 ]

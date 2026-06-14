@@ -29,7 +29,20 @@ from datadetector.fake_file_generators import (
     XMLGenerator,
 )
 from datadetector.fake_generator import FakeDataGenerator
-from datadetector.models import FindResult, RedactionResult, ScoringConfig, TransformerConfig, ValidationResult
+from datadetector.mlops import (
+    GateFinding,
+    GateReport,
+    scan_rag_records,
+    scan_text,
+    scan_training_data,
+)
+from datadetector.models import (
+    FindResult,
+    RedactionResult,
+    ScoringConfig,
+    TransformerConfig,
+    ValidationResult,
+)
 from datadetector.nlp import (
     ChineseTokenizer,
     KoreanTokenizer,
@@ -78,8 +91,8 @@ from datadetector.resource_models import (
     ScanStrategy,
 )
 from datadetector.stream_engine import StreamEngine
-from datadetector.transformer_ner import TransformerNERDetector
 from datadetector.tokenization import SecureTokenizer
+from datadetector.transformer_ner import TransformerNERDetector
 from datadetector.utils.yaml_utils import (
     PatternFileHandler,
     YAMLHandler,
@@ -136,6 +149,12 @@ __all__ = [
     "TransformerConfig",
     # Scoring
     "ScoringConfig",
+    # MLOps gate
+    "GateReport",
+    "GateFinding",
+    "scan_text",
+    "scan_rag_records",
+    "scan_training_data",
     "TransformerNERDetector",
     # Regex engine configuration
     "RegexEngine",
