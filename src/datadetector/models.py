@@ -232,3 +232,39 @@ class TransformerConfig:
     def is_enabled(self) -> bool:
         """Check if any transformer feature is enabled."""
         return self.enable_ner or self.enable_context_classifier
+
+
+@dataclass
+class PrivyscopeConfig:
+    """Configuration for the optional privyscope NER backend.
+
+    privyscope is a standalone multilingual PII engine (regex filter + ONNX
+    BIOES/Viterbi NER), vendored as the `pii-ml-engine` submodule. It ships no
+    language data of its own -- install the core plus at least one language pack:
+
+        pip install -e pii-ml-engine
+        pip install privyscope-ko      # and/or privyscope-en
+    """
+
+    enabled: bool = False
+
+    # Language selection. Leave `lang` unset to use the sole installed pack;
+    # set auto_language=True to route each text to its own language engine.
+    lang: Optional[str] = None
+    auto_language: bool = False
+
+    # "balanced" | "high_recall" | "high_precision" -- shifts decoder biases.
+    operating_point: str = "balanced"
+
+    # Skip the ONNX stage entirely (no model weights needed -- works offline).
+    regex_only: bool = False
+
+    # Local weights bundle; enables fully offline use when pre-populated.
+    cache_dir: Optional[str] = None
+
+    # Confidence assigned to privyscope matches (spans carry no per-span score).
+    score: float = 0.6
+
+    def is_enabled(self) -> bool:
+        """Check if the privyscope backend is enabled."""
+        return self.enabled

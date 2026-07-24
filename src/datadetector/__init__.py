@@ -38,6 +38,7 @@ from datadetector.mlops import (
 )
 from datadetector.models import (
     FindResult,
+    PrivyscopeConfig,
     RedactionResult,
     ScoringConfig,
     TransformerConfig,
@@ -53,6 +54,7 @@ from datadetector.nlp import (
     SmartTokenizer,
     StopwordFilter,
 )
+from datadetector.privyscope_backend import PrivyscopeDetector
 from datadetector.rag_config import RAGPolicyConfig, load_rag_policy
 from datadetector.rag_middleware import RAGSecurityMiddleware
 from datadetector.rag_models import (
@@ -147,6 +149,9 @@ __all__ = [
     "load_rag_policy",
     # Transformer NLP
     "TransformerConfig",
+    # privyscope NER backend
+    "PrivyscopeConfig",
+    "PrivyscopeDetector",
     # Scoring
     "ScoringConfig",
     # MLOps gate

@@ -12,6 +12,7 @@ from datadetector.context import ContextFilter, ContextHint, KeywordRegistry
 from datadetector.models import (
     FindResult,
     Match,
+    PrivyscopeConfig,
     RedactionResult,
     RedactionStrategy,
     ScoringConfig,
@@ -61,6 +62,7 @@ class Engine:
         nlp_config: Optional[NLPConfig] = None,
         transformer_config: Optional[TransformerConfig] = None,
         scoring_config: Optional[ScoringConfig] = None,
+        privyscope_config: Optional[PrivyscopeConfig] = None,
     ) -> None:
         """
         Initialize engine with pattern registry.
@@ -80,6 +82,11 @@ class Engine:
                               pip install data-detector[transformer]
             scoring_config: Optional scoring weights and thresholds. Controls initial
                           scores, keyword boosts, ML weights, and min_score filtering.
+            privyscope_config: Optional privyscope NER backend config. When enabled it
+                          takes over the NER slot from transformer_config's NER (the
+                          two are alternatives, never both). Requires the pii-ml-engine
+                          submodule plus a language pack:
+                          pip install -e pii-ml-engine && pip install privyscope-ko
         """
         self.registry = registry
         self.default_mask_char = default_mask_char
@@ -111,12 +118,27 @@ class Engine:
 
         # NER Detection (Way 1) -- lazy-loaded
         self.transformer_config = transformer_config
+        self.privyscope_config = privyscope_config
         self._ner_detector: Any = None  # None=not loaded, False=failed
 
     def _get_ner_detector(self) -> Any:
-        """Lazy-load the Transformer NER detector. Returns None if unavailable."""
+        """Lazy-load the NER detector. Returns None if unavailable.
+
+        privyscope takes precedence when enabled; otherwise the HuggingFace
+        Transformer NER backend is used. Only one occupies the NER slot, so
+        spans are never contributed twice.
+        """
         if self._ner_detector is not None:
             return self._ner_detector if self._ner_detector is not False else None
+
+        if self.privyscope_config and self.privyscope_config.is_enabled():
+            try:
+                from datadetector.privyscope_backend import PrivyscopeDetector
+
+                self._ner_detector = PrivyscopeDetector(self.privyscope_config)
+                return self._ner_detector
+            except ImportError:
+                logger.debug("privyscope_backend not available, falling back to transformer NER")
 
         if not self.transformer_config or not self.transformer_config.is_ner_enabled():
             self._ner_detector = False
