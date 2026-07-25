@@ -65,7 +65,7 @@ HTTP pattern-listing endpoint.
 A Python package (`datadetector`) layered as: Interface (CLI / Library / HTTP)
 → Core Engine → Pattern Registry → YAML pattern storage. PII patterns ship as a
 git submodule (`pii-pattern-engine`); optional ML models live in
-`pii-engine`.
+`pii-ml-engine`.
 
 ### 2.2 User classes
 

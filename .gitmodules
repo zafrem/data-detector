@@ -1,6 +1,6 @@
 [submodule "pii-pattern-engine"]
 	path = pii-pattern-engine
 	url = https://github.com/zafrem/pii-pattern-engine.git
-[submodule "pii-engine"]
-	path = pii-engine
-	url = https://github.com/zafrem/privyscope.git
+[submodule "pii-ml-engine"]
+	path = pii-ml-engine
+	url = https://github.com/zafrem/pii-ml-engine.git

@@ -94,13 +94,6 @@ transformer = [
     "torch>=2.0.0",
     "accelerate>=0.20.1",
 ]
-# privyscope NER backend. The engine is NOT on PyPI -- it is vendored as the
-# `pii-engine` git submodule (github.com/zafrem/privyscope) and installed
-# from there:
-#     git submodule update --init pii-engine
-#     pip install -e pii-engine
-# The core ships no language data; also install at least one language pack
-# (e.g. privyscope-ko / privyscope-en) so the NER stage can load.
 database = [
     "sqlalchemy>=2.0.0",
 ]

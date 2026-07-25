@@ -30,12 +30,12 @@ SEP = "-" * 72
 
 def check_prerequisites():
     """Check models and transformers are available."""
-    model_base = Path(__file__).parent.parent / "pii-engine" / "models" / "transformer"
+    model_base = Path(__file__).parent.parent / "pii-ml-engine" / "models" / "transformer"
     binary_ok = (model_base / "binary_classifier" / "model.safetensors").exists()
     cat_ok = (model_base / "category_classifier" / "model.safetensors").exists()
 
     if not binary_ok or not cat_ok:
-        print("  Models not found in pii-engine/models/transformer/")
+        print("  Models not found in pii-ml-engine/models/transformer/")
         print("  Train first:  python -m datadetector.training.train_pii_classifier ...")
         sys.exit(1)
 

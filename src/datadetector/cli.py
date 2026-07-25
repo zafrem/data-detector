@@ -21,7 +21,7 @@ from datadetector.mlops import (
     scan_text,
     scan_training_data,
 )
-from datadetector.models import PrivyscopeConfig, RedactionStrategy, TransformerConfig
+from datadetector.models import RedactionStrategy, TransformerConfig
 from datadetector.registry import load_registry
 from datadetector.resource_models import (
     ConnectionConfig,
@@ -41,13 +41,6 @@ def setup_logging(verbose: bool = False) -> None:
         level=level,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     )
-
-
-def _privyscope_config(ner: bool, ner_lang: Optional[str]) -> Optional[PrivyscopeConfig]:
-    """Build a PrivyscopeConfig from the shared --ner/--ner-lang flags (None if off)."""
-    if not ner:
-        return None
-    return PrivyscopeConfig(enabled=True, lang=ner_lang)
 
 
 @click.group()
@@ -118,14 +111,7 @@ def main(ctx: click.Context, verbose: bool) -> None:
 @click.option(
     "--ner",
     is_flag=True,
-    help="Enable NER detection via the privyscope backend (pii-engine submodule), "
-    "to catch entities regex misses. Needs `pip install -e pii-engine`.",
-)
-@click.option(
-    "--ner-lang",
-    default=None,
-    help="Language for --ner (e.g. 'ko', 'en'). Omit to use the sole installed "
-    "language pack.",
+    help="Enable Transformer-based NER detection (improves recall)",
 )
 @click.pass_context
 def find(
@@ -140,7 +126,6 @@ def find(
     on_match: str,
     ml_context: bool,
     ner: bool,
-    ner_lang: Optional[str],
 ) -> None:
     """Find PII in text or file."""
     # Load text
@@ -156,18 +141,13 @@ def find(
     pattern_paths = [str(p) for p in patterns] if patterns else None
     registry = load_registry(paths=pattern_paths)
 
-    # Configure Transformer context classification (--ml-context).
+    # Configure Transformer features
     transformer_config = None
-    if ml_context:
-        transformer_config = TransformerConfig(enable_context_classifier=True)
+    if ml_context or ner:
+        transformer_config = TransformerConfig(enable_context_classifier=ml_context, enable_ner=ner)
 
-    # Create engine and find. --ner drives the privyscope NER backend
-    # (pii-engine), which occupies the engine's NER slot.
-    engine = Engine(
-        registry,
-        transformer_config=transformer_config,
-        privyscope_config=_privyscope_config(ner, ner_lang),
-    )
+    # Create engine and find
+    engine = Engine(registry, transformer_config=transformer_config)
     ns_list = list(namespaces) if namespaces else None
     result = engine.find(
         text, namespaces=ns_list, include_matched_text=include_text, stop_on_first_match=first_only
@@ -306,18 +286,6 @@ def validate(
     is_flag=True,
     help="Print redaction statistics",
 )
-@click.option(
-    "--ner",
-    is_flag=True,
-    help="Enable NER detection via the privyscope backend (pii-engine submodule), "
-    "to catch entities regex misses. Needs `pip install -e pii-engine`.",
-)
-@click.option(
-    "--ner-lang",
-    default=None,
-    help="Language for --ner (e.g. 'ko', 'en'). Omit to use the sole installed "
-    "language pack.",
-)
 @click.pass_context
 def redact(
     ctx: click.Context,
@@ -328,8 +296,6 @@ def redact(
     patterns: Tuple[Path, ...],
     strategy: str,
     stats: bool,
-    ner: bool,
-    ner_lang: Optional[str],
 ) -> None:
     """Redact PII from text or file."""
     # Load text
@@ -346,7 +312,7 @@ def redact(
     registry = load_registry(paths=pattern_paths)
 
     # Create engine and redact
-    engine = Engine(registry, privyscope_config=_privyscope_config(ner, ner_lang))
+    engine = Engine(registry)
     ns_list = list(namespaces) if namespaces else None
     redaction_strategy = RedactionStrategy(strategy)
     result = engine.redact(text, namespaces=ns_list, strategy=redaction_strategy)
@@ -494,18 +460,6 @@ def resource(ctx: click.Context) -> None:
     type=click.Path(path_type=Path),
     help="Output scan result JSON file",
 )
-@click.option(
-    "--ner",
-    is_flag=True,
-    help="Enable NER detection via the privyscope backend (pii-engine submodule), "
-    "to catch entities regex misses. Needs `pip install -e pii-engine`.",
-)
-@click.option(
-    "--ner-lang",
-    default=None,
-    help="Language for --ner (e.g. 'ko', 'en'). Omit to use the sole installed "
-    "language pack.",
-)
 @click.pass_context
 def scan(
     ctx: click.Context,
@@ -516,12 +470,10 @@ def scan(
     limit: int,
     namespaces: Tuple[str, ...],
     out: Optional[Path],
-    ner: bool,
-    ner_lang: Optional[str],
 ) -> None:
     """Scan a data resource for PII."""
     registry = load_registry()
-    engine = Engine(registry, privyscope_config=_privyscope_config(ner, ner_lang))
+    engine = Engine(registry)
     explorer = DataExplorer(engine, sample_limit=limit, namespaces=list(namespaces))
 
     resource = DataResource(

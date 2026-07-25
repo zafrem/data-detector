@@ -203,11 +203,7 @@ Step 3b: ML Context Check  — fine-tuned Transformer classifiers
 Step 3c: LLM Check         — (reserved for future use)
 ```
 
-**Step 3b** uses two DistilBERT models expected in `pii-engine/models/transformer/`
-(no longer bundled — that submodule now hosts the privyscope NER backend; train
-your own or the engine falls back to zero-shot). Note this is context
-*classification*; NER via privyscope is documented in the
-[NER Detection Guide](../guides/ner-detection.md):
+**Step 3b** uses two DistilBERT models stored in `pii-ml-engine/models/transformer/`:
 
 ```
 ┌──────────────────────────────────────────────────────────┐
@@ -239,14 +235,14 @@ your own or the engine falls back to zero-shot). Note this is context
 │  └────────────────────────────────────────────┘          │
 │                                                          │
 │  Models auto-discovered from:                            │
-│    pii-engine/models/transformer/                        │
+│    pii-ml-engine/models/transformer/                        │
 │      binary_classifier/   (model.safetensors ~256MB)     │
 │      category_classifier/ (model.safetensors ~256MB)     │
 └──────────────────────────────────────────────────────────┘
 ```
 
 Training code: `src/datadetector/training/train_pii_classifier.py`
-Data generation: `pii-engine/generate_data.py`
+Data generation: `pii-ml-engine/generate_data.py`
 
 ```
 ┌──────────────────────────────────────────────────────────┐

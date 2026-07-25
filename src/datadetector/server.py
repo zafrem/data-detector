@@ -12,7 +12,7 @@ from pydantic import BaseModel
 from starlette.responses import Response
 
 from datadetector.engine import Engine
-from datadetector.models import PrivyscopeConfig, RedactionStrategy
+from datadetector.models import RedactionStrategy
 from datadetector.rag_middleware import RAGSecurityMiddleware
 from datadetector.rag_models import SecurityAction, SecurityLayer, SeverityLevel
 from datadetector.registry import PatternRegistry, load_registry
@@ -241,15 +241,10 @@ class DataDetectorServer:
 
         logger.info(f"Loading patterns from: {paths}")
         self.registry = load_registry(paths=paths)
-        # Optional privyscope NER backend (pii-engine). Enabled via the
-        # `privyscope:` section of the config; disabled -> regex-only as before.
-        # The RAG middleware wraps this same engine, so it inherits the setting.
-        privyscope_config = PrivyscopeConfig.from_dict(self.config.get("privyscope"))
         self.engine = Engine(
             self.registry,
             default_mask_char=self.config.get("redaction", {}).get("mask_char", "*"),
             hash_algorithm=self.config.get("redaction", {}).get("hash_algorithm", "sha256"),
-            privyscope_config=privyscope_config if privyscope_config.is_enabled() else None,
         )
         self.rag_middleware = RAGSecurityMiddleware(self.engine)
         logger.info(f"Loaded {len(self.registry)} patterns")
