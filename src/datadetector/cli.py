@@ -21,7 +21,7 @@ from datadetector.mlops import (
     scan_text,
     scan_training_data,
 )
-from datadetector.models import RedactionStrategy, TransformerConfig
+from datadetector.models import PrivyscopeConfig, RedactionStrategy, TransformerConfig
 from datadetector.registry import load_registry
 from datadetector.resource_models import (
     ConnectionConfig,
@@ -113,6 +113,18 @@ def main(ctx: click.Context, verbose: bool) -> None:
     is_flag=True,
     help="Enable Transformer-based NER detection (improves recall)",
 )
+@click.option(
+    "--privyscope",
+    is_flag=True,
+    help="Enable the privyscope NER backend (pii-engine submodule) for detection. "
+    "Takes the NER slot in place of --ner. Needs `pip install -e pii-engine`.",
+)
+@click.option(
+    "--privyscope-lang",
+    default=None,
+    help="Language for --privyscope (e.g. 'ko', 'en'). Omit to use the sole "
+    "installed language pack.",
+)
 @click.pass_context
 def find(
     ctx: click.Context,
@@ -126,6 +138,8 @@ def find(
     on_match: str,
     ml_context: bool,
     ner: bool,
+    privyscope: bool,
+    privyscope_lang: Optional[str],
 ) -> None:
     """Find PII in text or file."""
     # Load text
@@ -146,8 +160,18 @@ def find(
     if ml_context or ner:
         transformer_config = TransformerConfig(enable_context_classifier=ml_context, enable_ner=ner)
 
+    # Configure the privyscope NER backend. It occupies the single NER slot, so
+    # it takes precedence over --ner when both are given.
+    privyscope_config = None
+    if privyscope:
+        privyscope_config = PrivyscopeConfig(enabled=True, lang=privyscope_lang)
+
     # Create engine and find
-    engine = Engine(registry, transformer_config=transformer_config)
+    engine = Engine(
+        registry,
+        transformer_config=transformer_config,
+        privyscope_config=privyscope_config,
+    )
     ns_list = list(namespaces) if namespaces else None
     result = engine.find(
         text, namespaces=ns_list, include_matched_text=include_text, stop_on_first_match=first_only
