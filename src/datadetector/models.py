@@ -268,3 +268,21 @@ class PrivyscopeConfig:
     def is_enabled(self) -> bool:
         """Check if the privyscope backend is enabled."""
         return self.enabled
+
+    @classmethod
+    def from_dict(cls, data: Optional[Dict[str, Any]]) -> "PrivyscopeConfig":
+        """Build a config from a ``privyscope:`` mapping (e.g. config.yml).
+
+        Unknown keys are ignored; missing keys fall back to the field defaults.
+        An empty/None mapping yields a disabled config.
+        """
+        data = data or {}
+        return cls(
+            enabled=bool(data.get("enabled", False)),
+            lang=data.get("lang"),
+            auto_language=bool(data.get("auto_language", False)),
+            operating_point=str(data.get("operating_point", "balanced")),
+            regex_only=bool(data.get("regex_only", False)),
+            cache_dir=data.get("cache_dir"),
+            score=float(data.get("score", 0.6)),
+        )
