@@ -111,19 +111,14 @@ def main(ctx: click.Context, verbose: bool) -> None:
 @click.option(
     "--ner",
     is_flag=True,
-    help="Enable Transformer-based NER detection (improves recall)",
+    help="Enable NER detection via the privyscope backend (pii-engine submodule), "
+    "to catch entities regex misses. Needs `pip install -e pii-engine`.",
 )
 @click.option(
-    "--privyscope",
-    is_flag=True,
-    help="Enable the privyscope NER backend (pii-engine submodule) for detection. "
-    "Takes the NER slot in place of --ner. Needs `pip install -e pii-engine`.",
-)
-@click.option(
-    "--privyscope-lang",
+    "--ner-lang",
     default=None,
-    help="Language for --privyscope (e.g. 'ko', 'en'). Omit to use the sole "
-    "installed language pack.",
+    help="Language for --ner (e.g. 'ko', 'en'). Omit to use the sole installed "
+    "language pack.",
 )
 @click.pass_context
 def find(
@@ -138,8 +133,7 @@ def find(
     on_match: str,
     ml_context: bool,
     ner: bool,
-    privyscope: bool,
-    privyscope_lang: Optional[str],
+    ner_lang: Optional[str],
 ) -> None:
     """Find PII in text or file."""
     # Load text
@@ -155,16 +149,16 @@ def find(
     pattern_paths = [str(p) for p in patterns] if patterns else None
     registry = load_registry(paths=pattern_paths)
 
-    # Configure Transformer features
+    # Configure Transformer context classification (--ml-context).
     transformer_config = None
-    if ml_context or ner:
-        transformer_config = TransformerConfig(enable_context_classifier=ml_context, enable_ner=ner)
+    if ml_context:
+        transformer_config = TransformerConfig(enable_context_classifier=True)
 
-    # Configure the privyscope NER backend. It occupies the single NER slot, so
-    # it takes precedence over --ner when both are given.
+    # --ner drives the privyscope NER backend (pii-engine), which occupies the
+    # engine's NER slot.
     privyscope_config = None
-    if privyscope:
-        privyscope_config = PrivyscopeConfig(enabled=True, lang=privyscope_lang)
+    if ner:
+        privyscope_config = PrivyscopeConfig(enabled=True, lang=ner_lang)
 
     # Create engine and find
     engine = Engine(
