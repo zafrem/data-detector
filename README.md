@@ -173,12 +173,65 @@ results = engine.find("My SSN is 123-45-6789")
 | Binary Classifier | PII vs Non-PII | 96.2% | 96.9% |
 | Category Classifier | 21 PII types | 87.9% | 86.5% |
 
+> These fine-tuned classifiers refine *scores* (context classification) and are
+> not bundled — train your own or the engine falls back to zero-shot. For NER
+> (finding names/addresses regex misses), see
+> [NER Detection](#ner-detection-pii-engine--privyscope) above.
+
 Install Transformer dependencies:
 ```bash
 pip install data-detector[transformer]
 ```
 
 See [Context Analysis Guide](docs/guides/context-analysis.md) for details.
+
+### NER Detection (pii-engine / privyscope)
+
+Regex catches well-formatted values (emails, card numbers, national IDs); it
+misses free-form entities like names and addresses. The optional **pii-engine**
+submodule ([privyscope](https://github.com/zafrem/privyscope) — a two-stage
+regex + ONNX BIOES/Viterbi NER engine) fills that gap. Its detections are merged
+into the same result: entities regex missed are **added**, and where NER agrees
+with a regex hit the regex match is **corroborated** (score boosted,
+`detection_method="regex+ner"`).
+
+```python
+from datadetector import Engine, load_registry
+from datadetector.models import PrivyscopeConfig
+
+engine = Engine(
+    load_registry(),
+    privyscope_config=PrivyscopeConfig(enabled=True, lang="ko"),  # omit lang for the sole installed pack
+)
+results = engine.find("greeting from 홍길동, reach me at a@acme.io")
+```
+
+From the CLI (`find`, `redact`, and `scan` all accept it):
+
+```bash
+data-detector find --text "…" --ner --ner-lang ko
+```
+
+From the server / RAG middleware, enable the `privyscope:` section in `config.yml`:
+
+```yaml
+privyscope:
+  enabled: true
+  lang: ko            # omit to use the sole installed language pack
+```
+
+Install the backend (it is **not** on PyPI — it ships as the submodule):
+
+```bash
+git submodule update --init pii-engine
+pip install -e pii-engine
+pip install privyscope-ko      # a language pack, for the ONNX NER stage
+```
+
+If the backend or a language pack is not installed, detection **degrades
+gracefully** to regex-only — no errors. See the
+[NER Detection Guide](docs/guides/ner-detection.md) for entity mappings and
+operating points.
 
 ### Configurable Scoring (ScoringConfig)
 

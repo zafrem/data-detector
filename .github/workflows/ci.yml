@@ -7,7 +7,7 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'pii-pattern-engine/**'
-      - 'pii-ml-engine/**'
+      - 'pii-engine/**'
       - 'pyproject.toml'
       - '.github/workflows/ci.yml'
   pull_request:
@@ -16,7 +16,7 @@ on:
       - 'src/**'
       - 'tests/**'
       - 'pii-pattern-engine/**'
-      - 'pii-ml-engine/**'
+      - 'pii-engine/**'
       - 'pyproject.toml'
       - '.github/workflows/ci.yml'
   workflow_call:
