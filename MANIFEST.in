@@ -1,0 +1,33 @@
+# Include pattern and schema files
+recursive-include pii-pattern-engine *.yml *.yaml *.md
+recursive-include config *.yml *.yaml
+include schemas/*.json
+
+# Include utility scripts
+recursive-include scripts *.py
+
+# Include documentation
+include README.md
+include CHANGELOG.md
+include QUICKSTART.md
+include CONTRIBUTING.md
+include REQUIREMENTS.md
+include LICENSE
+
+# Include documentation directories
+recursive-include docs *.md
+
+# Include examples
+recursive-include examples *.py *.yml
+
+# Include tests (optional, for source distributions)
+recursive-include tests *.py
+
+# Include verification module from pii-pattern-engine submodule
+recursive-include src/verification *.py
+
+# Exclude compiled Python files
+global-exclude *.py[cod]
+global-exclude __pycache__
+global-exclude *.so
+global-exclude .DS_Store

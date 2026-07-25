@@ -1,0 +1,442 @@
+namespace: eu
+description: EU national identification numbers for GDPR compliance
+patterns:
+- id: germany_personalausweis_01
+  location: eu
+  category: other
+  description: German identity card number (Personalausweisnummer - 9 alphanumeric
+    with at least 1 letter)
+  pattern: '[A-Z0-9]{9}'
+  verification: contains_letter
+  mask: '*********'
+  examples:
+    match:
+    - L01X00T47
+    - T22000129
+    - C9Y1BTM58
+    - ABC123456
+    - 1A2B3C4D5
+    nomatch:
+    - L01X00T4
+    - L01X00T471
+    - '123456789'
+    - L01X00T47A
+    - '12345678'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: German Personalausweis number. Highly sensitive PII under GDPR. Must contain
+      at least one letter.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z0-9]{9}'
+    go: '[A-Z0-9]{9}'
+    java: '[A-Z0-9]{9}'
+    javascript: '[A-Z0-9]{9}'
+- id: france_insee_01
+  location: eu
+  category: other
+  description: French INSEE number / NIR (15 digits - 1 + 2-digit year + 2-digit month
+    + 5-digit place + 3-digit order + 2-digit key)
+  pattern: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+  verification: france_insee_valid
+  mask: '***************'
+  examples:
+    match:
+    - '188057813579816'
+    - '295017535679891'
+    nomatch:
+    - '388057813579897'
+    - '18805781357989'
+    - '1880578135798971'
+    - '188057813579897'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: French Social Security Number (Numéro de Sécurité Sociale). Uses mod-97
+      checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+    go: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+    java: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+    javascript: '[12]\s*\d{2}\s*(?:0[1-9]|1[0-2])\s*\d{5}\s*\d{3}\s*\d{2}'
+- id: italy_codice_fiscale_01
+  location: eu
+  category: other
+  description: Italian fiscal code (16 alphanumeric - 6 letters + 2 digits + letter
+    + 2 digits + letter + 3 digits + letter)
+  pattern: '[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]'
+  mask: '****************'
+  examples:
+    match:
+    - RSSMRA85T10A562S
+    - VRDGPP65D15H501T
+    - MRORSS70A01F205X
+    - BNCLCU80B01F839K
+    - SRTGRL75C15H501Z
+    nomatch:
+    - RSSMRA85T10A562
+    - RSSMRA85T10A5622
+    - 123456789ABCDEF
+    - RSSMRA85T10A56SS
+    - 12SMRA85T10A562S
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Italian Codice Fiscale. Contains surname(3) + name(3) + birth year(2) +
+      month(1) + day&gender(2) + municipality(4) + check(1).
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]'
+    go: '[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]'
+    java: '[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]'
+    javascript: '[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]'
+- id: spain_dni_01
+  location: eu
+  category: other
+  description: Spanish DNI (8 digits + letter)
+  pattern: \d{8}\s*[A-Z]
+  verification: spain_dni_valid
+  mask: '********-*'
+  examples:
+    match:
+    - 12345678Z
+    - 87654321X
+    - 44444444A
+    nomatch:
+    - 1234567Z
+    - 123456789Z
+    - '12345678'
+    - 12345678A
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Spanish DNI (Documento Nacional de Identidad). Uses mod-23 checksum for
+      the letter.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{8}\s*[A-Z]
+    go: \d{8}\s*[A-Z]
+    java: \d{8}\s*[A-Z]
+    javascript: \d{8}\s*[A-Z]
+- id: spain_nie_01
+  location: eu
+  category: other
+  description: Spanish NIE (foreigner ID - letter + 7 digits + letter)
+  pattern: '[XYZ]\s*\d{7}\s*[A-Z]'
+  verification: spain_nie_valid
+  mask: '*-*******-*'
+  examples:
+    match:
+    - X1234567L
+    - Y1234567X
+    - Z1234567R
+    nomatch:
+    - A1234567L
+    - X123456L
+    - X12345678L
+    - X1234567A
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Spanish NIE (Número de Identidad de Extranjero) for non-Spanish residents.
+      Uses mod-23 checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[XYZ]\s*\d{7}\s*[A-Z]'
+    go: '[XYZ]\s*\d{7}\s*[A-Z]'
+    java: '[XYZ]\s*\d{7}\s*[A-Z]'
+    javascript: '[XYZ]\s*\d{7}\s*[A-Z]'
+- id: netherlands_bsn_01
+  location: eu
+  category: other
+  description: Dutch BSN (Burgerservicenummer - 8 or 9 digits)
+  pattern: \d{8,9}
+  verification: netherlands_bsn_valid
+  mask: '*********'
+  examples:
+    match:
+    - '111111110'
+    - '234567892'
+    nomatch:
+    - '1234567'
+    - '1234567890'
+    - ABC123456
+    - '123456789'
+    - '111111111'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Dutch BSN (Citizen Service Number). Uses 11-proof validation algorithm.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{8,9}
+    go: \d{8,9}
+    java: \d{8,9}
+    javascript: \d{8,9}
+- id: belgium_rrn_01
+  location: eu
+  category: other
+  description: Belgian National Register Number (11 digits - YYMMDD-XXX-CC)
+  pattern: \d{2}\.?\d{2}\.?\d{2}[-\s]?\d{3}[-\s]?\d{2}
+  verification: belgium_rrn_valid
+  mask: '**.**.**-***-**'
+  examples:
+    match:
+    - 85.07.30-123-35
+    - 850730-123-35
+    - '85073012335'
+    nomatch:
+    - '8507301234'
+    - '850730123456'
+    - 85.07.30-123
+    - 85.07.30-123-45
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Belgian Rijksregisternummer. Uses mod-97 checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{2}\.?\d{2}\.?\d{2}[-\s]?\d{3}[-\s]?\d{2}
+    go: \d{2}\.?\d{2}\.?\d{2}[-\s]?\d{3}[-\s]?\d{2}
+    java: \d{2}\.?\d{2}\.?\d{2}[-\s]?\d{3}[-\s]?\d{2}
+    javascript: \d{2}\.?\d{2}\.?\d{2}[-\s]?\d{3}[-\s]?\d{2}
+- id: poland_pesel_01
+  location: eu
+  category: other
+  description: Polish PESEL (11 digits - YYMMDDXXXXX)
+  pattern: \d{11}
+  verification: poland_pesel_valid
+  mask: '***********'
+  examples:
+    match:
+    - '44051401359'
+    - 02261308547
+    - '55030101230'
+    - '83010512349'
+    nomatch:
+    - '4405140135'
+    - '440514013590'
+    - ABCD1234567
+    - '44051401350'
+    - '11111111111'
+    - '00000000000'
+    - '12345678901'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Polish PESEL. Validates birth date and weighted checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{11}
+    go: \d{11}
+    java: \d{11}
+    javascript: \d{11}
+- id: sweden_personnummer_01
+  location: eu
+  category: other
+  description: Swedish personal identity number (YYYYMMDD-XXXX or YYMMDD-XXXX)
+  pattern: (?:\d{8}|\d{6})[-\s]?\d{4}
+  verification: sweden_personnummer_valid
+  mask: '******-****'
+  examples:
+    match:
+    - 900101-1239
+    - 850315-2343
+    - '199001011239'
+    nomatch:
+    - 19900101-123
+    - 900101-123
+    - '1990010112345'
+    - 900101-1230
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Swedish Personnummer. Uses Luhn algorithm for checksum.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: (?:\d{8}|\d{6})[-\s]?\d{4}
+    go: (?:\d{8}|\d{6})[-\s]?\d{4}
+    java: (?:\d{8}|\d{6})[-\s]?\d{4}
+    javascript: (?:\d{8}|\d{6})[-\s]?\d{4}
+- id: denmark_cpr_01
+  location: eu
+  category: other
+  description: Danish CPR number (DDMMYY-XXXX)
+  pattern: \d{6}[-\s]?\d{4}
+  mask: '******-****'
+  examples:
+    match:
+    - 010190-1234
+    - 0101901234
+    - 311299-9999
+    - 150685-5678
+    - '2506751234'
+    nomatch:
+    - 01019012
+    - 0101901234567
+    - 32019-1234
+    - 010190-123
+    - 010190-12345
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'Danish CPR (Central Person Register) number. Format: birth date(6) + serial(4).'
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{6}[-\s]?\d{4}
+    go: \d{6}[-\s]?\d{4}
+    java: \d{6}[-\s]?\d{4}
+    javascript: \d{6}[-\s]?\d{4}
+- id: portugal_nif_01
+  location: eu
+  category: other
+  description: Portuguese NIF (9 digits)
+  pattern: '[1-3]\d{8}'
+  mask: '*********'
+  examples:
+    match:
+    - '123456789'
+    - '212345678'
+    - '312345678'
+    nomatch:
+    - '12345678'
+    - '1234567890'
+    - '412345678'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'Portuguese NIF (Número de Identificação Fiscal). First digit indicates
+      type: 1=person, 2=company, 3=other.'
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[1-3]\d{8}'
+    go: '[1-3]\d{8}'
+    java: '[1-3]\d{8}'
+    javascript: '[1-3]\d{8}'
+- id: austria_sozialversicherungsnummer_01
+  location: eu
+  category: other
+  description: Austrian social security number (10 digits - XXXX DDMMYY)
+  pattern: \d{4}\s?\d{6}
+  mask: '****-******'
+  examples:
+    match:
+    - 1234 010190
+    - '1234010190'
+    - 9999 311299
+    nomatch:
+    - '123401019'
+    - '12340101900'
+    - ABCD010190
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'Austrian Sozialversicherungsnummer (SVNR). Format: serial(4) + birth date(6).'
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{4}\s?\d{6}
+    go: \d{4}\s?\d{6}
+    java: \d{4}\s?\d{6}
+    javascript: \d{4}\s?\d{6}
+- id: finland_hetu_01
+  location: eu
+  category: other
+  description: Finnish personal identity code (DDMMYYCZZZQ)
+  pattern: \d{6}[+\-A]\d{3}[0-9A-FHJ-NPR-Y]
+  verification: finland_hetu_valid
+  mask: '******-****'
+  examples:
+    match:
+    - 010190-123M
+    - 311285-456A
+    nomatch:
+    - 010190-123
+    - 010190-12A
+    - 010190*123A
+    - 010190-123A
+    - 321285-456A
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Finnish HETU (Henkilötunnus). Validates birth date and check character.
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: \d{6}[+\-A]\d{3}[0-9A-FHJ-NPR-Y]
+    go: \d{6}[+\-A]\d{3}[0-9A-FHJ-NPR-Y]
+    java: \d{6}[+\-A]\d{3}[0-9A-FHJ-NPR-Y]
+    javascript: \d{6}[+\-A]\d{3}[0-9A-FHJ-NPR-Y]
+- id: uk_nino_01
+  location: eu
+  category: other
+  description: UK National Insurance Number (2 letters + 6 digits + letter)
+  pattern: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]'
+  mask: '**-**-**-**-*'
+  examples:
+    match:
+    - AB123456C
+    - AB 12 34 56 C
+    - JG103759A
+    - SH987654D
+    - PE 00 11 22 B
+    nomatch:
+    - AB12345C
+    - AB1234567C
+    - OO123456C
+    - DA123456C
+    - QQ123456C
+    - AB123456E
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'UK National Insurance Number (NINO). Note: UK left EU but still relevant
+      for GDPR transition. Certain letters are excluded (D, F, I, Q, U, V).'
+  priority: 200
+  match_type: exactly_matches
+  langs:
+    python: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]'
+    go: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]'
+    java: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]'
+    javascript: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z]\s?\d{2}\s?\d{2}\s?\d{2}\s?[A-D]'

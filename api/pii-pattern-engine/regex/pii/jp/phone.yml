@@ -1,0 +1,56 @@
+namespace: jp
+description: Japan phone number patterns
+patterns:
+- id: mobile_01
+  location: jp
+  category: phone
+  description: Japanese mobile phone number (090/080/070-XXXX-XXXX)
+  pattern: 0[789]0-?[0-9]{4}-?[0-9]{4}
+  mask: 0**-****-****
+  examples:
+    match:
+    - 090-1234-5678
+    - 08012345678
+    - 070-9876-5432
+    nomatch:
+    - 060-1234-5678
+    - 090-123-45678
+    - 0901-234-5678
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  match_type: exactly_matches
+  langs:
+    python: 0[789]0-?[0-9]{4}-?[0-9]{4}
+    go: 0[789]0-?[0-9]{4}-?[0-9]{4}
+    java: 0[789]0-?[0-9]{4}-?[0-9]{4}
+    javascript: 0[789]0-?[0-9]{4}-?[0-9]{4}
+- id: landline_01
+  location: jp
+  category: phone
+  description: Japanese landline phone number (03-xxxx-xxxx, etc.) - excludes 070/080/090
+    mobile prefixes
+  pattern: 0(?:[1-6][0-9]?|[789][1-9])(?:-?[0-9]{3,4}-?[0-9]{4})
+  verification: not_repeating_pattern
+  mask: '**-****-****'
+  examples:
+    match:
+    - 03-1234-5678
+    - 06-6789-0123
+    - 011-123-4567
+    - 0312345678
+    nomatch:
+    - 00-1234-5678
+    - 090-1234-5678
+    - 03-12345-678
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: low
+  match_type: exactly_matches
+  langs:
+    python: 0(?:[1-6][0-9]?|[789][1-9])(?:-?[0-9]{3,4}-?[0-9]{4})
+    go: 0(?:[1-6][0-9]?|[789][1-9])(?:-?[0-9]{3,4}-?[0-9]{4})
+    java: 0(?:[1-6][0-9]?|[789][1-9])(?:-?[0-9]{3,4}-?[0-9]{4})
+    javascript: 0(?:[1-6][0-9]?|[789][1-9])(?:-?[0-9]{3,4}-?[0-9]{4})

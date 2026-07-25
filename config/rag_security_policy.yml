@@ -1,0 +1,145 @@
+# RAG Security Policy Configuration
+#
+# This file defines security policies for the three-layer RAG protection:
+# 1. Input Layer - Scan user queries
+# 2. Storage Layer - Scan documents before indexing
+# 3. Output Layer - Scan LLM responses
+#
+# Redaction Strategies:
+#   - mask: Replace with asterisks (e.g., "***@***.com")
+#   - fake: Replace with realistic fake data (e.g., "fake123@example.com")
+#   - tokenize: Replace with reversible tokens (e.g., "[TOKEN:comm:email:0]")
+#   - hash: Replace with hash value (e.g., "[HASH:a1b2c3d4...]")
+#
+# Actions:
+#   - block: Reject the operation entirely
+#   - sanitize: Remove/replace PII and continue
+#   - warn: Log warning but allow through
+#   - allow: No modification
+#
+# Severity Levels:
+#   - low: Email addresses, URLs
+#   - medium: Phone numbers, names
+#   - high: SSN, credit cards, bank accounts
+#   - critical: Passwords, API keys, tokens
+
+# Layer 1: Input Scanning (User Queries)
+input_layer:
+  enabled: true
+  action: sanitize  # block | sanitize | warn | allow
+  severity_threshold: medium  # Only block/sanitize medium+ severity
+
+  # Redaction strategy: Choose ONE
+  redaction_strategy: fake  # mask | fake | tokenize | hash
+
+  # Namespaces to scan (comment out to scan all)
+  namespaces:
+    - comm  # Email, phone, URL
+    - us    # SSN, credit cards
+    # - kr    # Korean RRN, phone
+    # - jp    # Japanese patterns
+
+  # Logging
+  log_matches: true
+  log_level: info
+
+# Layer 2: Storage Scanning (Document Indexing)
+storage_layer:
+  enabled: true
+  action: sanitize  # block | sanitize | warn | allow
+  severity_threshold: low  # Sanitize all PII levels
+
+  # Redaction strategy: Choose ONE
+  # IMPORTANT: Use 'tokenize' if you need reversible masking
+  #            Use 'fake' to preserve semantic structure for embeddings
+  redaction_strategy: tokenize  # mask | fake | tokenize | hash
+
+  # Namespaces to scan
+  namespaces:
+    - comm
+    - us
+
+  # Tokenization settings (only applies if strategy is 'tokenize')
+  preserve_format: true  # Keep token format consistent
+  use_stable_tokens: false  # Same PII → same token (less secure)
+
+  # Logging
+  log_matches: true
+  log_level: info
+
+# Layer 3: Output Scanning (LLM Responses)
+output_layer:
+  enabled: true
+  action: block  # block | sanitize | warn | allow
+  severity_threshold: high  # Block high+ severity in responses
+
+  # Redaction strategy: Choose ONE
+  # Note: 'block' action will return error message instead
+  redaction_strategy: mask  # mask | fake | tokenize | hash
+
+  # Namespaces to scan
+  namespaces:
+    - comm
+    - us
+
+  # Detokenization (only if tokens present)
+  allow_detokenization: false  # Allow reversing tokens in responses
+
+  # Logging
+  log_matches: true
+  log_level: warning  # Higher severity for output leaks
+
+# Global Settings
+global:
+  # Default action when policy not specified
+  default_action: sanitize
+
+  # Default redaction strategy
+  default_strategy: mask
+
+  # Performance
+  max_concurrent_scans: 10
+  stop_on_first_match: false  # Set true for faster detection-only
+
+  # Monitoring
+  enable_metrics: true
+  metrics_port: 9090
+
+# Use Case Presets
+# Uncomment one preset to use predefined configurations
+
+# Preset: Public Chatbot (Strict)
+# public_chatbot:
+#   input_layer:
+#     action: sanitize
+#     redaction_strategy: fake
+#   storage_layer:
+#     action: sanitize
+#     redaction_strategy: fake
+#   output_layer:
+#     action: block
+#     severity_threshold: medium
+
+# Preset: Internal Tool (Lenient)
+# internal_tool:
+#   input_layer:
+#     action: warn
+#     redaction_strategy: mask
+#   storage_layer:
+#     action: sanitize
+#     redaction_strategy: tokenize
+#   output_layer:
+#     action: sanitize
+#     severity_threshold: high
+
+# Preset: Maximum Security
+# maximum_security:
+#   input_layer:
+#     action: block
+#     severity_threshold: low
+#   storage_layer:
+#     action: block
+#     severity_threshold: low
+#   output_layer:
+#     action: block
+#     severity_threshold: low

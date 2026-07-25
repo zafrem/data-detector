@@ -1,0 +1,29 @@
+namespace: comm
+description: Generic Passport Numbers (Covers many countries not specific in other files)
+
+patterns:
+  - id: generic_passport
+    location: comm
+    category: passport
+    description: Generic Passport Number (6-9 Alphanumeric)
+    pattern: '[A-Z0-9]{6,9}'
+    flags: [IGNORECASE]
+    mask: "********"
+    examples:
+      match:
+        - "123456789"
+        - "A1234567"
+        - "ZZ9988776"
+      nomatch:
+        - "12345"
+        - "1234567890"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    match_type: exactly_matches
+    langs:
+      python: '[A-Z0-9]{6,9}'
+      go: '[A-Z0-9]{6,9}'
+      java: '[A-Z0-9]{6,9}'
+      javascript: '[A-Z0-9]{6,9}'

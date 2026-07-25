@@ -1,0 +1,53 @@
+namespace: us
+description: US Medical and Healthcare patterns (HIPAA)
+
+patterns:
+  - id: npi_id
+    verification: us_npi_valid
+    location: us
+    category: identification
+    description: National Provider Identifier (NPI) - 10-digit unique ID
+    pattern: '[1-9][0-9]{9}'
+    mask: "NPI-**********"
+    examples:
+      match:
+        - "1234567893"
+        - "9876543213"
+      nomatch:
+        - "0123456789"
+        - "123456789"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: high
+    match_type: exactly_matches
+    langs:
+      python: '[1-9][0-9]{9}'
+      go: '[1-9][0-9]{9}'
+      java: '[1-9][0-9]{9}'
+      javascript: '[1-9][0-9]{9}'
+
+  - id: icd10_code
+    location: us
+    category: medical
+    description: ICD-10-CM Diagnosis Code (3 to 7 characters)
+    pattern: '[A-Z][0-9][0-9A-Z](?:\.[0-9A-Z]{1,4})?'
+    mask: "ICD-***"
+    examples:
+      match:
+        - "A00.1"
+        - "Z99.89"
+        - "M54"
+      nomatch:
+        - "123.4"
+        - "ABCD"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '[A-Z][0-9][0-9A-Z](?:\.[0-9A-Z]{1,4})?'
+      go: '[A-Z][0-9][0-9A-Z](?:\.[0-9A-Z]{1,4})?'
+      java: '[A-Z][0-9][0-9A-Z](?:\.[0-9A-Z]{1,4})?'
+      javascript: '[A-Z][0-9][0-9A-Z](?:\.[0-9A-Z]{1,4})?'

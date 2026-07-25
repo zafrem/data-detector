@@ -1,0 +1,164 @@
+namespace: jp
+description: Japan other patterns (zipcode, addresses, names)
+patterns:
+- id: zipcode_01
+  location: jp
+  category: address
+  description: Japanese postal code (XXX-XXXX)
+  pattern: '[0-9]{3}-?[0-9]{4}'
+  verification: jp_zipcode_valid
+  mask: '***-****'
+  examples:
+    match:
+    - 100-0001
+    - 150-0002
+    - '5300001'
+    nomatch:
+    - 12-34567
+    - 1234-567
+    - '12345678'
+    - '1111111'
+    - '0000000'
+    - 999-1234
+    - '9998765'
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: low
+  priority: 150
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{3}-?[0-9]{4}'
+    go: '[0-9]{3}-?[0-9]{4}'
+    java: '[0-9]{3}-?[0-9]{4}'
+    javascript: '[0-9]{3}-?[0-9]{4}'
+- id: address_simple_01
+  location: jp
+  category: address
+  description: Japanese address - simplified pattern (prefecture, city, street details)
+  pattern: (?:〒\s*)?(?:[0-9０-９]{3}[-−‐][0-9０-９]{4}\s*)?(?:北海道|東京都|大阪府|京都府|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)[ぁ-ゟ゠-ヿ一-鿿\s]+(?:市|区|町|村)[ぁ-ゟ゠-ヿ一-鿿a-zA-Z0-9０-９\s\-−‐]+(?:[0-9０-９]+丁目[0-9０-９]+番[0-9０-９]+号|[0-9０-９]+[-−‐][0-9０-９]+(?:[-−‐][0-9０-９]+)?)
+  mask: '***-**** *** *** ***'
+  examples:
+    match:
+    - 〒100-0001 東京都千代田区千代田1-1-1
+    - 大阪府大阪市中央区本町2丁目3番4号
+    - 神奈川県横浜市西区みなとみらい3-4-1
+    - 京都府京都市左京区吉田本町36-1
+    - 北海道札幌市中央区北1条西2-1-1
+    nomatch:
+    - アメリカ合衆国ニューヨーク州
+    - 123 Main Street
+    - 東京都
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: 'Simplified Japanese address pattern using Unicode character ranges instead
+      of property escapes. Matches: optional postal code + prefecture + city/ward
+      + street details + number (supports formats like 1-1-1, 36-1, or 2丁目3番4号).'
+  match_type: exactly_matches
+  langs:
+    python: (?:〒\s*)?(?:[0-9０-９]{3}[-−‐][0-9０-９]{4}\s*)?(?:北海道|東京都|大阪府|京都府|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)[ぁ-ゟ゠-ヿ一-鿿\s]+(?:市|区|町|村)[ぁ-ゟ゠-ヿ一-鿿a-zA-Z0-9０-９\s\-−‐]+(?:[0-9０-９]+丁目[0-9０-９]+番[0-9０-９]+号|[0-9０-９]+[-−‐][0-9０-９]+(?:[-−‐][0-9０-９]+)?)
+    go: (?:〒\s*)?(?:[0-9０-９]{3}[-−‐][0-9０-９]{4}\s*)?(?:北海道|東京都|大阪府|京都府|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)[ぁ-ゟ゠-ヿ一-鿿\s]+(?:市|区|町|村)[ぁ-ゟ゠-ヿ一-鿿a-zA-Z0-9０-９\s\-−‐]+(?:[0-9０-９]+丁目[0-9０-９]+番[0-9０-９]+号|[0-9０-９]+[-−‐][0-9０-９]+(?:[-−‐][0-9０-９]+)?)
+    java: (?:〒\s*)?(?:[0-9０-９]{3}[-−‐][0-9０-９]{4}\s*)?(?:北海道|東京都|大阪府|京都府|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)[ぁ-ゟ゠-ヿ一-鿿\s]+(?:市|区|町|村)[ぁ-ゟ゠-ヿ一-鿿a-zA-Z0-9０-９\s\-−‐]+(?:[0-9０-９]+丁目[0-9０-９]+番[0-9０-９]+号|[0-9０-９]+[-−‐][0-9０-９]+(?:[-−‐][0-9０-９]+)?)
+    javascript: (?:〒\s*)?(?:[0-9０-９]{3}[-−‐][0-9０-９]{4}\s*)?(?:北海道|東京都|大阪府|京都府|青森県|岩手県|宮城県|秋田県|山形県|福島県|茨城県|栃木県|群馬県|埼玉県|千葉県|神奈川県|新潟県|富山県|石川県|福井県|山梨県|長野県|岐阜県|静岡県|愛知県|三重県|滋賀県|兵庫県|奈良県|和歌山県|鳥取県|島根県|岡山県|広島県|山口県|徳島県|香川県|愛媛県|高知県|福岡県|佐賀県|長崎県|熊本県|大分県|宮崎県|鹿児島県|沖縄県)[ぁ-ゟ゠-ヿ一-鿿\s]+(?:市|区|町|村)[ぁ-ゟ゠-ヿ一-鿿a-zA-Z0-9０-９\s\-−‐]+(?:[0-9０-９]+丁目[0-9０-９]+番[0-9０-９]+号|[0-9０-９]+[-−‐][0-9０-９]+(?:[-−‐][0-9０-９]+)?)
+- id: japanese_name_hiragana_01
+  location: jp
+  category: name
+  description: Japanese name in Hiragana (2-8 characters)
+  pattern: '[ぁ-ゟ]{2,8}'
+  mask: '***'
+  examples:
+    match:
+    - たなか
+    - やまだたろう
+    - さとうはなこ
+    - すずき
+    nomatch:
+    - た
+    - abcd
+    - 田中
+    - '123'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Matches Hiragana characters only
+  match_type: exactly_matches
+  langs:
+    python: '[ぁ-ゟ]{2,8}'
+    go: '[ぁ-ゟ]{2,8}'
+    java: '[ぁ-ゟ]{2,8}'
+    javascript: '[ぁ-ゟ]{2,8}'
+- id: japanese_name_katakana_01
+  location: jp
+  category: name
+  description: Japanese name in Katakana (2-8 characters)
+  pattern: '[゠-ヿ]{2,8}'
+  mask: '***'
+  examples:
+    match:
+    - タナカ
+    - ヤマダタロウ
+    - サトウハナコ
+    - スズキ
+    nomatch:
+    - タ
+    - abcd
+    - 田中
+    - '123'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Matches Katakana characters only
+  match_type: exactly_matches
+  langs:
+    python: '[゠-ヿ]{2,8}'
+    go: '[゠-ヿ]{2,8}'
+    java: '[゠-ヿ]{2,8}'
+    javascript: '[゠-ヿ]{2,8}'
+- id: japanese_name_kanji_01
+  location: jp
+  category: name
+  description: Japanese name in Kanji (2-4 characters)
+  pattern: '[一-鿿]{2,4}'
+  verification: japanese_name_kanji_valid
+  mask: '***'
+  examples:
+    match:
+    - 田中
+    - 山田太郎
+    - 佐藤花子
+    - 鈴木
+    - 高橋
+    - 渡辺
+    nomatch:
+    - 田
+    - abcd
+    - たなか
+    - '123'
+    - 東京都
+    - 日本語
+    - 電話
+    - 金属
+    - 中心
+    - 大学
+    - 高速
+    - 情報
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Matches Japanese names in Kanji with known surname prefixes. Uses surname
+      verification to reduce false positives.
+  match_type: exactly_matches
+  langs:
+    python: '[一-鿿]{2,4}'
+    go: '[一-鿿]{2,4}'
+    java: '[一-鿿]{2,4}'
+    javascript: '[一-鿿]{2,4}'

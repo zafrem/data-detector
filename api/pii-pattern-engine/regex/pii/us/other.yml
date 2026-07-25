@@ -1,0 +1,74 @@
+namespace: us
+description: United States other patterns (ZIP code, EIN)
+patterns:
+- id: zipcode_01
+  location: us
+  category: address
+  description: US ZIP code (5 digits or ZIP+4)
+  pattern: \b[0-9]{5}(?:-[0-9]{4})?\b
+  verification: us_zipcode_valid
+  mask: '*****'
+  examples:
+    match:
+    - '90210'
+    - 90210-1234
+    - '48201'
+    - '10001'
+    - 60601-5678
+    - '33101'
+    nomatch:
+    - '1234'
+    - '123456'
+    - '12345'
+    - '11111'
+    - ABC12345
+    - 90210XYZ
+    - MODEL90210A
+    - '00000'
+    - '99999'
+    - '54321'
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: low
+  metadata:
+    note: Uses word boundaries to prevent matching when embedded in alphanumeric strings.
+      Uses verification to reject sequential/repetitive patterns.
+  match_type: exactly_matches
+  langs:
+    python: \b[0-9]{5}(?:-[0-9]{4})?\b
+    go: \b[0-9]{5}(?:-[0-9]{4})?\b
+    java: \b[0-9]{5}(?:-[0-9]{4})?\b
+    javascript: \b[0-9]{5}(?:-[0-9]{4})?\b
+- id: ein_01
+  location: us
+  category: other
+  description: Employer Identification Number (XX-XXXXXXX)
+  pattern: '[0-9]{2}-[0-9]{7}'
+  verification: not_timestamp
+  mask: '**-*******'
+  examples:
+    match:
+    - 12-3456789
+    - 98-7654321
+    - 45-6789012
+    - 78-9012345
+    nomatch:
+    - 123-456789
+    - 12-345678
+    - 12-34567890
+    - '123456789'
+    - 1-23456789
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: medium
+  metadata:
+    note: Requires hyphen separator. Uses verification to reject timestamps.
+  priority: 150
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{2}-[0-9]{7}'
+    go: '[0-9]{2}-[0-9]{7}'
+    java: '[0-9]{2}-[0-9]{7}'
+    javascript: '[0-9]{2}-[0-9]{7}'

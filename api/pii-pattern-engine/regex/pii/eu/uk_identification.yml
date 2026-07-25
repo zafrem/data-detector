@@ -1,0 +1,29 @@
+namespace: eu
+description: UK National Identification Numbers (UK remains common in many PII datasets)
+
+patterns:
+  - id: uk_nino_01
+    verification: uk_nino_valid
+    location: eu
+    category: identification
+    description: UK National Insurance Number (NINO)
+    pattern: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z][0-9]{6}[A-D]'
+    flags: [IGNORECASE]
+    mask: "**-**-**-*"
+    examples:
+      match:
+        - "AB123456C"
+        - "AA000000A"
+      nomatch:
+        - "DF123456G"
+        - "QQ123456C"
+    policy:
+      store_raw: false
+      action_on_match: redact
+      severity: critical
+    match_type: exactly_matches
+    langs:
+      python: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z][0-9]{6}[A-D]'
+      go: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z][0-9]{6}[A-D]'
+      java: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z][0-9]{6}[A-D]'
+      javascript: '[A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z][0-9]{6}[A-D]'

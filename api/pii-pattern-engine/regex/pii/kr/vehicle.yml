@@ -1,0 +1,29 @@
+namespace: kr
+description: Korean vehicle registration plate patterns
+
+patterns:
+  - id: vehicle_registration_01
+    location: kr
+    category: vehicle
+    description: Korean license plate format (e.g., 123가 4567)
+    pattern: '\b\d{2,3}[가-힣]\s?\d{4}\b'
+    mask: "###* ####"
+    verification: kr_vehicle_registration_valid
+    examples:
+      match:
+        - "123가 4567"
+        - "12가3456"
+        - "52가 1234"
+      nomatch:
+        - "1가 1234"
+        - "123가 123"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\b\d{2,3}[가-힣]\s?\d{4}\b'
+      go: '\b\d{2,3}[가-힣]\s?\d{4}\b'
+      java: '\b\d{2,3}[가-힣]\s?\d{4}\b'
+      javascript: '\b\d{2,3}[가-힣]\s?\d{4}\b'

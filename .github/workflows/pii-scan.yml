@@ -1,0 +1,65 @@
+name: PII Scan
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Weekly on Sunday at midnight
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'src/**'
+      - 'pii-pattern-engine/**'
+      - 'pii-engine/**'
+      - 'pii-llm-engine/**'
+      - '.github/workflows/pii-scan.yml'
+  workflow_dispatch: # Allow manual trigger
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  scan:
+    name: Periodic PII Scan
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+        token: ${{ secrets.GH_TOKEN || github.token }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+        
+    - name: Install Data Detector
+      run: pip install -e .
+      
+    - name: Scan for PII
+      run: |
+        echo "Scanning source code for PII patterns..."
+        
+        # We use a temp file to store findings to avoid subshell issues with TOTAL_MATCHES
+        # and to provide a clean summary at the end.
+        FINDINGS_FILE=$(mktemp)
+        
+        # Find all python files in src and scan them
+        find src -name "*.py" -type f | while read -r file; do
+          OUTPUT=$(data-detector find --file "$file" --ns us --ns kr 2>/dev/null || true)
+          
+          if echo "$OUTPUT" | grep -q "Found [1-9]"; then
+            MATCH_COUNT=$(echo "$OUTPUT" | grep -oE "Found [0-9]+" | awk '{print $2}')
+            echo "::notice file=$file::Found $MATCH_COUNT PII patterns in $file"
+            echo "### $file ($MATCH_COUNT matches)" >> "$FINDINGS_FILE"
+            echo "$OUTPUT" | grep -E "^  " | head -n 10 >> "$FINDINGS_FILE"
+            echo "" >> "$FINDINGS_FILE"
+          fi
+        done
+        
+        if [ -s "$FINDINGS_FILE" ]; then
+          echo "## PII Scan Results" >> $GITHUB_STEP_SUMMARY
+          cat "$FINDINGS_FILE" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ No PII patterns found in source code." >> $GITHUB_STEP_SUMMARY
+        fi

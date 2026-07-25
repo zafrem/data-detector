@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-JZC9YF4Y3Z" crossorigin="anonymous"></script> <!-- NOSONAR - SRI not supported for dynamic Google Analytics content -->
+<script>
+window.dataLayer=window.dataLayer||[];
+function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());
+gtag('config','G-JZC9YF4Y3Z');
+</script>
+<title>Data Detector API</title>
+<meta name="google-site-verification" content="google736311ca6ba1b7ad.html" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" crossorigin="anonymous"> <!-- NOSONAR - SRI not supported for dynamic Google Fonts content -->
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0b;--surface:#111113;--border:#1e1e22;
+  --text:#e8e6e3;--dim:#6b6966;--accent:#d4f34a;
+  --danger:#ff4d4d;--mono:'IBM Plex Mono',monospace;
+  --serif:'Instrument Serif',Georgia,serif;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--mono);line-height:1.7;
+  min-height:100vh;overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%,rgba(212,243,74,.04),transparent),
+    radial-gradient(ellipse 50% 50% at 80% 80%,rgba(212,243,74,.02),transparent);
+  pointer-events:none;z-index:0;
+}
+
+/* --- layout --- */
+.wrap{max-width:820px;margin:0 auto;padding:0 2rem;position:relative;z-index:1}
+header{padding:5rem 0 3rem;border-bottom:1px solid var(--border)}
+header .tag{
+  display:inline-block;font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--bg);background:var(--accent);padding:.2rem .7rem;border-radius:2px;
+  margin-bottom:1.4rem;font-weight:600;
+}
+header h1{
+  font-family:var(--serif);font-weight:400;font-size:3.2rem;
+  line-height:1.1;letter-spacing:-.02em;margin-bottom:.8rem;
+}
+header h1 em{font-style:italic;color:var(--accent)}
+header p{color:var(--dim);font-size:.85rem;max-width:520px}
+header .base-url{
+  margin-top:1.4rem;padding:.6rem 1rem;
+  background:var(--surface);border:1px solid var(--border);border-radius:4px;
+  font-size:.8rem;display:inline-flex;align-items:center;gap:.6rem;
+  cursor:pointer;transition:border-color .2s;
+}
+header .base-url:hover{border-color:var(--accent)}
+header .base-url .label{color:var(--dim);font-size:.65rem;text-transform:uppercase;letter-spacing:.08em}
+header .base-url code{color:var(--accent)}
+header .base-url .copy{color:var(--dim);font-size:.65rem;opacity:0;transition:opacity .2s}
+header .base-url:hover .copy{opacity:1}
+
+/* --- sections --- */
+section{padding:3rem 0;border-bottom:1px solid var(--border)}
+section:last-of-type{border-bottom:none;padding-bottom:5rem}
+.section-label{
+  font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--dim);margin-bottom:1.6rem;font-weight:600;
+}
+
+/* --- auth flow --- */
+.auth-flow{display:grid;gap:1rem}
+.auth-step{
+  display:grid;grid-template-columns:2rem 1fr;gap:1rem;
+  padding:1.2rem 1.4rem;background:var(--surface);
+  border:1px solid var(--border);border-radius:6px;
+}
+.auth-step .num{
+  font-family:var(--serif);font-size:1.6rem;color:var(--accent);
+  line-height:1;
+}
+.auth-step h3{font-size:.8rem;font-weight:600;margin-bottom:.3rem}
+.auth-step p{font-size:.75rem;color:var(--dim);line-height:1.6}
+
+/* --- endpoint cards --- */
+.endpoints{display:grid;gap:1.2rem}
+.ep{
+  border:1px solid var(--border);border-radius:6px;
+  overflow:hidden;transition:border-color .25s;
+}
+.ep:hover{border-color:#2a2a30}
+.ep-header{
+  display:flex;align-items:center;gap:.8rem;
+  padding:1rem 1.4rem;cursor:pointer;
+  background:var(--surface);user-select:none;
+}
+.ep-header .method{
+  font-size:.6rem;font-weight:600;letter-spacing:.06em;
+  padding:.15rem .5rem;border-radius:2px;flex-shrink:0;
+}
+.ep-header .method.post{background:rgba(212,243,74,.15);color:var(--accent)}
+.ep-header .method.get{background:rgba(74,180,243,.15);color:#4ab4f3}
+.ep-header .path{font-size:.8rem;font-weight:500}
+.ep-header .desc{margin-left:auto;font-size:.7rem;color:var(--dim);text-align:right}
+.ep-header .chevron{
+  color:var(--dim);font-size:.7rem;transition:transform .25s;margin-left:.6rem;
+}
+.ep.open .ep-header .chevron{transform:rotate(90deg)}
+.ep-body{
+  max-height:0;overflow:hidden;transition:max-height .35s ease;
+}
+.ep.open .ep-body{max-height:800px}
+.ep-content{padding:1.2rem 1.4rem;border-top:1px solid var(--border)}
+.ep-content .sub{
+  font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--dim);margin-bottom:.5rem;font-weight:600;
+}
+.ep-content .sub+.sub{margin-top:1.2rem}
+
+/* --- code blocks --- */
+pre{
+  background:var(--bg);border:1px solid var(--border);border-radius:4px;
+  padding:1rem 1.2rem;overflow-x:auto;font-size:.75rem;
+  line-height:1.8;margin-top:.4rem;
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+pre code{font-family:var(--mono)}
+.k{color:var(--accent)}.s{color:#8bdb6a}.n{color:#e09956}.d{color:var(--dim)}.p{color:#6b6966}
+
+/* --- try-it panel --- */
+.try-it{
+  padding:3rem 0;
+}
+.try-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+@media(max-width:680px){.try-grid{grid-template-columns:1fr}}
+.try-input,.try-output{display:flex;flex-direction:column;gap:.6rem}
+.try-input label,.try-output label{
+  font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--dim);font-weight:600;
+}
+textarea{
+  background:var(--surface);border:1px solid var(--border);border-radius:4px;
+  padding:.8rem 1rem;font-family:var(--mono);font-size:.8rem;
+  color:var(--text);resize:vertical;min-height:120px;
+  outline:none;transition:border-color .2s;
+}
+textarea:focus{border-color:var(--accent)}
+select,button.run{
+  font-family:var(--mono);font-size:.75rem;
+  padding:.5rem .8rem;border-radius:4px;cursor:pointer;
+}
+select{
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);outline:none;
+}
+button.run{
+  background:var(--accent);color:var(--bg);border:none;
+  font-weight:600;letter-spacing:.04em;transition:opacity .2s;
+  align-self:flex-start;
+}
+button.run:hover{opacity:.85}
+button.run:disabled{opacity:.4;cursor:not-allowed}
+.try-output pre{min-height:120px;margin:0;border-color:var(--border)}
+.try-controls{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.try-controls .status{font-size:.7rem;color:var(--dim)}
+.try-controls .status.err{color:var(--danger)}
+
+/* --- footer --- */
+footer{
+  padding:2rem 0 3rem;text-align:center;
+  font-size:.7rem;color:var(--dim);
+}
+footer a{color:var(--dim);text-decoration:underline;text-underline-offset:3px}
+footer a:hover{color:var(--text)}
+
+/* --- animations --- */
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+header,.section-label,.auth-step,.ep,.try-grid,footer{
+  animation:fadeUp .5s ease both;
+}
+header{animation-delay:.05s}
+section:nth-of-type(1) .section-label{animation-delay:.15s}
+section:nth-of-type(1) .auth-step:nth-child(1){animation-delay:.2s}
+section:nth-of-type(1) .auth-step:nth-child(2){animation-delay:.25s}
+section:nth-of-type(1) .auth-step:nth-child(3){animation-delay:.3s}
+section:nth-of-type(2) .section-label{animation-delay:.35s}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="tag">v0.0.5</div>
+  <h1>Data <em>Detector</em> API</h1>
+  <p>PII detection, validation, masking, and fake-replacement. Detect personal information across Korean, Chinese, Japanese, and English text.</p>
+  <div class="base-url" role="button" tabindex="0" onclick="navigator.clipboard.writeText(location.origin+'/api');this.querySelector('.copy').textContent='copied!'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+    <div>
+      <div class="label">Base URL</div>
+      <code id="baseUrl"></code>
+    </div>
+    <span class="copy">click to copy</span>
+  </div>
+</header>
+
+<!-- AUTH -->
+<section>
+  <div class="section-label">Authentication</div>
+  <div class="auth-flow">
+    <div class="auth-step">
+      <div class="num">1</div>
+      <div>
+        <h3>Get an API key</h3>
+        <p>POST to <code>/api/auth/issue</code> with your admin token and a system name identifying your service.</p>
+      </div>
+    </div>
+    <div class="auth-step">
+      <div class="num">2</div>
+      <div>
+        <h3>Store the key</h3>
+        <p>The response contains a signed API key (<code>dd_...</code>). Store it securely &mdash; it cannot be retrieved again.</p>
+      </div>
+    </div>
+    <div class="auth-step">
+      <div class="num">3</div>
+      <div>
+        <h3>Authenticate requests</h3>
+        <p>Pass the key in every request: <code>Authorization: Bearer dd_...</code></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENDPOINTS -->
+<section>
+  <div class="section-label">Endpoints</div>
+  <div class="endpoints">
+
+    <!-- auth/issue -->
+    <div class="ep">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span class="method post">POST</span>
+        <span class="path">/api/auth/issue</span>
+        <span class="desc">Issue API key</span>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="ep-body"><div class="ep-content">
+        <div class="sub">Request</div>
+<pre><code>{
+  <span class="k">"token"</span>: <span class="s">"your-admin-token"</span>,
+  <span class="k">"system"</span>: <span class="s">"billing-service"</span>
+}</code></pre>
+        <div class="sub">Response</div>
+<pre><code>{
+  <span class="k">"api_key"</span>: <span class="s">"dd_c2eca8ea..."</span>,
+  <span class="k">"system"</span>: <span class="s">"billing-service"</span>,
+  <span class="k">"message"</span>: <span class="s">"Store this key securely."</span>
+}</code></pre>
+      </div></div>
+    </div>
+
+    <!-- detect -->
+    <div class="ep">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span class="method post">POST</span>
+        <span class="path">/api/detect</span>
+        <span class="desc">Detect PII</span>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="ep-body"><div class="ep-content">
+        <div class="sub">Request</div>
+<pre><code>{
+  <span class="k">"text"</span>: <span class="s">"Email me at test@example.com"</span>,
+  <span class="k">"namespaces"</span>: [<span class="s">"comm"</span>, <span class="s">"us"</span>]  <span class="d">// optional</span>
+}</code></pre>
+        <div class="sub">Response</div>
+<pre><code>{
+  <span class="k">"pii_found"</span>: <span class="n">true</span>,
+  <span class="k">"match_count"</span>: <span class="n">1</span>,
+  <span class="k">"matches"</span>: [
+    { <span class="k">"ns_id"</span>: <span class="s">"comm/email_01"</span>, <span class="k">"category"</span>: <span class="s">"email"</span>,
+      <span class="k">"start"</span>: <span class="n">12</span>, <span class="k">"end"</span>: <span class="n">28</span>, <span class="k">"severity"</span>: <span class="s">"medium"</span> }
+  ]
+}</code></pre>
+      </div></div>
+    </div>
+
+    <!-- validate -->
+    <div class="ep">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span class="method post">POST</span>
+        <span class="path">/api/validate</span>
+        <span class="desc">Validate against pattern</span>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="ep-body"><div class="ep-content">
+        <div class="sub">Request</div>
+<pre><code>{
+  <span class="k">"text"</span>: <span class="s">"010-1234-5678"</span>,
+  <span class="k">"ns_id"</span>: <span class="s">"kr/mobile_01"</span>
+}</code></pre>
+        <div class="sub">Response</div>
+<pre><code>{
+  <span class="k">"ok"</span>: <span class="n">true</span>,
+  <span class="k">"ns_id"</span>: <span class="s">"kr/mobile_01"</span>
+}</code></pre>
+      </div></div>
+    </div>
+
+    <!-- mask -->
+    <div class="ep">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span class="method post">POST</span>
+        <span class="path">/api/mask</span>
+        <span class="desc">Mask PII</span>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="ep-body"><div class="ep-content">
+        <div class="sub">Request</div>
+<pre><code>{
+  <span class="k">"text"</span>: <span class="s">"Call 010-1234-5678 or test@example.com"</span>
+}</code></pre>
+        <div class="sub">Response</div>
+<pre><code>{
+  <span class="k">"original"</span>: <span class="s">"Call 010-1234-5678 or test@example.com"</span>,
+  <span class="k">"masked"</span>:   <span class="s">"Call **-****-**** or ***@***.***"</span>,
+  <span class="k">"change_count"</span>: <span class="n">2</span>,
+  <span class="k">"changes"</span>: [ <span class="d">... detail per match</span> ]
+}</code></pre>
+      </div></div>
+    </div>
+
+    <!-- fake -->
+    <div class="ep">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span class="method post">POST</span>
+        <span class="path">/api/fake</span>
+        <span class="desc">Replace with fake data</span>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="ep-body"><div class="ep-content">
+        <div class="sub">Request</div>
+<pre><code>{
+  <span class="k">"text"</span>: <span class="s">"SSN: 123-45-6789"</span>,
+  <span class="k">"namespaces"</span>: [<span class="s">"us"</span>]
+}</code></pre>
+        <div class="sub">Response</div>
+<pre><code>{
+  <span class="k">"original"</span>: <span class="s">"SSN: 123-45-6789"</span>,
+  <span class="k">"replaced"</span>: <span class="s">"SSN: 018-15-8567"</span>,
+  <span class="k">"change_count"</span>: <span class="n">1</span>,
+  <span class="k">"changes"</span>: [ <span class="d">... detail per match</span> ]
+}</code></pre>
+      </div></div>
+    </div>
+
+    <!-- logs -->
+    <div class="ep">
+      <div class="ep-header" role="button" tabindex="0" onclick="this.parentElement.classList.toggle('open')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+        <span class="method get">GET</span>
+        <span class="path">/api/logs</span>
+        <span class="desc">Usage logs</span>
+        <span class="chevron">&#9654;</span>
+      </div>
+      <div class="ep-body"><div class="ep-content">
+        <div class="sub">Query Parameters</div>
+<pre><code><span class="k">system</span>=billing-service  <span class="d">// filter by system</span>
+<span class="k">event</span>=api_call          <span class="d">// token_issued | api_call</span>
+<span class="k">limit</span>=50                <span class="d">// max entries (default 100)</span></code></pre>
+        <div class="sub">Response</div>
+<pre><code>{
+  <span class="k">"logs"</span>: [
+    { <span class="k">"event"</span>: <span class="s">"api_call"</span>, <span class="k">"system"</span>: <span class="s">"billing-service"</span>,
+      <span class="k">"endpoint"</span>: <span class="s">"/api/mask"</span>,
+      <span class="k">"detail"</span>: { <span class="k">"change_count"</span>: <span class="n">3</span> },
+      <span class="k">"timestamp"</span>: <span class="s">"2026-02-21T05:47:04Z"</span> }
+  ],
+  <span class="k">"total"</span>: <span class="n">1</span>
+}</code></pre>
+      </div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- TRY IT -->
+<section class="try-it">
+  <div class="section-label">Try It</div>
+  <div class="try-grid">
+    <div class="try-input">
+      <label>Input text</label>
+      <textarea id="tryText" placeholder="Enter text with PII...">Contact me at test@example.com or call 010-1234-5678. SSN: 123-45-6789</textarea>
+      <div class="try-controls">
+        <select id="tryEndpoint">
+          <option value="detect">Detect</option>
+          <option value="mask" selected>Mask</option>
+          <option value="fake">Fake</option>
+        </select>
+        <input type="password" id="tryKey" placeholder="API key (dd_...)" style="
+          font-family:var(--mono);font-size:.75rem;padding:.5rem .8rem;
+          background:var(--surface);border:1px solid var(--border);border-radius:4px;
+          color:var(--text);outline:none;flex:1;min-width:140px;
+        ">
+        <button class="run" id="tryRun" onclick="runTry()">Run</button>
+        <span class="status" id="tryStatus"></span>
+      </div>
+    </div>
+    <div class="try-output">
+      <label>Response</label>
+      <pre id="tryResult"><code class="d">Response will appear here...</code></pre>
+    </div>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <a href="https://github.com/zafrem/data-detector" target="_blank">GitHub</a>
+  &nbsp;&middot;&nbsp; Apache License 2.0
+</footer>
+
+<script>
+document.getElementById('baseUrl').textContent = location.origin + '/api';
+
+let _demoAvailable = false;
+(async function checkDemo() {
+  try {
+    const res = await fetch('/api/demo-key');
+    if (res.ok) {
+      _demoAvailable = true;
+      document.getElementById('tryKey').placeholder = 'Using demo key (or enter your own)';
+    }
+  } catch (e) { /* demo key not available */ }
+})();
+
+async function runTry() {
+  const text = document.getElementById('tryText').value;
+  const endpoint = document.getElementById('tryEndpoint').value;
+  const userKey = document.getElementById('tryKey').value.trim();
+  const useDemo = !userKey && _demoAvailable;
+  const status = document.getElementById('tryStatus');
+  const result = document.getElementById('tryResult');
+  const btn = document.getElementById('tryRun');
+
+  if (!userKey && !useDemo) { status.textContent = 'API key required'; status.className = 'status err'; return; }
+  if (!text) { status.textContent = 'Enter some text'; status.className = 'status err'; return; }
+
+  btn.disabled = true;
+  status.textContent = 'sending...';
+  status.className = 'status';
+
+  try {
+    const url = useDemo ? '/api/demo/' + endpoint : '/api/' + endpoint;
+    const headers = { 'Content-Type': 'application/json' };
+    if (!useDemo) headers['Authorization'] = 'Bearer ' + userKey;
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ text })
+    });
+    const data = await res.json();
+    result.innerHTML = '<code>' + syntaxHighlight(JSON.stringify(data, null, 2)) + '</code>';
+    const demoLabel = useDemo ? ' (demo)' : '';
+    status.textContent = res.status + ' \u00b7 ' + res.statusText + demoLabel;
+    status.className = res.ok ? 'status' : 'status err';
+  } catch (e) {
+    result.innerHTML = '<code class="d">' + e.message + '</code>';
+    status.textContent = 'error';
+    status.className = 'status err';
+  }
+  btn.disabled = false;
+}
+
+function syntaxHighlight(json) {
+  return json.replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/"([^"]+)":/g, '<span class="k">"$1"</span>:')
+    .replace(/: "([^"]*)"/g, ': <span class="s">"$1"</span>')
+    .replace(/: (\d+)/g, ': <span class="n">$1</span>')
+    .replace(/: (true|false|null)/g, ': <span class="n">$1</span>');
+}
+</script>
+</body>
+</html>

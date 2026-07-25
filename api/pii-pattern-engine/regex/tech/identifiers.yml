@@ -1,0 +1,75 @@
+namespace: tech
+description: Common Technical Identifiers (MAC, UUID, CVE)
+
+patterns:
+  - id: mac_address
+    location: tech
+    category: identifiers
+    description: 48-bit MAC Address (e.g., 00:1A:2B:3C:4D:5E)
+    pattern: '\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b'
+    mask: "**:**:**:**:**:**"
+    examples:
+      match:
+        - "00:1A:2B:3C:4D:5E"
+        - "00-1A-2B-3C-4D-5E"
+      nomatch:
+        - "00:1A:2B:3C:4D"
+        - "00:1A:2B:3C:4D:5G"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b'
+      go: '\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b'
+      java: '\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b'
+      javascript: '\b([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})\b'
+
+  - id: uuid_guid
+    location: tech
+    category: identifiers
+    description: UUID/GUID (e.g., 550e8400-e29b-41d4-a716-446655440000)
+    pattern: '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+    mask: "********-****-****-****-************"
+    examples:
+      match:
+        - "550e8400-e29b-41d4-a716-446655440000"
+        - "D30E7B78-E29B-41D4-A716-446655440000"
+      nomatch:
+        - "550e8400-e29b-41d4-a716-44665544000"
+        - "550e8400e29b41d4a716446655440000"
+    policy:
+      store_raw: false
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+      go: '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+      java: '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+      javascript: '\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b'
+
+  - id: cve_identifier
+    location: tech
+    category: identifiers
+    description: CVE Identifier (Common Vulnerabilities and Exposures)
+    pattern: '\bCVE-[0-9]{4}-[0-9]{4,7}\b'
+    mask: "CVE-****-****"
+    examples:
+      match:
+        - "CVE-2023-12345"
+        - "CVE-2021-9999999"
+      nomatch:
+        - "CVE-23-12345"
+        - "CV-2023-12345"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: low
+    match_type: exactly_matches
+    langs:
+      python: '\bCVE-[0-9]{4}-[0-9]{4,7}\b'
+      go: '\bCVE-[0-9]{4}-[0-9]{4,7}\b'
+      java: '\bCVE-[0-9]{4}-[0-9]{4,7}\b'
+      javascript: '\bCVE-[0-9]{4}-[0-9]{4,7}\b'

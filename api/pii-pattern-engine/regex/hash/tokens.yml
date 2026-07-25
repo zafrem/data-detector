@@ -1,0 +1,287 @@
+namespace: comm
+description: High-entropy token and secret patterns (API keys, tokens, secrets)
+patterns:
+- id: generic_token_01
+  location: comm
+  category: token
+  description: Generic high-entropy token (20+ chars, base64url/hex, high entropy)
+  pattern: '[A-Za-z0-9_\-+/=.]{20,}'
+  verification: high_entropy_token
+  priority: 100
+  mask: '[REDACTED_TOKEN]'
+  examples:
+    match:
+    - abc123XYZ456def789GHI012jkl345MNO678pqr901STU234vwx567ABC890
+    - eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ
+    - example_token_ABCDEFGH1234567890IJKLMNOP1234567890QRSTUVWXYZ1234567890
+    - TEST1234567890ABCDEFGHIJKLMNOP1234567890QRSTUVWXYZ1234567890ABC
+    nomatch:
+    - short_token_here
+    - has spaces in it so invalid
+    - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    - simple-password-123
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: Detects generic high-entropy tokens (20+ chars) using Shannon entropy calculation
+  match_type: exactly_matches
+  langs:
+    python: '[A-Za-z0-9_\-+/=.]{20,}'
+    go: '[A-Za-z0-9_\-+/=.]{20,}'
+    java: '[A-Za-z0-9_\-+/=.]{20,}'
+    javascript: '[A-Za-z0-9_\-+/=.]{20,}'
+- id: aws_access_key_01
+  location: comm
+  category: token
+  description: AWS Access Key ID (starts with AKIA, 20 chars)
+  pattern: AKIA[0-9A-Z]{16}
+  priority: 1
+  mask: AKIA****************
+  examples:
+    match:
+    - AKIAIOSFODNN7EXAMPLE
+    - AKIAJG6N5D2K4EXAMPLE
+    nomatch:
+    - AKIA123
+    - akiaiosfodnn7example
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    provider: AWS
+    type: Access Key ID
+  match_type: exactly_matches
+  langs:
+    python: AKIA[0-9A-Z]{16}
+    go: AKIA[0-9A-Z]{16}
+    java: AKIA[0-9A-Z]{16}
+    javascript: AKIA[0-9A-Z]{16}
+- id: aws_secret_key_01
+  location: comm
+  category: token
+  description: AWS Secret Access Key (40 chars, base64)
+  pattern: \b[A-Za-z0-9/+=]{40}\b
+  verification: high_entropy_token
+  priority: 5
+  mask: '[REDACTED_AWS_SECRET]'
+  examples:
+    match:
+    - wJalrXUtnFEMI/K7MDENG/bPxRfiCYzQ3m8Nv5Tw
+    - je7MtGbClwBF/2Zp9Utk/h3yCo8nvbEXAMPLEKEY
+    nomatch:
+    - short_key
+    - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    provider: AWS
+    type: Secret Access Key
+  match_type: exactly_matches
+  langs:
+    python: \b[A-Za-z0-9/+=]{40}\b
+    go: \b[A-Za-z0-9/+=]{40}\b
+    java: \b[A-Za-z0-9/+=]{40}\b
+    javascript: \b[A-Za-z0-9/+=]{40}\b
+- id: github_token_01
+  location: comm
+  category: token
+  description: GitHub Personal Access Token (starts with ghp_, gho_, ghu_, ghs_, or
+    ghr_)
+  pattern: gh[pousr]_[A-Za-z0-9_]{36,}
+  verification: high_entropy_token
+  priority: 1
+  mask: ghp_************************************
+  examples:
+    match:
+    - ghp_Tf8k2Lm9Xp4Qr7Wn1Yv6Bj3Hd0Gs5Uc8Eo2Ai
+    - gho_Kw3Nz7Rf1Xp5Ym9Tq4Uc8Lj2Bv6Hd0Gs5Eo1Ai
+    - ghu_Mj4Qr8Tf2Xp6Yn0Wk3Uc9Lv7Bh1Gs5Ed0Ai2Rn
+    nomatch:
+    - ghp_short
+    - github_token_123
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    provider: GitHub
+    type: Personal Access Token
+  match_type: exactly_matches
+  langs:
+    python: gh[pousr]_[A-Za-z0-9_]{36,}
+    go: gh[pousr]_[A-Za-z0-9_]{36,}
+    java: gh[pousr]_[A-Za-z0-9_]{36,}
+    javascript: gh[pousr]_[A-Za-z0-9_]{36,}
+- id: stripe_key_01
+  location: comm
+  category: token
+  description: Stripe-like API Key (example pattern - use rk_test_ for testing)
+  pattern: rk_(live|test)_[A-Za-z0-9]{24,}
+  verification: high_entropy_token
+  priority: 1
+  mask: rk_****_************************
+  examples:
+    match:
+    - rk_test_EXAMPLEKEY1234567890abcdefgh12345
+    - rk_test_Kp7Xm2Lq9Wr4Jn6Tb8Vc3Hs5Fd0Yg1Az
+    nomatch:
+    - rk_test_short
+    - rk_prod_notvalid
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    provider: Example (Stripe-like pattern)
+    type: API Key
+    note: Example pattern using rk_ prefix. These are FAKE examples for testing only.
+  match_type: exactly_matches
+  langs:
+    python: rk_(live|test)_[A-Za-z0-9]{24,}
+    go: rk_(live|test)_[A-Za-z0-9]{24,}
+    java: rk_(live|test)_[A-Za-z0-9]{24,}
+    javascript: rk_(live|test)_[A-Za-z0-9]{24,}
+- id: jwt_token_01
+  location: comm
+  category: token
+  description: JSON Web Token (JWT) - three base64url parts separated by dots
+  pattern: eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+
+  priority: 2
+  mask: '[REDACTED_JWT]'
+  examples:
+    match:
+    - eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+    - eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJleGFtcGxlLmNvbSIsInN1YiI6InVzZXIxMjMifQ.abcdef123456
+    nomatch:
+    - eyJ.incomplete.token
+    - notavalidjwttoken
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    type: JSON Web Token (JWT)
+  match_type: exactly_matches
+  langs:
+    python: eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+
+    go: eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+
+    java: eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+
+    javascript: eyJ[A-Za-z0-9_\-]+\.eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+
+- id: slack_token_01
+  location: comm
+  category: token
+  description: Slack Token (starts with xoxb-, xoxp-, xoxa-, or xoxr-)
+  pattern: xox[bpar]-[A-Za-z0-9\-]{10,}
+  verification: high_entropy_token
+  priority: 1
+  mask: xox*-***************************
+  examples:
+    match:
+    - xoxb-5Kq7Xm2Lw9Rp4Jn6Tb8Vc3Hs0Fd1Yg-Az8Bx
+    - xoxp-3Rm9Yf8Mq7Gx2Wd4Kn6Tb0Vc5Hs1Jw-Pl3Nz
+    nomatch:
+    - xoxb-short
+    - xoxz-invalidprefix
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    provider: Slack
+    type: API Token
+    note: FAKE examples for testing only - not real tokens
+  match_type: exactly_matches
+  langs:
+    python: xox[bpar]-[A-Za-z0-9\-]{10,}
+    go: xox[bpar]-[A-Za-z0-9\-]{10,}
+    java: xox[bpar]-[A-Za-z0-9\-]{10,}
+    javascript: xox[bpar]-[A-Za-z0-9\-]{10,}
+- id: google_api_key_01
+  location: comm
+  category: token
+  description: Google API Key (starts with AIza)
+  pattern: AIza[A-Za-z0-9\-_]{35}
+  priority: 1
+  mask: AIza***********************************
+  examples:
+    match:
+    - AIzaSyD-9tN3R6X5Q8W7E4R2T1Y9U6I5O3P0A8S
+    - AIzaSyABC123DEF456GHI789JKL012MNO345PQR
+    nomatch:
+    - AIza123
+    - aizaNotValid
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    provider: Google
+    type: API Key
+  match_type: exactly_matches
+  langs:
+    python: AIza[A-Za-z0-9\-_]{35}
+    go: AIza[A-Za-z0-9\-_]{35}
+    java: AIza[A-Za-z0-9\-_]{35}
+    javascript: AIza[A-Za-z0-9\-_]{35}
+- id: generic_api_key_01
+  location: comm
+  category: token
+  description: Generic API key pattern (32+ random chars without common prefixes)
+  pattern: '[A-Za-z0-9_\-+/=]{32,}'
+  verification: high_entropy_token
+  priority: 110
+  mask: '[REDACTED_API_KEY]'
+  examples:
+    match:
+    - AbC123dEf456GhI789JkL012MnO345PqR678StU901VwX234YzA567
+    - XyZ987wVu654TsR321QpO098NmL765KjI432HgF210
+    nomatch:
+    - short
+    - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    type: Generic API Key
+    note: Catches 32+ char tokens without specific vendor prefixes
+  match_type: exactly_matches
+  langs:
+    python: '[A-Za-z0-9_\-+/=]{32,}'
+    go: '[A-Za-z0-9_\-+/=]{32,}'
+    java: '[A-Za-z0-9_\-+/=]{32,}'
+    javascript: '[A-Za-z0-9_\-+/=]{32,}'
+- id: private_key_01
+  location: comm
+  category: token
+  description: Private key header (RSA, EC, SSH, PGP)
+  pattern: '-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'
+  priority: 1
+  mask: '[REDACTED_PRIVATE_KEY]'
+  examples:
+    match:
+    - '-----BEGIN PRIVATE KEY-----'
+    - '-----BEGIN RSA PRIVATE KEY-----'
+    - '-----BEGIN EC PRIVATE KEY-----'
+    - '-----BEGIN OPENSSH PRIVATE KEY-----'
+    nomatch:
+    - '-----BEGIN PUBLIC KEY-----'
+    - '-----BEGIN CERTIFICATE-----'
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    type: Private Key
+    note: Detects private key headers - full key content should be removed
+  match_type: exactly_matches
+  langs:
+    python: '-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'
+    go: '-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'
+    java: '-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'
+    javascript: '-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'

@@ -1,0 +1,237 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data-detector"
+version = "0.0.5"
+description = "A general-purpose engine that detects and masks personal information by country and information type"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "Apache License 2.0"}
+authors = [
+    {name="zafrem", email="zafrem@gmail.com"}
+]
+keywords = ["pii", "detection", "redaction", "regex", "privacy", "gdpr"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "pyyaml>=6.0",
+    "jsonschema>=4.17.0",
+    "click>=8.1.0",
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "grpcio>=1.59.0",
+    "grpcio-tools>=1.59.0",
+    "prometheus-client>=0.19.0",
+    "pydantic>=2.0.0",
+    "python-multipart>=0.0.6",
+    "faker>=20.0.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.25.0",
+    "black>=24.8.0,<25.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+    "types-pyyaml",
+    "types-jsonschema",
+    "faker>=20.0.0",
+    "Pillow>=10.0.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.0",
+]
+test = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.25.0",
+    "faker>=20.0.0",
+    "Pillow>=10.0.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.0",
+]
+fake = [
+    "faker>=20.0.0",
+    "Pillow>=10.0.0",
+    "reportlab>=4.0.0",
+    "python-docx>=1.0.0",
+    "openpyxl>=3.1.0",
+    "python-pptx>=0.6.0",
+]
+nlp = [
+    "langdetect>=1.0.9",
+    "konlpy>=0.6.0",
+    "jieba>=0.42.1",
+    "sudachipy>=0.6.7",
+    "sudachidict_core>=20230110",
+]
+re2 = [
+    "google-re2>=1.1",
+]
+transformer = [
+    "transformers>=4.30.0",
+    "torch>=2.0.0",
+    "accelerate>=0.20.1",
+]
+# privyscope NER backend. The engine is NOT on PyPI -- it is vendored as the
+# `pii-engine` git submodule (github.com/zafrem/privyscope) and installed
+# from there:
+#     git submodule update --init pii-engine
+#     pip install -e pii-engine
+# The core ships no language data; also install at least one language pack
+# (e.g. privyscope-ko / privyscope-en) so the NER stage can load.
+database = [
+    "sqlalchemy>=2.0.0",
+]
+kafka = [
+    "confluent-kafka>=2.3.0",
+    "requests>=2.28.0",
+    "fastavro>=1.8.0",
+]
+file-storage = [
+    "openpyxl>=3.1.0",
+    "pyarrow>=14.0.0",
+]
+vector-db = [
+    "chromadb>=0.4.0",
+]
+training-data = [
+    "datasets>=2.14.0",
+]
+resources = [
+    "data-detector[database,kafka,file-storage,vector-db,training-data]",
+]
+
+[project.scripts]
+data-detector = "datadetector.cli:main"
+data-detector-restore-tokens = "datadetector.restore_tokens:main"
+
+[project.urls]
+Homepage = "https://github.com/zafrem/data-detector"
+Repository = "https://github.com/zafrem/data-detector"
+Issues = "https://github.com/zafrem/data-detector/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["datadetector*", "verification*"]
+
+[tool.setuptools.package-data]
+datadetector = ["py.typed"]
+
+# Include patterns and schemas via MANIFEST.in
+
+[tool.black]
+line-length = 100
+target-version = ["py38", "py39", "py310", "py311", "py312"]
+extend-exclude = '''
+/(
+  # Exclude symlinked verification module from pii-pattern-engine submodule
+  | src/verification
+)/
+'''
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+extend-exclude = ["src/verification", "api/"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "W",   # pycodestyle warnings
+    "UP",  # pyupgrade
+]
+# Ignore Python 3.9+/3.10+ specific rules (project supports Python 3.8+)
+ignore = [
+    "UP006",  # Use builtin collection types (list, dict, tuple) - requires Python 3.9+
+    "UP007",  # Use X | Y for type unions - requires Python 3.10+
+    "UP035",  # Import from typing instead of collections.abc - requires Python 3.9+
+    "UP037",  # Remove quotes from type annotation - requires Python 3.10+ for some cases
+    "UP045",  # Use X | None instead of Optional[X] - requires Python 3.10+
+]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict = true
+exclude = ["src/verification/"]
+
+[[tool.mypy.overrides]]
+module = [
+    "verification.*",
+    "verification.python.*",
+    "verification.python.verification",
+    "langdetect",
+    "konlpy.*",
+    "jieba.*",
+    "sudachipy",
+    "re2",
+    "transformers",
+    "transformers.*",
+    "torch",
+    "chromadb",
+    "datasets",
+    "confluent_kafka",
+    "requests",
+    "pyarrow",
+    "pyarrow.parquet",
+    "openpyxl",
+    "openpyxl.*",
+    "sqlalchemy",
+]
+ignore_missing_imports = true
+ignore_errors = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v"
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+filterwarnings = [
+    "ignore:pkg_resources is deprecated:DeprecationWarning",
+    "ignore:Deprecated call to `pkg_resources.declare_namespace:DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["src/datadetector"]
+omit = ["*/tests/*", "*/test_*.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]

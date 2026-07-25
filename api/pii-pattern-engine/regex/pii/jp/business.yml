@@ -1,0 +1,28 @@
+namespace: jp
+description: Japanese Business and Corporate Identification
+
+patterns:
+  - id: jp_corporate_number
+    verification: jp_corporate_number_valid
+    location: jp
+    category: identification
+    description: Japanese Corporate Number (法人番号 - 13 digits)
+    pattern: '[1-9][0-9]{12}'
+    mask: "JP-*************"
+    examples:
+      match:
+        - "9234567890123"
+        - "2000012345678"
+      nomatch:
+        - "0123456789012"
+        - "123456789012"
+    policy:
+      store_raw: true
+      action_on_match: report
+      severity: medium
+    match_type: exactly_matches
+    langs:
+      python: '[1-9][0-9]{12}'
+      go: '[1-9][0-9]{12}'
+      java: '[1-9][0-9]{12}'
+      javascript: '[1-9][0-9]{12}'

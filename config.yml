@@ -1,0 +1,51 @@
+server:
+  port: 8080
+  host: "0.0.0.0"
+  tls: false
+  # tls_cert: /path/to/cert.pem
+  # tls_key: /path/to/key.pem
+
+security:
+  api_key_required: false
+  # api_key: ${API_KEY}  # Set via environment variable
+  rate_limit_rps: 100
+  # jwt_secret: ${JWT_SECRET}
+
+registry:
+  paths:
+    - config/tokens.yml
+    - pii-pattern-engine/regex/pii/common
+    - pii-pattern-engine/regex/pii/us
+    - pii-pattern-engine/regex/pii/kr
+  hot_reload: true
+  reload_interval: 60  # seconds
+
+redaction:
+  default_strategy: mask  # mask, hash, tokenize
+  hash_algorithm: sha256
+  mask_char: "*"
+
+# Optional privyscope NER backend (the `pii-engine` submodule). When enabled it
+# augments the regex core with NER, catching entities regex misses; the RAG
+# middleware inherits it too. Disabled by default -> regex-only.
+# Requires: git submodule update --init pii-engine && pip install -e pii-engine
+# (plus a language pack, e.g. privyscope-ko, for the ONNX NER stage).
+privyscope:
+  enabled: false
+  # lang: ko             # language pack to use; omit to use the sole installed one
+  # auto_language: false # route each text to its own language engine
+  # operating_point: balanced  # balanced | high_recall | high_precision
+  # regex_only: false    # skip the ONNX stage (no model weights needed)
+  # cache_dir:           # local weights bundle for fully offline use
+  # score: 0.6           # confidence assigned to privyscope matches
+
+observability:
+  metrics: prometheus
+  metrics_port: 9090
+  log_level: INFO  # DEBUG, INFO, WARNING, ERROR
+  log_format: json  # json, text
+
+performance:
+  max_text_length: 1048576  # 1MB
+  timeout_ms: 5000
+  worker_count: 4

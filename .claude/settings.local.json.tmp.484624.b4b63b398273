@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m datadetector.cli resource inventory --in /tmp/dummy_scan.json)",
+      "Bash(echo \"=== exit: $? ===\")",
+      "Bash(python -m datadetector.cli version)",
+      "Bash(PYTHONPATH=src python -c \"import datadetector; print\\('ok', datadetector.__version__\\)\")",
+      "Bash(PYTHONPATH=src python -m datadetector.cli resource inventory --in /tmp/dummy_scan.json)",
+      "Bash(PYTHONPATH=src data-detector resource inventory --in /tmp/s.json --format json)",
+      "Bash(git rm *)",
+      "Bash(echo \"--- exit $? ---\")",
+      "Bash(echo \"=== exit $? ===\")",
+      "Bash(PYTHONPATH=src python -c \"import datadetector.mlops, datadetector.cli; print\\('imports ok'\\)\")",
+      "Bash(PYTHONPATH=src python -m datadetector.cli gate text --ns comm --ns kr)",
+      "Bash(echo \"exit=$?\")",
+      "Read(//tmp/**)",
+      "Bash(PYTHONPATH=src python -m datadetector.cli gate text --ns comm -q)",
+      "Bash(PYTHONPATH=src python -m datadetector.cli gate rag /tmp/rag.jsonl --ns comm --ns us --ns kr -q)",
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('findings:',r['findings_count'],'items_with_pii:',r['items_with_pii'],'/',r['scanned_items']\\); [print\\(' ',f['location'],f['category'],f['severity']\\) for f in r['findings']]\")",
+      "Bash(PYTHONPATH=src python -m datadetector.cli gate rag /tmp/rag.jsonl --ns us --ns kr -q)",
+      "Bash(mkdir -p /tmp/td)",
+      "Bash(PYTHONPATH=src python -m datadetector.cli gate training-data /tmp/td --ns comm -q)",
+      "Bash(python -c \"import sys,json; r=json.load\\(sys.stdin\\); print\\('target:',r['target'],'fields_scanned:',r['scanned_items'],'pii_fields:',r['items_with_pii'],'findings:',r['findings_count']\\); [print\\(' ',f['location'],f['category']\\) for f in r['findings']]\")",
+      "Bash(PYTHONPATH=src python -m pytest tests/test_mlops_gate.py tests/test_mlops_cli.py -q)",
+      "Bash(chmod +x examples/mlops_pii_gate.sh)",
+      "Bash(PYTHONPATH=src python -m pytest tests/test_cli.py -q)",
+      "Bash(PYTHONPATH=src python -m ruff check src/datadetector/mlops.py src/datadetector/cli.py src/datadetector/__init__.py)",
+      "Bash(git submodule *)",
+      "Bash(git config *)",
+      "Bash(git checkout *)",
+      "Bash(git commit -m ' *)",
+      "Bash(PYTHONPATH=src python -m pytest tests/ -q)",
+      "Bash(git stash *)"
+    ]
+  }
+}

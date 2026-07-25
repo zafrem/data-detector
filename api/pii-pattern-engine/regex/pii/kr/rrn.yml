@@ -1,0 +1,74 @@
+namespace: kr
+description: Korean Resident Registration Number and Alien Registration Number patterns
+patterns:
+- id: rrn_01
+  location: kr
+  category: rrn
+  description: Korean Resident Registration Number (주민등록번호)
+  pattern: '[0-9]{2}[01][0-9][0-3][0-9]-?[1-4][0-9]{6}'
+  verification: kr_rrn_valid
+  mask: '******-*******'
+  examples:
+    match:
+    - 900101-1234568
+    - 850315-2345678
+    - 0502153456789
+    nomatch:
+    - 900101-5234567
+    - 90010-11234567
+    - 900101-123456
+    - 901301-1234567
+    - 900132-1234567
+    - 900101-1234567
+    - 111111-1111111
+    - 900101-0234567
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'First 6 digits: YYMMDD, 7th digit: gender/century (1-4). Validates date
+      (month 01-12, day 01-31) and checksum.'
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{2}[01][0-9][0-3][0-9]-?[1-4][0-9]{6}'
+    go: '[0-9]{2}[01][0-9][0-3][0-9]-?[1-4][0-9]{6}'
+    java: '[0-9]{2}[01][0-9][0-3][0-9]-?[1-4][0-9]{6}'
+    javascript: '[0-9]{2}[01][0-9][0-3][0-9]-?[1-4][0-9]{6}'
+- id: alien_registration_01
+  location: kr
+  category: rrn
+  description: Korean Alien Registration Number (외국인등록번호)
+  pattern: '[0-9]{2}[01][0-9][0-3][0-9]-?[5-8][0-9]{6}'
+  verification: kr_alien_registration_valid
+  mask: '******-*******'
+  examples:
+    match:
+    - 900101-5234561
+    - 850315-6789019
+    - 920228-7123452
+    - 990515-8012347
+    - '8009058765437'
+    nomatch:
+    - 900101-1234567
+    - 900101-4234567
+    - 900101-9234567
+    - 90010-15234567
+    - 900101-523456
+    - 901301-5234567
+    - 900132-5234567
+    - 900101-0234567
+    - 555555-5555555
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: critical
+  metadata:
+    note: 'First 6 digits: YYMMDD, 7th digit: gender/century for foreigners (5-8).
+      Validates date (month 01-12, day 01-31).'
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{2}[01][0-9][0-3][0-9]-?[5-8][0-9]{6}'
+    go: '[0-9]{2}[01][0-9][0-3][0-9]-?[5-8][0-9]{6}'
+    java: '[0-9]{2}[01][0-9][0-3][0-9]-?[5-8][0-9]{6}'
+    javascript: '[0-9]{2}[01][0-9][0-3][0-9]-?[5-8][0-9]{6}'

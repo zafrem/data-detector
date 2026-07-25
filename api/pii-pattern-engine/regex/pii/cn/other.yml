@@ -1,0 +1,106 @@
+namespace: cn
+description: China other patterns (zipcode, social credit, names)
+patterns:
+- id: zipcode_01
+  location: cn
+  category: address
+  description: Chinese postal code (6 digits)
+  pattern: '[0-9]{6}'
+  verification: cn_zipcode_valid
+  mask: '******'
+  examples:
+    match:
+    - '100000'
+    - '200000'
+    - '518000'
+    - '310000'
+    nomatch:
+    - '10000'
+    - '1000000'
+    - A10000
+    - 10000A
+    - '12345678901234'
+    - '123456'
+    - '111111'
+    - '000000'
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: low
+  metadata:
+    note: Uses negative lookahead/lookbehind to prevent matching when embedded in
+      longer numbers
+  match_type: exactly_matches
+  langs:
+    python: '[0-9]{6}'
+    go: '[0-9]{6}'
+    java: '[0-9]{6}'
+    javascript: '[0-9]{6}'
+- id: social_credit_01
+  location: cn
+  category: other
+  description: Chinese Unified Social Credit Code (18 characters)
+  pattern: '[0-9A-Z]{18}'
+  flags:
+  - IGNORECASE
+  mask: '******************'
+  examples:
+    match:
+    - 91110000MA00123456
+    - 12345678901234567A
+    - 91320100MA1B2C3D4E
+    - 91440300567891234X
+    - 91110101ABCD123456
+    nomatch:
+    - 9111000MA00123456
+    - 91110000MA0012345678
+    - 91110000MA001234567
+    - 91110000-MA0012345
+    - 9111 0000 MA001234
+  policy:
+    store_raw: false
+    action_on_match: report
+    severity: medium
+  match_type: exactly_matches
+  langs:
+    python: '[0-9A-Z]{18}'
+    go: '[0-9A-Z]{18}'
+    java: '[0-9A-Z]{18}'
+    javascript: '[0-9A-Z]{18}'
+- id: chinese_name_01
+  location: cn
+  category: name
+  description: Simplified Chinese name (2-4 characters)
+  pattern: '[一-鿿]{2,4}'
+  verification: chinese_name_valid
+  mask: '***'
+  examples:
+    match:
+    - 王小明
+    - 李美丽
+    - 陈志强
+    - 林雅婷
+    - 欧阳修
+    - 张伟
+    - 刘芳
+    - 司马迁
+    nomatch:
+    - 王
+    - abcd
+    - '123'
+    - A
+    - 学习
+    - 任务
+  policy:
+    store_raw: false
+    action_on_match: redact
+    severity: high
+  metadata:
+    note: Matches Simplified Chinese names with known surname prefixes. Uses surname
+      verification to reduce false positives.
+  match_type: exactly_matches
+  langs:
+    python: '[一-鿿]{2,4}'
+    go: '[一-鿿]{2,4}'
+    java: '[一-鿿]{2,4}'
+    javascript: '[一-鿿]{2,4}'
