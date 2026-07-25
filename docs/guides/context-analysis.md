@@ -90,6 +90,11 @@ categories:
 
 When `TransformerConfig(enable_context_classifier=True)` is set, the engine runs two fine-tuned DistilBERT classifiers after the keyword check to further refine match scores.
 
+> **Context classification vs. NER.** This section is about *context
+> classification* — scoring regex matches. For *named-entity recognition*
+> (finding names/addresses regex misses) via the `pii-engine` (privyscope)
+> backend, see the [NER Detection Guide](ner-detection.md).
+
 ### Models
 
 | Model | Task | Location | Performance |
@@ -97,7 +102,13 @@ When `TransformerConfig(enable_context_classifier=True)` is set, the engine runs
 | Binary Classifier | PII vs Non-PII | `pii-engine/models/transformer/binary_classifier/` | 96.2% accuracy, F1 96.9% |
 | Category Classifier | 21 PII types | `pii-engine/models/transformer/category_classifier/` | 87.9% accuracy, F1 86.5% |
 
-Models are **auto-discovered** from `pii-engine/models/transformer/` when present. No explicit paths required.
+Fine-tuned models are **auto-discovered** from `pii-engine/models/transformer/`
+when present. These weights are **not bundled** — the `pii-engine` submodule now
+hosts the privyscope NER backend, not the classifier models. Train your own with
+`python -m datadetector.training.train_pii_classifier` (see below) and place them
+there, or the engine falls back to the generic zero-shot model
+(`facebook/bart-large-mnli`). Performance figures above are for the reference
+fine-tuned models.
 
 ### Scoring Logic
 
