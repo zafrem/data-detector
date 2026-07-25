@@ -239,10 +239,10 @@ class PrivyscopeConfig:
     """Configuration for the optional privyscope NER backend.
 
     privyscope is a standalone multilingual PII engine (regex filter + ONNX
-    BIOES/Viterbi NER), vendored as the `pii-ml-engine` submodule. It ships no
+    BIOES/Viterbi NER), vendored as the `pii-engine` submodule. It ships no
     language data of its own -- install the core plus at least one language pack:
 
-        pip install -e pii-ml-engine
+        pip install -e pii-engine
         pip install privyscope-ko      # and/or privyscope-en
     """
 

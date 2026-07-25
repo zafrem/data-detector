@@ -75,9 +75,9 @@ class ContextAnalyzer:
         return root
 
     def _auto_discover_models(self) -> None:
-        """Auto-discover fine-tuned transformer models in pii-ml-engine if paths not set.
+        """Auto-discover fine-tuned transformer models in pii-engine if paths not set.
 
-        Gracefully skips if pii-ml-engine submodule is missing or not populated.
+        Gracefully skips if pii-engine submodule is missing or not populated.
         """
         if self._transformer_config is None:
             return
@@ -86,11 +86,11 @@ class ContextAnalyzer:
             return  # already explicitly configured
 
         root = self._get_project_root()
-        model_base = root / "pii-ml-engine" / "models" / "transformer"
+        model_base = root / "pii-engine" / "models" / "transformer"
 
         if not model_base.exists():
             logger.debug(
-                "pii-ml-engine/models/transformer/ not found — "
+                "pii-engine/models/transformer/ not found — "
                 "ML context classifiers will not be auto-loaded. "
                 "Run 'git submodule update --init' or train models first."
             )
@@ -439,7 +439,7 @@ class ContextAnalyzer:
 
         # Check if fine-tuned models are available
         # Validate paths exist before attempting to load (avoids slow fallback on
-        # missing pii-ml-engine submodule or incomplete model files)
+        # missing pii-engine submodule or incomplete model files)
         binary_path = config.binary_model_path
         category_path = config.category_model_path
         if binary_path and not Path(binary_path).exists():

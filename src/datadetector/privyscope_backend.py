@@ -2,7 +2,7 @@
 privyscope-backed NER detector for PII detection.
 
 Provides a complementary detection path using the privyscope engine, vendored
-as the `pii-ml-engine` submodule. privyscope is a two-stage hybrid pipeline:
+as the `pii-engine` submodule. privyscope is a two-stage hybrid pipeline:
 a regex filter plus an optional ONNX BIOES/Viterbi NER stage, with per-text
 multilingual routing.
 
@@ -13,7 +13,7 @@ interface, so regex/NER merging and corroboration scoring are unchanged.
 privyscope ships no language data on its own -- install the core plus at least
 one language pack:
 
-    pip install -e pii-ml-engine
+    pip install -e pii-engine
     pip install privyscope-ko      # and/or privyscope-en
 """
 

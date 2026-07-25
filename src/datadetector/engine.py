@@ -84,9 +84,9 @@ class Engine:
                           scores, keyword boosts, ML weights, and min_score filtering.
             privyscope_config: Optional privyscope NER backend config. When enabled it
                           takes over the NER slot from transformer_config's NER (the
-                          two are alternatives, never both). Requires the pii-ml-engine
+                          two are alternatives, never both). Requires the pii-engine
                           submodule plus a language pack:
-                          pip install -e pii-ml-engine && pip install privyscope-ko
+                          pip install -e pii-engine && pip install privyscope-ko
         """
         self.registry = registry
         self.default_mask_char = default_mask_char
